@@ -12,10 +12,10 @@ from numpy.linalg import eig
 import numpy as np
 from multiprocessing import Pool
 
-base_dir = "../DynamicNetworksResults/"
+base_dir = "results/"
 
 graph_binary_dir = base_dir + "graph_binaries/"
 graph_source_dir = base_dir + "graph_sources/"
 plot_dir = base_dir + "plots/"
 graph_dir = base_dir + "graphs/"
-r_dir = "../DynamicNetworks/R Scripts/"
+r_dir = "R Scripts/"

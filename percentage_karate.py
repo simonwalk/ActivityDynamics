@@ -27,7 +27,8 @@ def create_network():
     global graph_source_name
     graph_name += "_{}PERC".format(0) + APPROACH
     graph_source_name = graph_name
-    nw = Network(False, graph_name, run=0, store_iterations=store_itas, deltatau = deltatau, deltapsi = deltapsi, runs=num_random_inits)
+    nw = Network(False, graph_name, run=0, store_iterations=store_itas, deltatau=deltatau, deltapsi=deltapsi,
+                 runs=num_random_inits)
     bg = Generator(graph_name)
     bg.debug_msg("Creating Karate network!")
     bg.create_karate_graph()

@@ -55,6 +55,7 @@ class Network:
         self.run = run
         self.runs = runs
         self.num_nodes = num_nodes
+
         # variables used for activity dynamics modeling process
         self.cur_iteration = 0
         self.ratio_ones = [1.0] * self.graph.num_vertices()
@@ -64,7 +65,6 @@ class Network:
         self.converge_at = float(converge_at)
         self.store_iterations = store_iterations
         self.ratio = None
-
 
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
@@ -97,6 +97,7 @@ class Network:
                     self.a_cs.append(curr_ac)
         self.set_ac(0)
 
+
     def set_ac(self, index):
         self.a_c = self.a_cs[index]
 
@@ -110,11 +111,14 @@ class Network:
     def calc_max_posts_per_day(self, start_tau=0, end_tau=None):
         return max(self.posts_per_user_per_day[start_tau:end_tau])
 
+
     def calc_g_per_month(self):
         return self.max_posts_per_day / (math.sqrt(self.a_c ** 2 + self.max_posts_per_day ** 2))
 
+
     def calc_max_q(self):
         return (self.max_posts_per_day * self.tau_in_days * self.num_vertices) / (2 * self.num_edges * self.g_per_month)
+
 
     def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
@@ -155,12 +159,8 @@ class Network:
     def create_folders(self):
         folders = [config.graph_source_dir+"weights/"+self.graph_name+"/",
                    config.plot_dir + "weights_over_time/" + self.graph_name + "/",
-                   #config.plot_dir + "scatterplots/" + self.graph_name + "/",
-                   #config.plot_dir + "active_inactive/" + self.graph_name + "/",
-                   #config.plot_dir + "percentage_comp/" + self.graph_name + "/",
                    config.plot_dir + "average_weights_over_tau/" + self.graph_name + "/",
-                   config.plot_dir + "ratios_over_time/" + self.graph_name + "/",]
-                   #config.plot_dir + "errors_over_time/" + self.graph_name + "/"]
+                   config.plot_dir + "ratios_over_time/" + self.graph_name + "/"]
         try:
             for folder in folders:
                 if not os.path.exists(folder):
@@ -213,7 +213,7 @@ class Network:
         self.intrinsic_file.close()
         self.extrinsic_file.close()
 
-    #TODO Replace with Filter + Purge!
+
     def reduce_to_largest_component(self):
         fl = label_largest_component(self.graph)
         self.graph = GraphView(self.graph, vfilt=fl)
@@ -244,7 +244,6 @@ class Network:
             self.set_graph_property("object", self.max_q, "max_q")
             self.set_graph_property("object", self.max_posts_per_day, "max_posts_per_day")
             self.set_graph_property("object", self.g_per_month, "g_per_month")
-
         except:
             self.debug_msg("  -> INFO: Could not store empirical activities!", level=1)
 
@@ -266,9 +265,7 @@ class Network:
     # init empirical weight as average over all nodes
     def init_empirical_activity(self, ac_multiplicator=1):
         initial_empirical_activity = self.apm[0]/self.num_vertices/(self.a_c*ac_multiplicator)
-        #print initial_empirical_activity
         random_init_nodes = self.num_users[0]
-
         # reset activity!
         # Todo: Avoid reset loop!
         for v in self.graph.vertices():
@@ -558,27 +555,6 @@ class Network:
     def activity_decay(self, x, ratio):
         return -x*ratio
 
-
-    # def activity_dynamics_empirical(self, store_weights=False):
-    #     # Collect required input
-    #     x = np.asarray(self.get_node_weights("activity"))
-    #     # Calculate deltax
-    #     ratio_ones = (self.ratio * np.asarray(self.ones_ratio))
-    #     fx = self.activity_decay(x, ratio_ones)
-    #     gx = self.peer_influence(x)
-    #     #print "fx ", fx
-    #     #print "gx ", gx
-    #     deltax = (fx + gx) * self.deltatau
-    #     # Set new weights
-    #     total_weights = sum(x + deltax)
-    #     self.debug_msg(" --> Sum of weights: {}".format(total_weights), level=2)
-    #     self.update_node_weights("activity", deltax)
-    #     if (store_weights and self.cur_iteration % self.store_iterations == 0) or (self.converged or self.diverged):
-    #         self.weights_file.write(str(total_weights) + "\n")
-    #     # Increment current iteration counter
-    #     self.cur_iteration += 1
-
-
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
             print "  \x1b[35m-NWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m] \x1b[33m{}\x1b[00m".format(
@@ -625,7 +601,7 @@ class Network:
         plt.xlabel(r"$Re(\kappa)$")
         plt.ylabel(r"$Im(\kappa)$")
         plt.tight_layout()
-        plt.savefig("../DynamicNetworksResults/plots/eigenvalues/" + self.graph_name + "_adjacency_spectrum.pdf")
+        plt.savefig(config.plot_dir + "eigenvalues/" + self.graph_name + "_adjacency_spectrum.pdf")
         plt.close("all")
 
     def load_graph_save(self, fpath):
@@ -654,640 +630,3 @@ class Network:
         self.num_edges = self.graph.num_edges()
         self.debug_msg("  --> Counted {} Vertices".format(self.num_vertices), level=0)
         self.debug_msg("  --> Counted {} Edges".format(self.num_edges), level=0)
-
-
-    # Stuff from Philipp Koncar...
-    def calc_eigenvalues(self, num_ev=100):
-        if num_ev > 100:
-            num_ev = 100
-        self.debug_msg("Starting calculation of {} Eigenvalues".format(num_ev))
-        evals_large_sparse, evecs_large_sparse = largest_eigsh(self.A, num_ev * 2, which='LM')
-        self.debug_msg("Finished calculating Eigenvalues")
-        weights = sorted([float(x) for x in evals_large_sparse], reverse=True)[:num_ev]
-        temp_str = ""
-        for e in weights:
-            temp_str += str(e) + ", "
-        temp_str = temp_str[:-2]
-        self.graph.graph_properties["ew"] = self.graph.new_graph_property("string", temp_str)
-        self.prepare_eigenvalues()
-
-
-
-    def update_vertex_properties(self, max_iter_ev=1000, max_iter_hits=1000):
-        self.debug_msg("Starting to update vertex properties... ")
-
-        self.debug_msg("\x1b[33m  ++ Updating PageRank\x1b[00m")
-        pr = pagerank(self.graph)
-        self.graph.vertex_properties["pagerank"] = pr
-
-        self.debug_msg("\x1b[33m  ++ Updating Clustering Coefficient\x1b[00m")
-        clustering = local_clustering(self.graph)
-        self.graph.vertex_properties["clustercoeff"] = clustering
-
-        self.debug_msg("\x1b[33m  ++ Updating Eigenvector Centrality\x1b[00m")
-        ev, ev_centrality = eigenvector(self.graph, weight=None, max_iter=max_iter_ev)
-        self.graph.vertex_properties["evcentrality"] = ev_centrality
-
-        #self.debug_msg("\x1b[33m  ++ Updating HITS\x1b[00m")
-        #eig, authorities, hubs = hits(self.graph, weight=None, max_iter=max_iter_hits)
-        #self.graph.vertex_properties["authorities"] = authorities
-        #self.graph.vertex_properties["hubs"] = hubs
-
-        self.debug_msg("\x1b[33m  ++ Updating Degree Property Map\x1b[00m")
-        degree = self.graph.degree_property_map("total")
-        self.graph.vertex_properties["degree"] = degree
-
-        self.debug_msg("Done.")
-
-    # Calculates the current percentage of connectivity
-    def current_percent_of_connectivity(self):
-        num_of_cur_edges = self.graph.num_edges()
-        num_of_com_edges = ((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2
-        percentage = (num_of_cur_edges / num_of_com_edges) * 100
-        percentage = round(percentage, 2)
-        self.debug_msg("Finished calculating percentage of the current connectivity of the graph: " + str(percentage) + "%")
-        return percentage
-
-    # Calculates and returns the numbers of edges needed to reach target percentage
-    def edge_variance_to_percent(self, target_percentage):
-        num_of_com_edges = ((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2
-        target_num_of_edges = (target_percentage /100) * num_of_com_edges
-        num_to_add = target_num_of_edges - self.graph.num_edges()
-        num_to_add = int(round(num_to_add))
-        self.debug_msg("Finished calculating edge variance to " + str(target_percentage) + "%: " + str(num_to_add))
-        return num_to_add
-
-    # Returns the maximum possible number of edges of the graph.
-    def maximum_edges_of_graph(self):
-        return ((self.graph.num_vertices() - 1) * self.graph.num_vertices()) // 2
-
-    # Calculates and returns the minimum number of edges for a spanning tree
-    def minimum_edges_for_spanning_tree(self):
-        return self.graph.num_vertices() - 1
-
-    # Calculates and returns the minimum percentage for a spanning tree
-    def minimum_percent_for_spanning_tree(self):
-        min_edges = self.minimum_edges_for_spanning_tree()
-        num_of_com_edges = ((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2
-        percentage = (min_edges / num_of_com_edges) * 100
-        return round(percentage,2)
-
-    # Updates the adjacency matrix contained in self.A
-    def update_adjacency_matrix(self):
-        self.debug_msg("Updating adjacency matrix...")
-        self.A = adjacency(self.graph, weight=None)
-        self.debug_msg("Done.")
-
-    # Returns an array containing the amount of edges added/removed per iteration.
-    # @params:
-    # target_num = The target number of edges.
-    # num_iter = The number of iterations.
-    def get_num_edges_per_iterations_array(self, target_num, num_iter):
-        if target_num == self.graph.num_edges():
-            self.debug_msg("Target number and current number of edges are equal!")
-            sys.exit("Program exit")
-        elif target_num < self.graph.num_edges():
-            num_edges = self.graph.num_edges() - target_num
-        else:
-            num_edges = target_num - self.graph.num_edges()
-        per_iter = num_edges // num_iter
-        rest = num_edges % num_iter
-        num_array = [per_iter for i in range(0, num_iter)]
-        for i in range(0, rest):
-            num_array[i] += 1
-        return num_array
-
-    # Calculates an edge list of the graph. Depending on the given mode, either missing or current edges are
-    # calculated.
-    # @params:
-    # mode = Specifies whether missing or current edges are calculated. Possible modes: current,
-    #        current_excl_st (with this mode edges belonging to a random spanning tree are not contained in the list),
-    #        missing
-    # strategy = Specifies the way the list is sorted. Possible strategies: random, high to high, low to low, high to low
-    # sorted_values = A list of sorted vertices is needed to sort the edge list.
-    def calculate_edge_list(self, mode, strategy, sorted_values=None):
-        self.debug_msg("Starting calculation of edge list (mode = " + mode + ", strategy = " + strategy + ")...")
-        edge_tuples = []
-        adj_matrix = self.A.todense()
-        if "current" in mode:
-            check_value = 1.0
-            num_of_edges = self.graph.num_edges()
-        else:
-            check_value = 0.0
-            num_of_edges = (((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2) - self.graph.num_edges()
-        for i in range(0, self.graph.num_vertices()):
-            if i % int((self.graph.num_vertices() / 10)) == 0 and i != 0:
-                self.debug_msg("  --> Covered " + str(int((float(i)/self.graph.num_vertices()) * 100)) + "% of vertices.")
-            if strategy == "random":
-                for j in range(0, self.graph.num_vertices()):
-                    if adj_matrix[i, j] == check_value and i < j:
-                        edge_tuples.append((i, j))
-            elif strategy == "high_to_high" or mode == "low_to_low":
-                for j in range(i + 1, self.graph.num_vertices()):
-                    if adj_matrix[sorted_values[i][0], sorted_values[j][0]] == check_value:
-                        edge_tuples.append((sorted_values[i][0], sorted_values[j][0]))
-                        adj_matrix[sorted_values[i][0], sorted_values[j][0]] = 1.0
-                        adj_matrix[sorted_values[j][0], sorted_values[i][0]] = 1.0
-            else:
-                for j in range(self.graph.num_vertices() - 1, i, -1):
-                    if adj_matrix[sorted_values[i][0], sorted_values[j][0]] == check_value:
-                        edge_tuples.append((sorted_values[i][0], sorted_values[j][0]))
-                        adj_matrix[sorted_values[i][0], sorted_values[j][0]] = 1.0
-                        adj_matrix[sorted_values[j][0], sorted_values[i][0]] = 1.0
-        self.debug_msg("  --> Covered 100% of vertices.")
-
-        if strategy == "random":
-            shuffle(edge_tuples)
-
-        if mode is "current_excl_st":
-            self.debug_msg("  --> Removing spanning tree edges...")
-            st_edges = random_spanning_tree(self.graph)
-            self.graph.set_edge_filter(st_edges)
-            num_of_edges -= self.graph.num_edges()
-            st_adj_matrix = adjacency(self.graph, weight=None).todense()
-            for i in range(0, self.graph.num_vertices()):
-                for j in range(i+1, self.graph.num_vertices()):
-                    if st_adj_matrix[i, j] == 1.0:
-                        if (i, j) in edge_tuples:
-                            edge_tuples.remove((i, j))
-                        else:
-                            edge_tuples.remove((j, i))
-            self.debug_msg("  --> Removed " + str(self.graph.num_edges()) + " spanning tree edges from the graph.")
-            self.graph.clear_filters()
-
-        if len(edge_tuples) != num_of_edges:
-            self.debug_msg("Error: The number of calculated edges did not meet the actual number of " + mode + " edges!")
-            sys.exit("Program exit")
-        else:
-            self.debug_msg("Done. Number of calculated " + mode + " edges: " + str(len(edge_tuples)))
-        return edge_tuples
-
-    # Adds new edges to the graph.
-    # @params:
-    # num_edges = The number of edges to add.
-    # applied_strategy = The used strategy. For possible strategies please see strategies dictionary below!
-    def add_edge_to_graph(self, num_edges, applied_strategy):
-        if num_edges > self.edge_variance_to_percent(100):
-            self.debug_msg("The given amount of edges cannot be added because it does not need that many to make the graph complete! Max possible: " + str(int(self.edge_variance_to_percent(100))))
-            sys.exit("Program exit")
-
-        # Strategy implementations
-        # !!! Make sure that function names match the one in the strategies dictionary below !!!
-
-        def get_random_edges():
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "random")
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_high", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "low_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_high", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "low_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_high", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "high_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("missing", "low_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        # helper functions
-
-        def get_sorted_vertices(property, reverse):
-            return sorted(enumerate(self.graph.vertex_properties[property].a), key=lambda x: x[1], reverse=reverse)
-
-        # strategies dictionary
-
-        strategies = {"random": get_random_edges,
-                      "high_to_high_ev": get_high_to_high_ev_edges,
-                      "high_to_low_ev": get_high_to_low_ev_edges,
-                      "low_to_low_ev" : get_low_to_low_ev_edges,
-                      "high_to_high_degree": get_high_to_high_degree_edges,
-                      "high_to_low_degree": get_high_to_low_degree_edges,
-                      "low_to_low_degree": get_low_to_low_degree_edges,
-                      "high_to_high_pr": get_high_to_high_pr_edges,
-                      "high_to_low_pr": get_high_to_low_pr_edges,
-                      "low_to_low_pr": get_low_to_low_pr_edges}
-
-        try:
-            edges_tuples = strategies[applied_strategy]()
-            #print edges_tuples
-        except KeyError:
-            self.debug_msg("The given strategy is not available! Please choose one of the following:")
-            for key in strategies.iterkeys():
-                self.debug_msg(key)
-            sys.exit("Program exit")
-
-        self.debug_msg("Adding " + str(len(edges_tuples)) + " edges to the graph...")
-        self.graph.add_edge_list(edges_tuples)
-        self.debug_msg("Done.")
-        self.edge_list[0:num_edges] = []
-        if len(self.edge_list) == 0:
-            self.edge_list = None
-
-    # Removes edges from the graph.
-    # @params:
-    # num_edges = The number of edges to remove.
-    # applied_strategy = The used strategy. For possible strategies please see strategies dictionary below!
-    def remove_edge_from_graph(self, num_edges, applied_strategy):
-        if num_edges > self.graph.num_edges():
-            self.debug_msg("It is not possible to remove more edges than the graph currently has! Max possible: " + str(self.graph.num_edges()))
-            sys.exit("Program exit")
-
-        # Strategy implementations
-        # !!! Make sure that function names match the one in the strategies dictionary below !!!
-
-        def get_random_edges():
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "random")
-            return self.edge_list[0:num_edges]
-
-        def get_random_st_edges():
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "random")
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_high", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_ev_st_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_high", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_ev_st_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_ev_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "low_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_ev_st_edges():
-            sorted_evecvals = get_sorted_vertices("evcentrality", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "low_to_low", sorted_evecvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_high", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_degree_st_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_high", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_degree_st_edges():
-            sorted_degrees = get_sorted_vertices("degree", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_degree_edges():
-            sorted_degrees = get_sorted_vertices("degree", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "low_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_degree_st_edges():
-            sorted_degrees = get_sorted_vertices("degree", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "low_to_low", sorted_degrees)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_high", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_high_pr_st_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_high", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "high_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_high_to_low_pr_st_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", True)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "high_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_pr_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current", "low_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        def get_low_to_low_pr_st_edges():
-            sorted_prvals = get_sorted_vertices("pagerank", False)
-            if self.edge_list is None:
-                self.edge_list = self.calculate_edge_list("current_excl_st", "low_to_low", sorted_prvals)
-            return self.edge_list[0:num_edges]
-
-        # helper functions
-
-        def get_sorted_vertices(property, reverse):
-            return sorted(enumerate(self.graph.vertex_properties[property].a), key=lambda x: x[1], reverse=reverse)
-
-        # strategies dictionary
-
-        strategies = {"random": get_random_edges,
-                      "random_st": get_random_st_edges,
-                      "high_to_high_ev": get_high_to_high_ev_edges,
-                      "high_to_high_ev_st": get_high_to_high_ev_st_edges,
-                      "high_to_low_ev": get_high_to_low_ev_edges,
-                      "high_to_low_ev_st": get_high_to_low_ev_st_edges,
-                      "low_to_low_ev": get_low_to_low_ev_edges,
-                      "low_to_low_ev_st": get_low_to_low_ev_st_edges,
-                      "high_to_high_degree": get_high_to_high_degree_edges,
-                      "high_to_high_degree_st": get_high_to_high_degree_st_edges,
-                      "high_to_low_degree": get_high_to_low_degree_edges,
-                      "high_to_low_degree_st": get_high_to_low_degree_st_edges,
-                      "low_to_low_degree": get_low_to_low_degree_edges,
-                      "low_to_low_degree_st": get_low_to_low_degree_st_edges,
-                      "high_to_high_pr": get_high_to_high_pr_edges,
-                      "high_to_high_pr_st": get_high_to_high_pr_st_edges,
-                      "high_to_low_pr": get_high_to_low_pr_edges,
-                      "high_to_low_pr_st": get_high_to_low_pr_st_edges,
-                      "low_to_low_pr": get_low_to_low_pr_edges,
-                      "low_to_low_pr_st": get_low_to_low_pr_st_edges}
-
-        try:
-            deleting_edges = strategies[applied_strategy]()
-            #print deleting_edges
-        except KeyError:
-            self.debug_msg("The given strategy is not available! Please choose one of the following:")
-            for key in strategies.iterkeys():
-                self.debug_msg(key)
-            sys.exit("Program exit")
-
-        self.debug_msg("Removing " + str(len(deleting_edges)) + " edges from the graph...")
-        for edge in deleting_edges:
-            edge_to_remove = self.graph.edge(edge[0], edge[1])
-            self.graph.remove_edge(edge_to_remove)
-        self.debug_msg("Done.")
-        self.edge_list[0:num_edges] = []
-        if len(self.edge_list) == 0:
-            self.edge_list = None
-
-    # Adds new vertices to the graph.
-    # @params:
-    # num_vertices = The number of vertices to add.
-    # degree = The degree every added vertex will have.
-    # applied_strategy = The used strategy. For possible strategies please see strategies dictionary below!
-    def add_vertex_to_graph(self, num_vertices, degree, applied_strategy):
-        if degree >= self.graph.num_vertices():
-            self.debug_msg("The given degree is not possible!")
-            sys.exit("Program exit")
-
-        # Strategy implementations
-        # !!! Make sure that function names match the one in the strategies dictionary below !!!
-
-        def get_random_vertices():
-            return None
-
-        def get_high_ev_vertices():
-            return get_vertices("evcentrality", True)
-
-        def get_low_ev_vertices():
-            return get_vertices("evcentrality", False)
-
-        def get_high_degree_vertices():
-            return get_vertices("degree", True)
-
-        def get_low_degree_vertices():
-            return get_vertices("degree", False)
-
-        def get_high_pr_vertices():
-            return get_vertices("pagerank", True)
-
-        def get_low_pr_vertices():
-            return get_vertices("pagerank", False)
-
-        # Helper functions
-
-        def get_vertices(property, reverse):
-            sorted_indices = sorted(enumerate(self.graph.vertex_properties[property].a), key=lambda x: x[1], reverse=reverse)
-            matching_vertices = []
-            for i in range(0, degree):
-                matching_vertices.append(sorted_indices[i][0])
-            return matching_vertices
-
-        # strategies dictionary
-
-        strategies = {"random": get_random_vertices,
-                      "high_ev": get_high_ev_vertices,
-                      "low_ev": get_low_ev_vertices,
-                      "high_degree": get_high_degree_vertices,
-                      "low_degree": get_low_degree_vertices,
-                      "high_pr": get_high_pr_vertices,
-                      "low_pr": get_low_pr_vertices}
-
-        try:
-            connecting_vertices = strategies[applied_strategy]()
-            #print connecting_vertices
-        except KeyError:
-            self.debug_msg("The given strategy is not available! Please choose one of the following:")
-            for key in strategies.iterkeys():
-                self.debug_msg(key)
-            sys.exit("Program exit")
-
-        self.debug_msg("Adding " + str(num_vertices) + " vertices to the graph...")
-        last_id = self.graph.num_vertices() - 1
-        i = 1
-        while i <= num_vertices:
-            new_vertex = self.graph.add_vertex()
-            #self.graph.vertex_properties["label"][new_vertex] = last_id + i
-            if connecting_vertices is None:
-                connecting_vertices = sample(range(0, self.graph.num_vertices()), degree)
-                for src_vertex in connecting_vertices:
-                    self.graph.add_edge(src_vertex, new_vertex)
-                connecting_vertices = None
-            else:
-                for src_vertex in connecting_vertices:
-                    self.graph.add_edge(src_vertex, new_vertex)
-            i += 1
-        self.debug_msg("Done.")
-        # pin_map = self.graph.new_vertex_property("bool")
-        # i = 0
-        # for v in self.graph.vertices():
-        #     if i < self.graph.num_vertices() - num_vertices:
-        #         pin_map[v] = True
-        #     else:
-        #         pin_map[v] = False
-        #     i = i + 1
-        # newpos = self.graph.new_vertex_property("vector<float>")
-        # self.graph.vertex_properties["pos"] = newpos
-        # self.graph.vertex_properties["pos"] = sfdp_layout(self.graph, pin=pin_map, pos = self.graph.vertex_properties["pos"])
-        # self.graph.vertex_properties["colors"] = community_structure(self.graph, 10000, 2)
-
-    # Removes vertices from the graph.
-    # @params:
-    # num_vertices = The number of vertices to remove.
-    # applied_strategy = The used strategy. For possible strategies please see strategies dictionary below!
-    # reduce_to_largest_component = If set true, the graph will be reduced to the largest component.
-    def remove_vertex_from_graph(self, num_vertices, applied_strategy, reduce_to_largest_component = False):
-        if num_vertices > self.graph.num_vertices():
-            self.debug_msg("The given number of vertices is not possible to remove because it is greater than the total number of vertices!")
-            sys.exit("Program exit")
-
-        # Strategy implementations
-        # !!! Make sure that function names match the one in the strategies dictionary below !!!
-
-        def get_random_vertices():
-            return sample(range(0, self.graph.num_vertices()), num_vertices)
-
-        def get_high_ev_vertices():
-            return get_vertices("evcentrality", True)
-
-        def get_low_ev_vertices():
-            return get_vertices("evcentrality", False)
-
-        def get_high_degree_vertices():
-            return get_vertices("degree", True)
-
-        def get_low_degree_vertices():
-            return get_vertices("degree", False)
-
-        def get_high_pr_vertices():
-            return get_vertices("pagerank", True)
-
-        def get_low_pr_vertices():
-            return get_vertices("pagerank", False)
-
-        # Helper functions
-
-        def get_vertices(property, reverse):
-            sorted_indices = sorted(enumerate(self.graph.vertex_properties[property].a), key=lambda x: x[1], reverse=reverse)
-            matching_vertices = []
-            for i in range(0, num_vertices):
-                matching_vertices.append(sorted_indices[i][0])
-            return matching_vertices
-
-        # strategies dictionary
-
-        strategies = {"random": get_random_vertices,
-                      "high_ev": get_high_ev_vertices,
-                      "low_ev": get_low_ev_vertices,
-                      "high_degree": get_high_degree_vertices,
-                      "low_degree": get_low_degree_vertices,
-                      "high_pr": get_high_pr_vertices,
-                      "low_pr": get_low_pr_vertices}
-
-        try:
-            deleting_vertices = strategies[applied_strategy]()
-            #print deleting_vertices
-        except KeyError:
-            self.debug_msg("The given strategy is not available! Please choose one of the following:")
-            for key in strategies.iterkeys():
-                self.debug_msg(key)
-            sys.exit("Program exit")
-
-        deleting_vertices = sorted(deleting_vertices, reverse=True)
-
-        self.debug_msg("Removing " + str(num_vertices) + " vertices from the graph...")
-        for vertex in deleting_vertices:
-            self.graph.remove_vertex(vertex)
-        self.debug_msg("Done.")
-
-        if reduce_to_largest_component is True:
-            self.reduce_to_largest_component()
-
-
-    # plot graph to file...this is deprecated!!!!
-    def draw_graph(self, run=0, min_nsize=15, max_nsize=40, file_format="png", output_size=4000, appendix="",
-                   label_color="orange"):
-        self.debug_msg("Drawing {}".format(file_format))
-        # pos = radial_tree_layout(self.graph, self.graph.vertex(0))
-        # pos = fruchterman_reingold_layout(self.graph)
-        #pos = self.graph.vertex_properties["pos"]
-
-        try:
-            graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties["colors"], edge_color="black",
-                       output_size=(output_size, output_size), vertex_text_color=label_color,   #pos = pos,
-                       vertex_size=prop_to_size(self.graph.vertex_properties["activity"], mi=min_nsize, ma=max_nsize),
-                       vertex_text=self.graph.vertex_properties["label"], vertex_text_position=0,
-                       output="graphs/{}_run_{}{}.{}".format(self.graph_name, run, "_" + appendix, file_format))
-        except:
-            ls = self.graph.new_vertex_property("int")
-            for ndx, n in enumerate(self.graph.vertices()):
-                ls[n] = str(ndx)
-            self.graph.vertex_properties["label"] = ls
-            graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties["colors"], edge_color="black",
-                       output_size=(output_size, output_size), vertex_text_color=label_color,   #pos = pos,
-                       vertex_size=prop_to_size(self.graph.vertex_properties["activity"], mi=min_nsize, ma=max_nsize),
-                       vertex_text=self.graph.vertex_properties["label"], vertex_text_position=0,
-                       output="graphs/{}_run_{}{}.{}".format(self.graph_name, run, "_" + appendix, file_format))
