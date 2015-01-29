@@ -477,17 +477,13 @@ class Generator():
 
 
     # randomly create node weights
-    def add_node_weights(self, min=0.0, max=0.1, distribution=[1, 0, 0]):
-        self.debug_msg("Adding random weights between {} and {} to nodes.".format(min, max))
+    def add_node_weights(self, min=0.0, max=0.1, distribution=[1,0,0]):
+        self.debug_msg("Adding random weights between {} and {} to nodes.".format(min, max), level=0)
         num_nodes = float(self.graph.num_vertices())
         weights = self.graph.new_vertex_property("double")
-        num_active = int(math.ceil(num_nodes * distribution[2]))
-        num_inactive = int(math.ceil(num_nodes * distribution[1]))
-        num_lurker = int(math.ceil(num_nodes * distribution[0]))
-        weights_list = [uniform(0.0001, 1) for x in xrange(num_active)]
-        weights_list.extend([uniform(min, max) for x in xrange(num_lurker)])
-        weights_list.extend([uniform(0, 0) for x in xrange(num_inactive)])
-        shuffle(weights_list)
+        num_lurker = int(math.ceil(num_nodes*distribution[0]))
+        weights_list = [random.uniform(min, max) for x in xrange(num_lurker)]
+        random.shuffle(weights_list)
         for ndx, n in enumerate(self.graph.vertices()):
             weights[n] = weights_list[ndx]
         self.graph.vertex_properties["activity"] = weights

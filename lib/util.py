@@ -264,8 +264,8 @@ def plot_weights_over_time(graph_name):
         out_file.close()
         debug_msg(" -- Calling weights_over_time.R", level=0)
         r_script_path = os.path.abspath(config.r_dir + 'weights_over_time.R')
-        wd = r_script_path.replace("DynamicNetworks/R Scripts/weights_over_time.R", "") + \
-             "DynamicNetworksResults/plots/weights_over_time/"
+        wd = r_script_path.replace("R Scripts/weights_over_time.R", "") + \
+             "results/plots/weights_over_time/"
         subprocess.call(['/usr/bin/RScript', r_script_path, wd, out_path, str(ratio), str(deltatau), graph_name,
                          "%.2f" % ew[0]], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
         debug_msg(" -- Done", level=0)
