@@ -43,7 +43,7 @@ def calc_activity(param):
 if __name__ == '__main__':
 
     datasets = ["Karate", "PrefAttach", "SBM_SAME", "SBM_ASC", "Random"]
-    synthetic_ds = datasets[2]
+    synthetic_ds = datasets[3]
     num_random_inits = 10
     ratios = [1, 10, 30, 80, 100, 120, 160, 200, 260, 320, 500]
     deltatau = 0.001
@@ -73,7 +73,21 @@ if __name__ == '__main__':
         self_block = 0.1
         power_exp = 2.2
         other_block = 0.0001
-        generator = Generator(graph_name, num_nodes=5000)
+        generator = Generator(graph_name, num_nodes=num_nodes)
+        generator.create_network(generator.create_stochastic_blockmodel_graph, [num_blocks, nodes_per_block,
+                                                                                self_block, other_block, None, False,
+                                                                                False, power_exp, None],
+                                 draw_graph=True, draw_ev=True)
+
+    if synthetic_ds == "SBM_ASC":
+        graph_name = "SBM_ASC"
+        num_blocks = 10
+        nodes_per_block = [x*100 for x in xrange(1, num_blocks+1, 1)]
+        num_nodes = sum(nodes_per_block)
+        self_block = 0.1
+        power_exp = 2.2
+        other_block = 0.0001
+        generator = Generator(graph_name, num_nodes=num_nodes)
         generator.create_network(generator.create_stochastic_blockmodel_graph, [num_blocks, nodes_per_block,
                                                                                 self_block, other_block, None, False,
                                                                                 False, power_exp, None],
