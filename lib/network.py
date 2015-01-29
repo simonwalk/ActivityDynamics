@@ -595,14 +595,6 @@ class Network:
         self.k1 = max(self.top_eigenvalues)
 
 
-    def plot_eigenvalues(self):
-        plt.figure(figsize=(8, 2))
-        plt.scatter(real(self.top_eigenvalues), imag(self.top_eigenvalues), c=abs(self.top_eigenvalues))
-        plt.xlabel(r"$Re(\kappa)$")
-        plt.ylabel(r"$Im(\kappa)$")
-        plt.tight_layout()
-        plt.savefig(config.plot_dir + "eigenvalues/" + self.graph_name + "_adjacency_spectrum.pdf")
-        plt.close("all")
 
     def load_graph_save(self, fpath):
         try:
@@ -617,15 +609,12 @@ class Network:
     def load_graph(self, fpath):
         self.debug_msg("Loading GT", level=0)
         self.graph = load_graph(fpath)
-        #self.reduce_to_largest_component()
         self.debug_msg("  --> Creating ones vector", level=0)
         self.ones_ratio = [1.0] * self.graph.num_vertices()
-        self.debug_msg("  --> Getting Laplacian Matrix", level=0)
-        self.L = laplacian(self.graph, weight=None)
+        #self.debug_msg("  --> Getting Laplacian Matrix", level=0)
+        #self.L = laplacian(self.graph, weight=None)
         self.debug_msg("  --> Getting Adjacency Matrix", level=0)
         self.A = adjacency(self.graph, weight=None)
-        #self.debug_msg("  --> Getting Degree Vector", level=0)
-        #self.degree_vector = self.graph.vertex_properties["degree"].a
         self.num_vertices = self.graph.num_vertices()
         self.num_edges = self.graph.num_edges()
         self.debug_msg("  --> Counted {} Vertices".format(self.num_vertices), level=0)

@@ -42,25 +42,17 @@ def get_network_details(graph_name, run=0, path=config.graph_binary_dir):
 def prepare_folders():
     flist = [config.graph_binary_dir,
              config.graph_binary_dir + "GT/",
-             #config.graph_binary_dir + "summary/",
              config.graph_binary_dir + "ratios/",
              config.graph_binary_dir + "empirical_input/",
              config.graph_source_dir + "empirical_results/",
              config.graph_source_dir,
-             #config.graph_source_dir + "errors",
              config.graph_source_dir + "weights",
-             #config.graph_source_dir + "a_b",
-             config.graph_source_dir + "eigenvalues_summary",
              config.graph_dir,
              config.plot_dir,
-             #config.plot_dir + "active_inactive",
-             #config.plot_dir + "average_over_time/",
              config.plot_dir + "eigenvalues",
              config.plot_dir + "functions",
              config.plot_dir + "scatterplots",
              config.plot_dir + "weights_over_time",
-             #config.plot_dir + "percentage_comp",
-             #config.plot_dir + "average_weights_over_percentage",
              config.plot_dir + "average_weights_over_tau",
              config.plot_dir + "ratios_over_time",
              config.plot_dir + "empirical_results"]
@@ -99,7 +91,8 @@ def empirical_result_plot(graph_name, run=0):
     out_file = open(source_path, "wb")
 
     debug_msg("  >>> Creating empirical result plot", level=0)
-    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
+    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, \
+    cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
 
     pipe_vals = [str(deltatau), "%.4f" % deltapsi, "%.2f" % a_cs[0], "%.2f" % ew[0]]
 
@@ -150,64 +143,31 @@ def plot_empirical_ratios(graph_name, run=0):
     plt.plot(x_vals, y_vals, alpha=0.5)
     max_x = max(x_vals)
     plt.plot([0, max_x], [ew[0], ew[0]], 'k-', lw=1)
-    plt.title("Ratio " + r"$(\frac{\lambda}{\mu})$" + " over "+r"$\tau$" +
+    plt.title("Ratio " +
+              r"$(\frac{\lambda}{\mu})$" +
+              " over " +
+              r"$\tau$" +
               "\n" +
               r"$\Delta\tau$"+"={}, ".format(deltatau) +
               r"$\Delta\psi$"+"={}, ".format("%.4f" % deltapsi) +
-              r"$a_c$"+"={}".format("%.2f" % a_cs[0])+
-              r", $\kappa_1$={}".format("%.2f" % ew[0]))
+              r"$a_c$"+"={}".format("%.2f" % a_cs[0]) +
+              r", $\kappa_1$={}".format("%.2f" % ew[0])
+    )
     plt.xlabel(r"$\tau$ (in Months)")
     plt.ylabel("Ratio "+ r"$(\frac{\lambda}{\mu})$")
     ax = plt.axes()
     ax.grid(color="gray")
     plt.savefig(storage_folder + graph_name + "_{}_{}_empirical_ratios.png".format(store_iterations,
-                                                                            str(deltatau).replace(".", "")))
+                                                                                   str(deltatau).replace(".", "")))
     plt.close("all")
-
-
-# def plot_empirical_error(graph_name, run=0):
-#     debug_msg("  >>> Plot Error over Time", level=0)
-#     graph, ratios, deltatau, deltastep, graph_name, store_iterations, cas, ew, random_inits = get_network_details(graph_name, run)
-#     storage_folder = config.plot_dir + "errors_over_time/" + graph_name + "/"
-#     debug_msg("    ++ Processing graph = {}, deltatau = {}, deltastep = {}".format(graph_name, deltatau, deltastep),
-#               level=0)
-#     y_vals = []
-#     x_vals = []
-#     fpath = get_weights_fn(store_iterations, deltatau, 0, graph_name, ratios[0])
-#     pf = open(fpath, "rb")
-#     counter = 1
-#     total_activity = 0
-#     for i, l in enumerate(pf):
-#         #print int(deltastep/deltatau/store_iterations)
-#         if i % int(deltastep/deltatau/store_iterations) == 0 and i > 0:
-#             x = (i+1)*deltatau/deltastep*store_iterations
-#             total_activity += sum([float(w) for w in l.split("\t")])
-#             y_vals.append(abs(sum([float(w) for w in l.split("\t")]) - cas[counter]))
-#             x_vals.append(x)
-#             counter += 1
-#     plt.plot(x_vals, np.asarray(y_vals)/total_activity, alpha=0.5)
-#     average_error = sum(np.asarray(y_vals)/total_activity)/len(y_vals)
-#     total_error = sum(np.asarray(y_vals)/total_activity)
-#     plt.title("Error over "+r"$\tau$"+"\nTotal: {}%".format("%.4f" % total_error) +
-#               ", Average per "+r"$\tau$"+ ": {}%".format("%.4f" % average_error) +
-#               "\n" + r"$\Delta\tau$"+"={}".format(deltatau)+
-#               r", $\Delta step$"+"={}".format(deltastep))
-#     plt.xlabel(r"$\tau$ (in Months)")
-#     plt.ylabel("Error in %")
-#     print "Total Activity: ", total_activity
-#     print "Sum Error: ", sum(y_vals)
-#     plt.subplots_adjust(top=0.85)
-#     ax = plt.axes()
-#     ax.grid(color="gray")
-#     plt.savefig(storage_folder + graph_name + "_{}_{}_error.png".format(store_iterations,
-#                                                                         str(deltatau).replace(".", "")))
-#     plt.close("all")
 
 
 def avrg_activity_over_tau_empirical(graph_name, run=0):
     debug_msg("  >>> Drawing Average Activity over Tau", level=0)
 
-    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
+    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, \
+    ew, random_inits, a_cs = get_network_details(graph_name, run)
+
     storage_folder = config.plot_dir + "average_weights_over_tau/" + graph_name + "/"
     debug_msg("    ++ Processing graph = {}, deltatau = {}, deltapsi = {}".format(graph_name, deltatau, deltapsi),
               level=0)
@@ -237,9 +197,10 @@ def avrg_activity_over_tau_empirical(graph_name, run=0):
 
 
 
-def avrg_activity_over_tau(graph_name, iterations_stored=1):
+def avrg_activity_over_tau(graph_name):
     debug_msg("  >>> Drawing Average Activity over Tau", level=0)
-    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs = get_network_details(graph_name)
+    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, \
+    ew, random_inits, a_cs = get_network_details(graph_name)
     storage_folder = config.plot_dir + "average_weights_over_tau/" + graph_name + "/"
     for ratio in ratios:
         x_avrg = []

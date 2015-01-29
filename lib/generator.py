@@ -22,6 +22,24 @@ class Generator():
         self.num_nodes = num_nodes
         self.graph_name = graph_name
 
+
+    # create network meta function that calls the corresponding functions of the generator class
+    def create_network(self, generator_function, generator_arguments=[], draw_graph=False, draw_init_number=0,
+                       draw_ev=False, debug_msg="Creating Network", node_weight_min=0.0, node_weight_max=0.1):
+        self.debug_msg(debug_msg)
+        generator_function(*generator_arguments)
+        self.add_node_weights(node_weight_min, node_weight_max)
+        self.calc_eigenvalues(max(int(self.graph.num_vertices()/2)-1, 1))
+        self.collect_colors()
+        self.calc_vertex_properties()
+        if draw_graph:
+            self.draw_graph(draw_init_number)
+        if draw_ev:
+            self.prepare_eigenvalues()
+            self.plot_eigenvalues()
+        self.store_graph(0)
+
+
     # start creating blockmodel graph
     def create_blockmodel_graph(self, blocks=7, connectivity=10, model="blockmodel-traditional"):
         def corr(a, b):
@@ -32,11 +50,14 @@ class Generator():
 
         self.debug_msg("Starting to create Blockmodel Graph with {} nodes and {} blocks".format(self.num_nodes, blocks))
 
-        self.graph, vertex_colors = random_graph(self.num_nodes, lambda: poisson(connectivity), directed=False, model=model, block_membership=lambda: randint(1, blocks), vertex_corr=corr)
+        self.graph, vertex_colors = random_graph(self.num_nodes, lambda: poisson(connectivity), directed=False,
+                                                 model=model, block_membership=lambda: randint(1, blocks),
+                                                 vertex_corr=corr)
         self.graph.vertex_properties["colorsComm"] = vertex_colors
 
     def create_fully_connected_graph(self, size=1000, directed=False, self_edges=False):
-        self.create_stochastic_blockmodel_graph(blocks=1, size=size, directed=directed, self_edges=self_edges, self_block_connectivity=1.0, other_block_connectivity=1.0)
+        self.create_stochastic_blockmodel_graph(blocks=1, size=size, directed=directed, self_edges=self_edges,
+                                                self_block_connectivity=1.0, other_block_connectivity=1.0)
 
     def create_sbm_lined_up_matrix(self, blocks=10, self_block_connectivity=[0.9], other_block_connectivity=[0.1]):
         connectivity_matrix = []
@@ -56,20 +77,26 @@ class Generator():
     # scale = None
     # scale = relative
     # scale = absolute
-    def create_stochastic_blockmodel_graph(self, blocks=10, size=[100], self_block_connectivity=[0.9], other_block_connectivity=[0.1], connectivity_matrix=None, directed=False, self_edges=False, power_exp=None, scale=None):
+    def create_stochastic_blockmodel_graph(self, blocks=10, size=[100], self_block_connectivity=[0.9],
+                                           other_block_connectivity=[0.1], connectivity_matrix=None,
+                                           directed=False, self_edges=False, power_exp=None, scale=None):
         size = size if isinstance(size, list) else [size]
-        self_block_connectivity = self_block_connectivity if isinstance(self_block_connectivity, list) else [self_block_connectivity]
-        other_block_connectivity = other_block_connectivity if isinstance(other_block_connectivity, list) else [other_block_connectivity]
-
+        self_block_connectivity = self_block_connectivity if isinstance(self_block_connectivity, list)\
+            else [self_block_connectivity]
+        other_block_connectivity = other_block_connectivity if isinstance(other_block_connectivity, list)\
+            else [other_block_connectivity]
         num_nodes = sum([size[i % len(size)] for i in xrange(blocks)])
         if power_exp is None:
-            self.debug_msg("Starting to create Stochastic Blockmodel Graph with {} nodes and {} blocks".format(num_nodes, blocks))
+            self.debug_msg("Starting to create Stochastic Blockmodel Graph with {} nodes and {} "
+                           "blocks".format(num_nodes, blocks))
         else:
-            self.debug_msg("Starting to create degree-corrected (alpha=" + str(power_exp) + ") Stochastic Blockmodel Graph with {} nodes and {} blocks".format(num_nodes, blocks))
+            self.debug_msg("Starting to create degree-corrected (alpha=" + str(power_exp) + ") Stochastic Blockmodel "
+                                                                                            "Graph with {} nodes and {}"
+                                                                                            " blocks".format(num_nodes,
+                                                                                                             blocks))
         self.debug_msg('convert/transform probabilities')
         blocks_range = range(blocks)
         block_sizes = np.array([size[i % len(size)] for i in blocks_range])
-
         # create connectivity matrix of self- and other-block-connectivity
         if connectivity_matrix is None:
             connectivity_matrix = []
@@ -89,18 +116,14 @@ class Generator():
                         else:
                             row.append(other_block_connectivity[idx % len(other_block_connectivity)])
                 connectivity_matrix.append(row)
-
         # convert con-matrix to np.array
         if not connectivity_matrix is None and isinstance(connectivity_matrix, np.matrix):
             connectivity_matrix = np.asarray(connectivity_matrix)
-
         # convert con-matrix to np.array
         if not connectivity_matrix is None and not isinstance(connectivity_matrix, np.ndarray):
             connectivity_matrix = np.array(connectivity_matrix)
-
         self.debug_msg('conn mat')
         #print_matrix(connectivity_matrix)
-
         if scale == 'relative' or scale == 'absolute':
             new_connectivity_matrix = []
             all_nodes = np.sum(block_sizes)
@@ -113,7 +136,6 @@ class Generator():
             connectivity_matrix = np.array(new_connectivity_matrix)
             self.debug_msg(scale + ' scaled conn mat:')
             #print_matrix(connectivity_matrix)
-
         # create nodes and store corresponding block-id
         self.debug_msg('insert nodes')
         graph = Graph(directed=directed)
@@ -126,11 +148,9 @@ class Generator():
                 appender((graph.add_vertex(), i))
                 node = vertex_to_block[-1][0]
                 colors[node] = i
-
         # create edges
         get_rand = np.random.random
         add_edge = graph.add_edge
-
         self.debug_msg('create edge probs')
         degree_probs = defaultdict(lambda: dict())
         for vertex, block_id in vertex_to_block:
@@ -204,7 +224,6 @@ class Generator():
 
     # add node to graph and check if node is in node_dict
     def add_node(self, id, pmap, node_dict, name_prop=""):
-
         if id in node_dict.keys():
             return self.graph.vertex(node_dict[id])
         else:
@@ -220,7 +239,6 @@ class Generator():
         self.debug_msg("Creating Graph")
         id_prop = self.graph.new_vertex_property("int")
         name_prop = self.graph.new_vertex_property("string")
-
         f = open(config.graph_source_dir + fname, "rb")
         id_to_index = {}
         for idx, line in enumerate(f):
@@ -231,7 +249,6 @@ class Generator():
             if split_line[1] != "":
                 target_v = self.add_node(split_line[1], id_prop, id_to_index, name_prop)
                 self.graph.add_edge(source_v, target_v)
-
         self.graph.vertex_properties["label"] = name_prop
         self.debug_msg("Detecting Communities")
         self.graph.vertex_properties['colorsComm'] = community_structure(self.graph, 1000, communities)
@@ -277,18 +294,16 @@ class Generator():
 
     # start creating random graph
     # NOTE:
-    # If min_degree is too small, graph will be disconnected and consist of many smaller graphs!
-    # This could make diffusion problematic!
+    # If min_degree is too small, graph will be disconnected and hence, consist of many smaller graphs!
     def create_random_graph(self, min_degree=2, max_degree=40, model="probabilistic", communities=10):
-        # Function to sample edges between nodes!
         def sample_k(min, max):
             accept = False
             while not accept:
                 k = randint(min, max + 1)
                 accept = random() < 1.0 / k
             return k
-
-        self.graph = random_graph(self.num_nodes, lambda: sample_k(min_degree, max_degree), model=model, vertex_corr=lambda i, k: 1.0 / (1 + abs(i - k)), directed=self.directed, n_iter=100)
+        self.graph = random_graph(self.num_nodes, lambda: sample_k(min_degree, max_degree), model=model,
+                                  vertex_corr=lambda i, k: 1.0 / (1 + abs(i - k)), directed=self.directed, n_iter=100)
         self.graph.vertex_properties['colorsComm'] = community_structure(self.graph, 10000, max_degree / communities)
 
 
@@ -305,6 +320,7 @@ class Generator():
         remove_parallel_edges(self.graph)
 
 
+    # collecting colors for plots
     def collect_colors(self, alpha=0.75):
         self.debug_msg("Collecting Colors for Graphs")
         norm = matplotlib.colors.Normalize(vmin=0, vmax=self.graph.num_vertices())
@@ -313,7 +329,6 @@ class Generator():
         camap = plt.get_cmap("Blues")
         m = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
         ma = matplotlib.cm.ScalarMappable(norm=norma, cmap=camap)
-
         clist = self.graph.new_vertex_property("vector<float>")
         calist = self.graph.new_vertex_property("vector<float>")
         for x in xrange(self.graph.num_vertices()):
@@ -322,7 +337,6 @@ class Generator():
             l[3] = alpha
             node = self.graph.vertex(x)
             clist[node] = l
-
             # color for activity / weight of node
             weight = self.graph.vertex_properties["activity"][node]
             la = list(ma.to_rgba(weight))
@@ -332,19 +346,18 @@ class Generator():
         self.graph.vertex_properties["colorsActivity"] = calist
         self.graph.vertex_properties['colorsComm'] = community_structure(self.graph, 1000, 10)
 
+
+    # calculating vertex properties (yet mostly unused)
     def calc_vertex_properties(self, max_iter_ev=1000, max_iter_hits=1000):
         self.debug_msg("\x1b[33m  ++ Calculating PageRank\x1b[00m")
         pr = pagerank(self.graph)
         self.graph.vertex_properties["pagerank"] = pr
-
         self.debug_msg("\x1b[33m  ++ Calculating Clustering Coefficient\x1b[00m")
         clustering = local_clustering(self.graph)
         self.graph.vertex_properties["clustercoeff"] = clustering
-
         self.debug_msg("\x1b[33m  ++ Calculating Eigenvector Centrality\x1b[00m")
         ev, ev_centrality = eigenvector(self.graph, weight=None, max_iter=max_iter_ev)
         self.graph.vertex_properties["evcentrality"] = ev_centrality
-
         self.debug_msg("\x1b[33m  ++ Calculating HITS\x1b[00m")
         eig, authorities, hubs = hits(self.graph, weight=None, max_iter=max_iter_hits)
         self.graph.vertex_properties["authorities"] = authorities
@@ -354,7 +367,8 @@ class Generator():
         degree = self.graph.degree_property_map("total")
         self.graph.vertex_properties["degree"] = degree
 
-    def draw_specific_graph(self, colors, color_type_in_outfname, output_size, label_color, edge_color, mi, ma, labels, run, appendix, file_format, label_pos=0, pos=None, v_size_prop_map=None):
+    def draw_specific_graph(self, colors, color_type_in_outfname, output_size, label_color, edge_color, mi, ma, labels,
+                            run, appendix, file_format, label_pos=0, pos=None, v_size_prop_map=None):
         if pos is None:
             try:
                 pos = self.graph.vertex_properties["pos"]
@@ -371,26 +385,26 @@ class Generator():
                 self.add_node_weights(0.0, 0.1)
                 v_size_prop_map = self.graph.vertex_properties["activity"]
 
-        graph_draw(self.graph, vertex_fill_color=colors, edge_color=edge_color, output_size=(output_size, output_size), vertex_text_color=label_color, pos=pos, vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)), vertex_text=labels, vertex_text_position=label_pos,
-                   output=config.graph_dir + "{}_{}_run_{}{}.{}".format(self.graph_name, color_type_in_outfname, run, appendix, file_format))
+        graph_draw(self.graph, vertex_fill_color=colors, edge_color=edge_color, output_size=(output_size, output_size),
+                   vertex_text_color=label_color, pos=pos, vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)),
+                   vertex_text=labels, vertex_text_position=label_pos,
+                   output=config.graph_dir + "{}_{}_run_{}{}.{}".format(self.graph_name, color_type_in_outfname, run,
+                                                                        appendix, file_format))
 
     # plot graph to file
-    def draw_graph(self, run=0, min_nsize=None, max_nsize=None, size_property=None, file_format="png", output_size=4000, appendix="", label_color="orange", draw_labels=False):
+    def draw_graph(self, run=0, min_nsize=None, max_nsize=None, size_property=None, file_format="png",
+                   output_size=4000, appendix="", label_color="orange", draw_labels=False):
         self.debug_msg("Drawing {}".format(file_format))
-
         if size_property == "degree":
             size_map = self.graph.new_vertex_property('float')
             for v in self.graph.vertices():
                 size_map[v] = v.out_degree() + v.in_degree()
-
         if not (isinstance(size_property, int) or isinstance(size_property, float), isinstance(size_property, str)):
             size_map = size_property
-
         if min_nsize is None or max_nsize is None:
             val = math.sqrt(self.graph.num_vertices()) / self.graph.num_vertices() * (output_size / 4)
             mi = val if min_nsize is None else min_nsize
             ma = val * 2 if max_nsize is None else max_nsize
-
         if draw_labels:
             try:
                 labels = self.graph.vertex_properties["label"]
@@ -402,82 +416,44 @@ class Generator():
                 labels = self.graph.vertex_properties["label"]
         else:
             labels = self.graph.new_vertex_property("string")
-
         if not size_property is None:
             try:
                 self.draw_specific_graph(self.graph.vertex_properties["colorsComm"], "communities", output_size,
-                                         label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0, v_size_prop_map=size_map)
+                                         label_color, "black", mi, ma, labels, run, appendix, file_format,
+                                         label_pos=0, v_size_prop_map=size_map)
             except Exception as e:
                 self.debug_msg("\x1b[31m" + str(e) + "\x1b[00m")
         else:
             try:
-                self.draw_specific_graph(self.graph.vertex_properties["colorsComm"], "communities", output_size, label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
+                self.draw_specific_graph(self.graph.vertex_properties["colorsComm"], "communities", output_size,
+                                         label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
             except Exception as e:
                 self.debug_msg("\x1b[31m" + str(e) + "\x1b[00m")
 
             try:
-                self.draw_specific_graph(self.graph.vertex_properties["colorsMapping"], "mapping", output_size, label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
+                self.draw_specific_graph(self.graph.vertex_properties["colorsMapping"], "mapping", output_size,
+                                         label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
             except Exception as e:
                 self.debug_msg("\x1b[31m" + str(e) + "\x1b[00m")
 
             try:
-                self.draw_specific_graph(self.graph.vertex_properties["colorsActivity"], "activity", output_size, label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
+                self.draw_specific_graph(self.graph.vertex_properties["colorsActivity"], "activity", output_size,
+                                         label_color, "black", mi, ma, labels, run, appendix, file_format, label_pos=0)
             except Exception as e:
                 self.debug_msg("\x1b[31m" + str(e) + "\x1b[00m")
 
-    # store graph to gml
-    def store_gml(self, run, save_specific=False):
-        self.debug_msg("Storing GML")
-        try:
-            if not os.path.exists("graph_binaries/GML/{}/".format(self.graph_name)):
-                self.debug_msg("Created folder: {}".format("graph_binaries/GML/{}/".format(self.graph_name)))
-                os.makedirs("graph_binaries/GML/{}/".format(self.graph_name))
-        except Exception as e:
-            self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-        self.graph.save("graph_binaries/GML/{}/{}_run_{}.gml".format(self.graph_name, self.graph_name, run))
 
-        if save_specific:
-            try:
-                spec_graph_name = self.graph_name.replace("RAND", "SPEC")
-                if not os.path.exists("graph_binaries/GML/{}/".format(spec_graph_name)):
-                    self.debug_msg("Created folder: {}".format("graph_binaries/GML/{}/".format(spec_graph_name)))
-                    os.makedirs("graph_binaries/GML/{}/".format(spec_graph_name))
-            except Exception as e:
-                self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-            self.graph.save("graph_binaries/GML/{}/{}_run_{}.gml".format(spec_graph_name, spec_graph_name, run))
-
-    # store graph to gml
-    def store_graph(self, run, save_specific=False):
+    # store graph
+    def store_graph(self, run):
         self.debug_msg("Storing Graph")
-
-        path_random = config.graph_binary_dir + "/GT/{}/".format(self.graph_name)
-        path_spec = config.graph_binary_dir + "/GT/{}/".format(self.graph_name.replace("RAND", "SPEC"))
-
+        path = config.graph_binary_dir + "/GT/{}/".format(self.graph_name)
         try:
-            if not os.path.exists(path_random):
-                self.debug_msg("Created folder: {}".format(path_random))
-                os.makedirs(path_random)
+            if not os.path.exists(path):
+                self.debug_msg("Created folder: {}".format(path))
+                os.makedirs(path)
         except Exception as e:
             self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-
-        self.graph.save(path_random + "{}_run_{}.gt".format(self.graph_name, run))
-        if save_specific:
-            try:
-
-                if not os.path.exists(path_spec):
-                    self.debug_msg("Created folder: {}".format(path_spec))
-                    os.makedirs(path_spec)
-            except Exception as e:
-                self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-            self.graph.save(path_spec + "{}_run_{}.gt".format(self.graph_name.replace("RAND", "SPEC"), run))
-
-    # load graph from gml
-    def load_gml(self, fn):
-        self.debug_msg("Loading GML")
-        self.graph = load_graph(config.graph_binary_dir + "GML/" + self.graph_name + "/{}.gml".format(fn))
-        self.directed = self.graph.is_directed()
-        self.num_nodes = self.graph.num_vertices()
-        self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(), self.graph.num_edges()))
+        self.graph.save(path + "{}_run_{}.gt".format(self.graph_name, run))
 
 
     # load graph from file
@@ -486,7 +462,8 @@ class Generator():
         self.graph = load_graph(config.graph_binary_dir + "GT/" + self.graph_name + "/{}.gt".format(fn))
         self.directed = self.graph.is_directed()
         self.num_nodes = self.graph.num_vertices()
-        self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(), self.graph.num_edges()))
+        self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(),
+                                                                        self.graph.num_edges()))
 
 
     # load graph from file
@@ -495,27 +472,24 @@ class Generator():
         self.graph = load_graph(config.graph_binary_dir + "GT/" + self.graph_name + "/{}.gt".format(fn))
         self.directed = self.graph.is_directed()
         self.num_nodes = self.graph.num_vertices()
-        self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(), self.graph.num_edges()))
+        self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(),
+                                                                        self.graph.num_edges()))
 
 
     # randomly create node weights
     def add_node_weights(self, min=0.0, max=0.1, distribution=[1, 0, 0]):
         self.debug_msg("Adding random weights between {} and {} to nodes.".format(min, max))
-
         num_nodes = float(self.graph.num_vertices())
         weights = self.graph.new_vertex_property("double")
         num_active = int(math.ceil(num_nodes * distribution[2]))
         num_inactive = int(math.ceil(num_nodes * distribution[1]))
         num_lurker = int(math.ceil(num_nodes * distribution[0]))
-
         weights_list = [uniform(0.0001, 1) for x in xrange(num_active)]
         weights_list.extend([uniform(min, max) for x in xrange(num_lurker)])
         weights_list.extend([uniform(0, 0) for x in xrange(num_inactive)])
-
         shuffle(weights_list)
         for ndx, n in enumerate(self.graph.vertices()):
             weights[n] = weights_list[ndx]
-
         self.graph.vertex_properties["activity"] = weights
 
 
@@ -528,6 +502,12 @@ class Generator():
         self.graph.edge_properties["activity"] = weights
 
 
+    def prepare_eigenvalues(self):
+        self.top_eigenvalues = np.asarray(self.graph.graph_properties['top_eigenvalues'])
+        self.k1 = max(self.top_eigenvalues)
+
+
+    # calculate eigenvalues, with a maximum of 100
     def calc_eigenvalues(self, num_ev=100):
         num_ev = min(100, num_ev)
         self.debug_msg("Extracting adjacency matrix!")
@@ -535,9 +515,22 @@ class Generator():
         self.debug_msg("Starting calculation of {} Eigenvalues".format(num_ev))
         evals_large_sparse, evecs_large_sparse = largest_eigsh(A, num_ev * 2, which='LM')
         self.debug_msg("Finished calculating Eigenvalues")
-        weights = sorted([float(x) for x in evals_large_sparse], reverse=True)[:num_ev]
-        self.graph.graph_properties["top_eigenvalues"] = self.graph.new_graph_property("object", weights)
+        evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[:num_ev]
+        self.graph.graph_properties["top_eigenvalues"] = self.graph.new_graph_property("object", evs)
 
 
+    # plot eigenvalue distribution
+    def plot_eigenvalues(self):
+        plt.figure(figsize=(8, 2))
+        plt.scatter(real(self.top_eigenvalues), imag(self.top_eigenvalues), c=abs(self.top_eigenvalues))
+        plt.xlabel(r"$Re(\kappa)$")
+        plt.ylabel(r"$Im(\kappa)$")
+        plt.tight_layout()
+        plt.savefig(config.plot_dir + "eigenvalues/" + self.graph_name + "_adjacency_spectrum.pdf")
+        plt.close("all")
+
+
+    # colorful debug output :-)
     def debug_msg(self, msg):
-        print "  \x1b[32m-GEN-\x1b[00m [\x1b[36m{}\x1b[00m] {}\x1b[00m".format(datetime.datetime.now().strftime("%H:%M:%S"), msg)
+        print "  \x1b[32m-GEN-\x1b[00m [\x1b[36m{}\x1b[00m] {}\x1b[00m".format(
+            datetime.datetime.now().strftime("%H:%M:%S"), msg)
