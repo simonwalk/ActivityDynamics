@@ -36,68 +36,12 @@ def print_timestat(timestat):
 
 def run_all(log_filename, timestat=None, core=None, rolling_window_size=None, draw_network=None):
     folder = log_filename.rsplit('/', 1)[0] + '/'
-    start = now()
     basic_network_activity_analysis(log_filename)
-    if not timestat is None:
-        timestat['basic network activity analysis'] = now() - start
     print 'log', log_filename
     print 'folder', folder
-    optical_rolling_window_size = 60
-    rolling_means = None
-    fit_curve_deg = range(10)
-    start = now()
-    basic_timeseries_activity_analysis(log_filename, rolling_window=optical_rolling_window_size)
-    if not timestat is None:
-        timestat['basic time-series activity analysis'] = now() - start
-    if draw_network is None:
-        draw_network = prompt_with_timeout('Should Networks be visualized? (y/n)', timeout=5, default_val='n') == 'y'
-    start = now()
-    network_filename, threshold_results = generate_weighted_network(log_filename, draw=draw_network)
-    if not timestat is None:
-        timestat['generate weighted network'] = now() - start
-    activity_values = sorted(threshold_results['activity'].values())
-    activity_values_gaps = [activity_values[i + 1] - activity_values[i] for i, val in enumerate(activity_values[1:])]
-    max_gap = (np.mean(activity_values_gaps) + np.median(activity_values_gaps)) / 2
-    target_th = activity_values[0]
-    for idx, i in enumerate(activity_values[1:]):
-        if activity_values[idx + 1] - activity_values[idx] <= max_gap:
-            target_th = i
-    core_recommendation_th, preserved_activity = min(threshold_results['activity'].iteritems(), key=lambda x: abs(x[1] - target_th))
-    if core is None:
-        core = prompt_with_timeout('Enter Core-Size:', timeout=15, default_val=core_recommendation_th, target_data_type=int)
-    start = now()
-    threshold_filter_dataframe(log_filename)
-    if not timestat is None:
-        timestat['threshold filter dataframe'] = now() - start
-    start = now()
-    time_gaps_result = time_gaps_analysis(log_filename, core=core)
-    recommendation = max(val['recommendation'] for val in time_gaps_result.values())
-    recommendation_months = int(recommendation.total_seconds() / 2635200) + 1
-    if not timestat is None:
-        timestat['time gaps analysis'] = now() - start
-    if rolling_window_size is None:
-        rolling_window_size = prompt_with_timeout('Enter rolling window size in months:', timeout=15, default_val=recommendation_months, target_data_type=int)
-    start = now()
-    core_activity_analysis(log_filename, core=core)
-    if not timestat is None:
-        timestat['core activity analysis'] = now() - start
-    start = now()
-    extract_binned_posts_replies(log_filename, core=core)
-    if not timestat is None:
-        timestat['extract binned posts replies'] = now() - start
-    start = now()
-    calc_lambda(folder, rolling_window=rolling_window_size, rolling_means=rolling_means, fit_curve_deg=fit_curve_deg)
-    if not timestat is None:
-        timestat['calc lambda'] = now() - start
-    start = now()
-    calc_mu(folder, rolling_window=rolling_window_size, rolling_means=rolling_means, fit_curve_deg=fit_curve_deg)
-    if not timestat is None:
-        timestat['calc mu'] = now() - start
-    start = now()
-    calc_ratio(folder, net_filename=network_filename, rolling_means=rolling_means, fit_curve_deg=fit_curve_deg)
-    if not timestat is None:
-        timestat['calc ratio'] = now() - start
-    print_timestat(timestat)
+    generate_weighted_network(log_filename, draw=draw_network)
+    core_activity_analysis(log_filename, core=1)
+    extract_binned_posts_replies(log_filename, core=1)
 
 
 def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, core=None, rolling_window_size=None, draw_network=None):
@@ -133,7 +77,7 @@ if __name__ == '__main__':
     core = 1
     rolling_window_size = 1
     draw_network = None
-    auto_decide("/Users/simon/Desktop/Projects/DynamicNetworks/data_preparation/sorted_wikis/MathStackExchange/", core=core,
+    auto_decide("/Users/simon/Desktop/BeerStackExchange/", core=core,
                 rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

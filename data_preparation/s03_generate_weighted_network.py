@@ -134,7 +134,6 @@ def generate_weighted_network(log_filename, draw=False):
     # data_frame = pd.DataFrame(columns=['datetime', 'source', 'destination'], dtype=int)
     if create_network:
         data_frame = read_log_to_df(log_filename)
-
         # create graph
         network = MyNet(network_name, create=True)
         print_f('add edges from df to network cache')

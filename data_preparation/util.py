@@ -70,10 +70,9 @@ def read_log_to_df(file_name):
         data_frame = pd.read_pickle(file_name)
     else:
         print_f('read log from:', file_name)
-        data_frame = pd.read_csv(file_name, header=None, names=['timestamp', 'source', 'destination'], infer_datetime_format=True, parse_dates=['timestamp'], sep='\t', comment='#',
+        data_frame = pd.read_csv(file_name, header=None, names=['timestamp', 'source', 'destination'],
+                                 infer_datetime_format=True, parse_dates=['timestamp'], sep='\t', comment='#',
                                  dtype={'timestamp': datetime.datetime, 'source': np.float, 'destination': np.float})
-        # date_parser=lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f")
-        # infer_datetime_format=True,
         print_f('convert and sort timestamps')
         data_frame.sort('timestamp', inplace=True)
         print_f('serialize data to:', file_name + '.ser')

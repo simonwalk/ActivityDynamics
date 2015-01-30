@@ -179,14 +179,14 @@ def extract_log_stackexchange(folder, posts_file='Posts.xml', comments_file='Com
     print_f('plot events stats')
     events_dist = {key: val / num_events * 100 for key, val in events_dist.iteritems()}
     X = np.arange(len(events_dist))
-    plt.bar(X, events_dist.values(), align='center', width=0.5)
-    plt.xticks(X, events_dist.keys(), rotation=-10)
-    ymax = max(events_dist.values()) + 1
-    plt.ylabel('percentage')
-    plt.xlabel('type')
-    plt.ylim(0, ymax)
-    plt.grid()
-    plt.savefig(folder + 'extracted_logfile_event_stat.png', dpi=150)
+    # plt.bar(X, events_dist.values(), align='center', width=0.5)
+    # plt.xticks(X, events_dist.keys(), rotation=-10)
+    # ymax = max(events_dist.values()) + 1
+    # plt.ylabel('percentage')
+    # plt.xlabel('type')
+    # plt.ylim(0, ymax)
+    # plt.grid()
+    # plt.savefig(folder + 'extracted_logfile_event_stat.png', dpi=150)
     print_f('extract log from stackexchange done')
     return logfile_filename
 

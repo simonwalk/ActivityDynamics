@@ -31,19 +31,19 @@ def basic_network_activity_analysis(log_filename):
         for dest_item, val in dest_dict.iteritems():
             histo_dict[val] += 1
 
-    print_f('plot')
-    max_key = max(histo_dict.keys())
-    x = np.arange(max_key + 1)
-    y = [histo_dict[i] for i in x]
-    plt.clf()
-    plt.plot(x, y)
-    plt.grid(axis='y')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('activity per link')
-    plt.ylabel('#links')
-    plt.savefig('communication_th.png', dpi=150)
-    plt.close('all')
+    # print_f('plot')
+    # max_key = max(histo_dict.keys())
+    # x = np.arange(max_key + 1)
+    # y = [histo_dict[i] for i in x]
+    # plt.clf()
+    # plt.plot(x, y)
+    # plt.grid(axis='y')
+    # plt.xscale('log')
+    # plt.yscale('log')
+    # plt.xlabel('activity per link')
+    # plt.ylabel('#links')
+    # plt.savefig('communication_th.png', dpi=150)
+    # plt.close('all')
 
     print 'all links:', links
     print 'all activity:', activity
@@ -64,37 +64,37 @@ def basic_network_activity_analysis(log_filename):
             norm = 1 / activity * 100
             activity_th = {key: val * norm for key, val in activity_th.iteritems()}
 
-        plt.clf()
-        plt.figure()
-        fig, ax = plt.subplots()
-        print_f('plot threshold')
-        ax.plot(*zip(*sorted(links_th.iteritems(), key=lambda x: x[0])), label='links', c='green', linewidth=2)
-        if log:
-            ax.set_yscale('log')
-        if norm_flag:
-            ax.set_ylabel('links/activity')
-            ax2 = ax
-        else:
-            ax.set_ylabel('links')
-            ax2 = ax.twinx()
-        ax2.plot(*zip(*sorted(activity_th.iteritems(), key=lambda x: x[0])), label='activity', c='blue', linewidth=2)
-        if not norm_flag:
-            ax2.set_ylabel('activity')
-        if log:
-            ax2.set_yscale('log')
-        plt.xlabel('threshold')
-        ax.legend(loc=2)
-        ax2.legend(loc=1)
-        if norm_flag:
-            ax.set_ylim([0, 100])
-            ax2.set_ylim([0, 100])
-        # plt.legend()
-        ax.grid()
-        ax.set_xlabel('activity threshold')
-        plot_name = 'activity_threshold_analysis' if not norm_flag else 'activity_threshold_analysis_norm'
-        plot_name = plot_name + '.png'
-        plt.savefig(folder_name + plot_name, dpi=150)
-        plt.close('all')
+        # plt.clf()
+        # plt.figure()
+        # fig, ax = plt.subplots()
+        # print_f('plot threshold')
+        # ax.plot(*zip(*sorted(links_th.iteritems(), key=lambda x: x[0])), label='links', c='green', linewidth=2)
+        # if log:
+        #     ax.set_yscale('log')
+        # if norm_flag:
+        #     ax.set_ylabel('links/activity')
+        #     ax2 = ax
+        # else:
+        #     ax.set_ylabel('links')
+        #     ax2 = ax.twinx()
+        # ax2.plot(*zip(*sorted(activity_th.iteritems(), key=lambda x: x[0])), label='activity', c='blue', linewidth=2)
+        # if not norm_flag:
+        #     ax2.set_ylabel('activity')
+        # if log:
+        #     ax2.set_yscale('log')
+        # plt.xlabel('threshold')
+        # ax.legend(loc=2)
+        # ax2.legend(loc=1)
+        # if norm_flag:
+        #     ax.set_ylim([0, 100])
+        #     ax2.set_ylim([0, 100])
+        # # plt.legend()
+        # ax.grid()
+        # ax.set_xlabel('activity threshold')
+        # plot_name = 'activity_threshold_analysis' if not norm_flag else 'activity_threshold_analysis_norm'
+        # plot_name = plot_name + '.png'
+        # plt.savefig(folder_name + plot_name, dpi=150)
+        # plt.close('all')
     print_f('basic network activity analysis done')
 
 
