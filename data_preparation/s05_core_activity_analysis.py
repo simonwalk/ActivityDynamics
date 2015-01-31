@@ -7,7 +7,7 @@ def bin_date(timestamp):
     return timestamp.replace(microsecond=0, second=0, minute=0, hour=0)
 
 
-def core_activity_analysis(log_filename, net_filename='weighted_net.gt', core=1, sample_size=-1):
+def core_activity_analysis(log_filename, net_filename='weighted_net.gt', core=0, sample_size=-1):
     print_f('start core activity analysis')
     folder_name = log_filename.rsplit('/', 1)[0] + '/'
     network_name = folder_name + net_filename

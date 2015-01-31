@@ -30,20 +30,29 @@ c2 <- rgb(0,0,0,alpha=1)
 c3 <- rgb(0.8, 0.4, 0.3, alpha=0.9)
 cex_paper = 1.5
 
+#print(t[,1])
+#print(t[,2])
+
 plot(t[,1], t[,2], type="l", pch=1, xlab=expression(tau ~ " (in months)"), ylab="Ratio", 
      col=c1, cex=cex_size, xlim=c(0, max_x_t), cex.axis=cex_paper, cex.lab=cex_paper)
 
-y = as.numeric(rep(k1, max_x_b+1))
-x = seq(0,max_x_t+1,1)
+
+x = seq(0,max_x_t,1)
+y = as.numeric(rep(k1, length(x)))
+
 rob = var(t[,2], na.rm=TRUE)
 print(rob)
 rob = rob/as.numeric(k1)
 print(rob)
+
+print(x)
+print(y)
 title(substitute(atop("Ratio " ~ (frac(lambda,mu)) ~ " over " ~ tau ~ " (in months)", 
                       Delta ~ tau == ~ dt ~ ", " ~ Delta ~ psi == ~ dp ~ ", " ~ kappa[1] == ~ k1 ~ ", " ~ rho == ~ rob),  
                  list(dt = dtau, dp = dpsi, k1 = k1, rob=round(rob, digits=4))), cex.main=cex_paper)
 
 lines(x, y, lty=2, col=c2)
+print("blubb")
 grid(col="gray", lwd=1)
 #rect(0, k1, max_x_b, as.numeric(k1)*0.98, col=rgb(0.8, 0.8, 0.8, alpha=0.2), border="transparent") 
 legend("bottomright", pch=c(1,NA), col=c(c1, c2), legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
@@ -60,10 +69,10 @@ y_max = max(intrinsic[,1], extrinsic[,1]+t[,4], t[,4])
 pdf(paste(args[7], "_activity.pdf", sep=""))
 par(mar=c(5,5,4,5)+.1)
 plot(t[,3], t[,4], type="l", pch=4,xlab=expression(tau ~ " (in months)"), 
-     ylab=expression("Simulated Activity over " ~ a[c]), 
+     ylab=expression("Simulated Activity over " ~ a[c]), lty=2,
      col=c2, cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(y_min, y_max))
-lines(t[,3], intrinsic[,1], col="red", type="l", lty=3)
-lines(t[,3], extrinsic[,1] + t[,4], col="blue", type="l", lty=4)
+#lines(t[,3], intrinsic[,1], col="red", type="l", lty=3)
+#lines(t[,3], extrinsic[,1] + t[,4], col="blue", type="l", lty=4)
 #lines(t[,3], t[,4] - extrinsic[,1] + intrinsic[,1], col="purple")
 #lines(t[,3], extrinsic[,1]+intrinsic[,1], col="green")
 
@@ -76,7 +85,8 @@ plot(t[,5], t[,6], type="o", lty=1, pch=2,xaxt="n",yaxt="n",xlab="",ylab="",
      col=c1, cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
 axis(4, cex.axis=cex_paper)
 mtext("Real Activity",side=4,line=3, cex=cex_paper)
-legend("topleft", pch=c(NA,2, NA,NA), col=c(c2, c1,"red","blue"), legend=c("Simulated Activity", "Real Activity", "Intrinsic Activity Decay", "Extrinsic Peer Influence"), lty=c(2,1,3,4), cex=cex_paper)
+#legend("topleft", pch=c(NA,2, NA,NA), col=c(c2, c1,"red","blue"), legend=c("Simulated Activity", "Real Activity", "Intrinsic Activity Decay", "Extrinsic Peer Influence"), lty=c(2,1,3,4), cex=cex_paper)
+legend("topleft", pch=c(NA,2), col=c(c2, c1), legend=c("Simulated Activity", "Observed Activity"), lty=c(2,1), cex=cex_paper)
 dev.off()
 
 print(" ++ closing files")

@@ -7,7 +7,7 @@ def bin_date(timestamp):
     return timestamp.replace(microsecond=0, second=0, minute=0, hour=0)
 
 
-def extract_binned_posts_replies(log_filename, net_filename=None, core=1, sample_size=-1):
+def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample_size=-1):
     print_f('start extraction of binned posts & replies')
     folder_name = log_filename.rsplit('/', 1)[0] + '/'
     network_name = folder_name + 'weighted_net.gt' if net_filename is None else net_filename

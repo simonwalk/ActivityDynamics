@@ -40,8 +40,8 @@ def run_all(log_filename, timestat=None, core=None, rolling_window_size=None, dr
     print 'log', log_filename
     print 'folder', folder
     generate_weighted_network(log_filename, draw=draw_network)
-    core_activity_analysis(log_filename, core=1)
-    extract_binned_posts_replies(log_filename, core=1)
+    core_activity_analysis(log_filename, core=0)
+    extract_binned_posts_replies(log_filename, core=0)
 
 
 def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, core=None, rolling_window_size=None, draw_network=None):
@@ -52,7 +52,7 @@ def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comment
     run_all(log_filename, timestat=timestat, core=core, rolling_window_size=rolling_window_size, draw_network=draw_network)
 
 
-def auto_decide(filename, core=None, rolling_window_size=None, draw_network=None):
+def auto_decide(filename, core=0, rolling_window_size=None, draw_network=None):
     time_stat = dict()
     if filename.endswith('.7z') or os.path.isdir(filename):
         run_all_stackexchange(filename, timestat=time_stat, core=core, rolling_window_size=rolling_window_size, draw_network=draw_network)
@@ -74,10 +74,12 @@ if __name__ == '__main__':
     parser.add_option("-w", action="store", type="int", dest="rolling_window")
     parser.add_option("-d", action="store_true", dest="draw_network")
     (options, args) = parser.parse_args()
-    core = 1
+    core = 0
     rolling_window_size = 1
     draw_network = None
-    auto_decide("/Users/simon/Desktop/BeerStackExchange/", core=core,
+    auto_decide("/Volumes/DataStorage/Programming/EnglishStackExchange/", core=core,
                 rolling_window_size=1, draw_network=draw_network)
+    #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
+    #            rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

@@ -7,12 +7,10 @@ __status__ = "Development"
 from lib.util import *
 from lib.generator import *
 
-APPROACHES = ["_RAND", "_SPEC"]
-APPROACH = APPROACHES[0]
-
 init_names = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", #0 - 4
               "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ", "KARATE", #5 - 9
-              "StackOverflow", "EnglishStackExchange","HistoryStackExchange", "MathStackExchange"] # 10 - 13
+              "StackOverflow", "EnglishStackExchange","HistoryStackExchange", "MathStackExchange", # 10 - 13
+              "BeerStackExchange"] # 14
 
 init_name = init_names[10]
 deltatau = 0.001
@@ -20,14 +18,10 @@ deltataus = [deltatau]
 store_itas = 10
 tau_in_days = 30.0
 graph_name = init_name
-graph_source_name = graph_name + "_0PERC" + APPROACH
 
 ratios = []
 
 def create_network():
-    global graph_name
-    global graph_source_name
-    graph_name += "_{}PERC".format(0) + APPROACH
     graph_source_name = graph_name
     nw = Network(False, graph_name, run=0)
     bg = Generator(graph_name)
@@ -57,9 +51,6 @@ def calc_activity(rand_iter):
     fpath = config.graph_binary_dir+"GT/"+graph_source_name+"/"+graph_source_name+"_run_"+str(rand_iter)+".gt"
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph_save(fpath)
-    nw.clear_all_filters()
-    nw.plot_fx(-1, 1)
-    nw.plot_gx(-6, 6)
     nw.prepare_eigenvalues()
     nw.create_folders()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_input/" + init_name + "_empirical_input.txt")

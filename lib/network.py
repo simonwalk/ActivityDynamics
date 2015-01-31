@@ -126,6 +126,7 @@ class Network:
         self.posts = []
         self.replies = []
         self.num_users = []
+        self.init_users = []
         self.posts_per_user_per_day = []
         self.a_cs = []
 
@@ -139,6 +140,8 @@ class Network:
             self.posts.append(float(el[2]))
             self.replies.append(float(el[3]))
             self.num_users.append(float(el[4]))
+            if ldx == 1:
+                self.init_users = el[5].split(",")
             self.posts_per_user_per_day.append(float(el[2])/float(el[4])/30.0)
         f.close()
 
@@ -264,16 +267,16 @@ class Network:
 
     # init empirical weight as average over all nodes
     def init_empirical_activity(self, ac_multiplicator=1):
-        initial_empirical_activity = self.apm[0]/self.num_vertices/(self.a_c*ac_multiplicator)
-        random_init_nodes = self.num_users[0]
+        initial_empirical_activity = self.apm[0]/len(self.init_users)/(self.a_c*ac_multiplicator)/len(self.init_users)
+        init_nodes = self.init_users
         # reset activity!
-        # Todo: Avoid reset loop!
         for v in self.graph.vertices():
             self.graph.vp["activity"][v] = 0.0
+
         # randomly initiate minimal activity
-        for v_idx in random.sample(xrange(self.num_vertices), int(random_init_nodes)):
-            v = self.graph.vertex(v_idx)
-            self.graph.vp["activity"][v] = initial_empirical_activity
+        for v_id in init_nodes:
+            n = self.graph.vertex(v_id)
+            self.graph.vp["activity"][n] = initial_empirical_activity
         
 
     # node weights setter
