@@ -15,23 +15,24 @@ def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample
     data_frame = read_log_to_df(log_filename)
     print_f('simplify timestamps')
     data_frame['timestamp'] = data_frame['timestamp'].map(lambda x: x.date().replace(day=1))
+    core = 1
+    if core > 0:
+        graph = read_graph(network_name, activity_threshold=core, largest_component=False)
 
     if core > 0:
-        graph = read_graph(network_name, activity_threshold=core, largest_component=True)
-
-    print_f('create set of user-ids')
-    if core > 0:
-        user_ids = {int(graph.vertex_properties["nodeID"][v]) for v in graph.vertices()}
+        print_f('create set of user-ids of network')
+        user_ids = {int(graph.vp["nodeID"][v]) for v in graph.vertices()}
         print_f('core', core, 'contains:', len(user_ids), 'users')
     else:
-        user_ids = {int(i) for i in data_frame['source']}
+        print_f('create set of user-ids of dataframe')
+        user_ids = set(data_frame['source'].astype('int')) | set(data_frame['destination'][data_frame['destination'].notnull()].astype('int'))
         print_f('dataset contains', len(user_ids), 'users')
 
-    if sample_size == -1 or sample_size >= len(user_ids):
-        user_ids = set(user_ids)
-    else:
-        print_f('sample', sample_size, 'users')
-        user_ids = set(random.sample(user_ids, sample_size))
+    #if sample_size == -1 or sample_size >= len(user_ids):
+    #    user_ids = set(user_ids)
+    #else:
+    #    print_f('sample', sample_size, 'users')
+    #    user_ids = set(random.sample(user_ids, sample_size))
     print_f('calc time-span...')
     min_date, max_date = np.min(data_frame['timestamp']).replace(day=1), np.max(data_frame['timestamp']).replace(day=1)
     dates_index = []

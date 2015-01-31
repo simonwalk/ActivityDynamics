@@ -39,7 +39,8 @@ def read_graph(filename, activity_threshold=None, largest_component=False, force
             return read_graph(filename, activity_threshold, largest_component, force_preprocessing=True)
     else:
         graph = load_graph(filename)
-        if not activity_threshold is None:
+        print_f('orig graph contains', graph.num_vertices(), 'nodes')
+        if activity_threshold is not None and activity_threshold > 1:
             print_f('filter activity >=', activity_threshold)
             graph = GraphView(graph, efilt=lambda e: graph.edge_properties["activity"][e] >= activity_threshold)
         if largest_component:

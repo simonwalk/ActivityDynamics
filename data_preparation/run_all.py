@@ -47,7 +47,7 @@ def run_all(log_filename, timestat=None, core=None, rolling_window_size=None, dr
 def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, core=None, rolling_window_size=None, draw_network=None):
     start = now()
     log_filename = extract_log_stackexchange(folder, posts_file, comments_file)
-    if not timestat is None:
+    if timestat is not None:
         timestat['extract log file'] = now() - start
     run_all(log_filename, timestat=timestat, core=core, rolling_window_size=rolling_window_size, draw_network=draw_network)
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     core = 0
     rolling_window_size = 1
     draw_network = None
-    auto_decide("/Volumes/DataStorage/Programming/EnglishStackExchange/", core=core,
+    auto_decide("/opt/datasets/stackexchange/english.stackexchange.com.7z", core=core,
                 rolling_window_size=1, draw_network=draw_network)
     #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
     #            rolling_window_size=1, draw_network=draw_network)

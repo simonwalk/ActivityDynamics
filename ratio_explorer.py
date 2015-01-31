@@ -25,6 +25,7 @@ folders = ["beachapedia_org_change_network.txt.sorted_results",
 instance = instances[wiki_selector]
 
 root_path = "/Volumes/DataStorage/Programming/"
+root_path = "/opt/datasets/stackexchange/"
 #root_path = "/Users/simon/Desktop/"
 
 root_path_ratios = root_path + "ActivityDynamics/results/graph_binaries/empirical_input/"
@@ -57,10 +58,9 @@ graph.clear_filters()
 #print df_posts[4]
 #exit()
 
-id_to_vertex_dict = {}
 id_pmap = graph.vp["nodeID"]
-for v in graph.vertices():
-    id_to_vertex_dict[id_pmap[v]] = v
+id_to_vertex_dict = {int(id_pmap[v]): v for v in graph.vertices()}
+
 
 # opening ratios file for activity dynamics simulation
 f = open(storage_path, "wb")
@@ -74,12 +74,15 @@ print "Number of Users: {}".format(graph.num_vertices())
 
 
 keys = set(id_to_vertex_dict.keys())
-print keys
+#print keys
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
+assert set(df_posts.columns) == set(df_replies.columns)
+print 'users in df:', len(df_posts.columns)
 val = set(df_posts.columns) | set(df_replies.columns)
-print val
-print val == keys
+#print val
+print 'overlap:', len(keys & val)
+print keys - val
 exit()
 
 for i in xrange(0, max_row):
