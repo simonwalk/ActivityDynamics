@@ -77,7 +77,13 @@ if __name__ == '__main__':
     core = 0
     rolling_window_size = 1
     draw_network = None
-    auto_decide("/opt/datasets/stackexchange/english.stackexchange.com.7z", core=core,
+    #auto_decide("/Volumes/DataStorage/Programming/EnglishStackExchange/", core=core,
+    #            rolling_window_size=1, draw_network=draw_network)
+    #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
+    #            rolling_window_size=1, draw_network=draw_network)
+    #auto_decide("/Volumes/DataStorage/Programming/MathStackExchange/", core=core,
+    #            rolling_window_size=1, draw_network=draw_network)
+    auto_decide("/Volumes/DataStorage/Programming/StackOverflow/", core=core,
                 rolling_window_size=1, draw_network=draw_network)
     #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
     #            rolling_window_size=1, draw_network=draw_network)

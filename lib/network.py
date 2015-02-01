@@ -125,7 +125,7 @@ class Network:
         self.apm = []
         self.posts = []
         self.replies = []
-        self.num_users = []
+        self.num_users = [] # self.graph.num_vertices()
         self.init_users = []
         self.posts_per_user_per_day = []
         self.a_cs = []
@@ -139,10 +139,12 @@ class Network:
             self.apm.append(float(el[1]))
             self.posts.append(float(el[2]))
             self.replies.append(float(el[3]))
-            self.num_users.append(float(el[4]))
-            if ldx == 1:
-                self.init_users = el[5].split(",")
-            self.posts_per_user_per_day.append(float(el[2])/float(el[4])/30.0)
+            try:
+                self.init_users.append(el[5].split(","))
+            except:
+                self.init_users.append(["dummy"])
+            self.num_users.append(len(self.init_users[ldx-1]))
+            self.posts_per_user_per_day.append(float(el[2])/len(self.init_users[ldx-1])/30.0)
         f.close()
 
         self.calc_acs(ac_per_taus)
@@ -267,8 +269,14 @@ class Network:
 
     # init empirical weight as average over all nodes
     def init_empirical_activity(self, ac_multiplicator=1):
-        initial_empirical_activity = self.apm[0]/len(self.init_users)/(self.a_c*ac_multiplicator)/len(self.init_users)
-        init_nodes = self.init_users
+        print self.apm[0]
+        print self.num_users[0]
+        print self.a_c
+        initial_empirical_activity = self.apm[0]/self.graph.num_vertices()/self.a_c
+
+        print "Init Activity: ", initial_empirical_activity
+
+        init_nodes = self.init_users[0]
         # reset activity!
         for v in self.graph.vertices():
             self.graph.vp["activity"][v] = 0.0
@@ -497,9 +505,9 @@ class Network:
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
-            self.ratio -= 0.01 * activity_current / (self.a_c * self.num_vertices)
+            #self.ratio -= 0.01 * activity_current / (self.a_c * self.num_vertices)
             self.ratios.append(self.ratio)
-        self.debug_msg("ratios ({}): ".format(len(self.ratios), self.ratios), level=1)
+        self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
 
     def set_ratio(self, index):
