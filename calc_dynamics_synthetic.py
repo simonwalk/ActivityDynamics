@@ -45,8 +45,8 @@ if __name__ == '__main__':
     datasets = ["Karate", "PrefAttach", "SBM_SAME", "SBM_ASC", "Random"]
     synthetic_ds = datasets[3]
     num_random_inits = 10
-    ratios = [1, 10, 30, 80, 100, 120, 160, 200, 260, 320, 500]
-    deltatau = 0.001
+    ratios = [1, 10, 30, 80, 100, 120, 160]
+    deltatau = 0.01
     deltapsi = 1
     store_itas = 10
 
@@ -70,9 +70,9 @@ if __name__ == '__main__':
         num_blocks = 10
         nodes_per_block = [500 for x in xrange(1, num_blocks+1, 1)]
         num_nodes = sum(nodes_per_block)
-        self_block = 0.1
-        power_exp = 2.2
-        other_block = 0.0001
+        self_block = 0.02
+        power_exp = 2.
+        other_block = 0.00005
         generator = Generator(graph_name, num_nodes=num_nodes)
         generator.create_network(generator.create_stochastic_blockmodel_graph, [num_blocks, nodes_per_block,
                                                                                 self_block, other_block, None, False,
@@ -84,9 +84,9 @@ if __name__ == '__main__':
         num_blocks = 10
         nodes_per_block = [x*100 for x in xrange(1, num_blocks+1, 1)]
         num_nodes = sum(nodes_per_block)
-        self_block = 0.1
-        power_exp = 2.2
-        other_block = 0.0001
+        self_block = 0.022
+        power_exp = 2.4
+        other_block = 0.0005
         generator = Generator(graph_name, num_nodes=num_nodes)
         generator.create_network(generator.create_stochastic_blockmodel_graph, [num_blocks, nodes_per_block,
                                                                                 self_block, other_block, None, False,
