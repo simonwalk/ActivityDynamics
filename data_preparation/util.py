@@ -75,6 +75,8 @@ def read_log_to_df(file_name):
                                  infer_datetime_format=True, parse_dates=['timestamp'], sep='\t', comment='#',
                                  dtype={'timestamp': datetime.datetime, 'source': np.float, 'destination': np.float})
         print_f('convert and sort timestamps')
+
+        print data_frame
         data_frame.sort('timestamp', inplace=True)
         print_f('serialize data to:', file_name + '.ser')
         data_frame.to_pickle(file_name + '.ser')

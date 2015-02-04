@@ -24,12 +24,14 @@ def core_activity_analysis(log_filename, net_filename='weighted_net.gt', core=0,
 
     # filter core users
     print_f('create set of user-ids')
-    if core > 0:
-        user_ids = {int(graph.vertex_properties["nodeID"][v]) for v in graph.vertices()}
-        core_users_percentage = len(user_ids) / num_all_users * 100
-        print_f('core', core, 'contains:', len(user_ids), 'users', '(', core_users_percentage, '% )')
-    else:
-        core_users_percentage = 100
+    core=0
+    print core
+    #if core > 0:
+    #    user_ids = {int(graph.vertex_properties["nodeID"][v]) for v in graph.vertices()}
+    #    core_users_percentage = len(user_ids) / num_all_users * 100
+    #    print_f('core', core, 'contains:', len(user_ids), 'users', '(', core_users_percentage, '% )')
+    #else:
+    core_users_percentage = 100
 
     # sampling users
     if sample_size == -1 or sample_size >= len(user_ids):

@@ -620,6 +620,8 @@ class Network:
     def load_graph(self, fpath):
         self.debug_msg("Loading GT", level=0)
         self.graph = load_graph(fpath)
+        remove_self_loops(self.graph)
+        remove_parallel_edges(self.graph)
         self.debug_msg("  --> Creating ones vector", level=0)
         self.ones_ratio = [1.0] * self.graph.num_vertices()
         #self.debug_msg("  --> Getting Laplacian Matrix", level=0)

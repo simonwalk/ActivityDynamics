@@ -1,4 +1,5 @@
 from __future__ import division
+import math
 from util import *
 from collections import defaultdict
 
@@ -36,6 +37,27 @@ class MyNet:
 
     def get_overall_activity(self):
         return sum(self.graph.edge_properties['activity'][e] for e in self.graph.edges())
+
+    def build_network_per_line(self, df):
+        for index, row in df.iterrows():
+            src = row['source']
+            trgt = row['destination']
+            ts = row['timestamp']
+
+            if src is not "nan":
+                src_v = self.vertex_mapping[src]
+
+            if not math.isnan(trgt):
+                #print trgt
+                trgt_v = self.vertex_mapping[trgt]
+                edge = self.graph.add_edge(src_v, trgt_v)
+        for orig_id, v in self.vertex_mapping.iteritems():
+            self.node_ids[v] = orig_id
+        remove_parallel_edges(self.graph)
+        remove_self_loops(self.graph)
+        print_f('build done')
+        print_f('\t=>vertices:', self.graph.num_vertices(), 'edges:', self.graph.num_edges())
+
 
     def build_network(self):
         for src, dest_dict in self.edges.iteritems():
@@ -124,6 +146,32 @@ class MyNet:
 
 
 # -----------------------------------------------------------------------------------------------
+
+def generate_network(log_filename, draw=False):
+    print_f('start generation of network')
+    folder_name = log_filename.rsplit('/', 1)[0] + '/'
+    network_name = folder_name + 'net.gt'
+    create_network = not os.path.isfile(network_name)
+    # data_frame = pd.DataFrame(columns=['datetime', 'source', 'destination'], dtype=int)
+    if create_network:
+        data_frame = read_log_to_df(log_filename)
+        # create graph
+        network = MyNet(network_name, create=True)
+        print_f('add edges from df to network cache')
+        network.build_network_per_line(data_frame)
+        print_f('store network')
+        network.store(network_name)
+    else:
+        print_f("load network from:", network_name)
+        network = MyNet(network_name)
+
+    all_nodes, all_edges = network.get_network_size()
+    all_activity = network.get_overall_activity()
+    # network.draw(filename='net_all.png')
+    # network.draw(filename='net_largest.png', largest=True, log=True)
+
+    print_f('generation of weighted network done')
+    return network_name
 
 
 def generate_weighted_network(log_filename, draw=False):

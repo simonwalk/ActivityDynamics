@@ -15,6 +15,8 @@ def create_network(graph_name):
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
     bg.collect_colors()
+    remove_self_loops(bg.graph)
+    remove_parallel_edges(bg.graph)
     bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
@@ -28,6 +30,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
     fpath = nw.get_binary_filename(graph_name)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph_save(fpath)
+
     nw.prepare_eigenvalues()
     nw.create_folders()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_input/" + nw.graph_name + "_empirical_input.txt")
@@ -56,8 +59,8 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
 if __name__ == '__main__':
 
     empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
-                    "NematodesWIKI", "CCC", "CDB"]
-    graph_name = empirical_ds[-2]
+                    "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
+    graph_name = empirical_ds[-1]
     create_network(graph_name)
     deltatau = 0.01
     store_itas = 10

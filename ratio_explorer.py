@@ -8,12 +8,12 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = -2
+wiki_selector = 8
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
              "NematodesWIKI", "AWAYCITY", "CDB", "CCC"]
-folders = ["beachapedia_org_change_network.txt.sorted_results",
+folders = ["beachapedia_org_collab_network.txt.sorted_results",
            "apbrwiki_com_change_network.txt.sorted_results",
            "characterdb_cjklib_org_change_network.txt.sorted_results",
            "semantic-mediawiki_org_change_network.txt.sorted_results",
@@ -21,7 +21,7 @@ folders = ["beachapedia_org_change_network.txt.sorted_results",
            "aardnoot_nl_change_network.txt.sorted_results",
            "autonomecollective_org_change_network.txt.sorted_results",
            "cumbriawindwatch_co_uk_change_network.txt.sorted_results",
-           "nobbz_de_change_network.txt.sorted_results",
+           "nobbz_de_collab_network.txt.sorted_results",
            "StackOverflow", "EnglishStackExchange",
            "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
            "nematodes_org_collab_network.txt.sorted_results",
@@ -46,7 +46,7 @@ print "Processing: {}".format(source_path)
 binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
 gnames = [instance + "_run_0.gt"]
 fnames = [binaries_path + instance + "/"]
-copy_file = source_path + "weighted_net.gt"
+copy_file = source_path + "net.gt"
 
 gname = gnames[0]
 fname = fnames[0]
@@ -66,7 +66,7 @@ print df_replies
 
 print "----"
 
-graph = load_graph(source_path + "weighted_net.gt")
+graph = load_graph(source_path + "net.gt")
 graph.clear_filters()
 
 id_pmap = graph.vp["nodeID"]

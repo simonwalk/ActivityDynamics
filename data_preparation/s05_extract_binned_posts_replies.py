@@ -15,7 +15,7 @@ def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample
     data_frame = read_log_to_df(log_filename)
     print_f('simplify timestamps')
     data_frame['timestamp'] = data_frame['timestamp'].map(lambda x: x.date().replace(day=1))
-    core = 1
+    core = 0
     if core > 0:
         graph = read_graph(network_name, activity_threshold=core, largest_component=False)
 

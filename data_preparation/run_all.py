@@ -8,6 +8,7 @@ from s01_extract_log_stackexchange import extract_log_stackexchange
 from s02_basic_network_activity_analysis import basic_network_activity_analysis
 from s02_basic_timeseries_activity_analysis import basic_timeseries_activity_analysis
 from s03_generate_weighted_network import generate_weighted_network
+from s03_generate_weighted_network import generate_network
 from s04_threshold_filter_dataframe import threshold_filter_dataframe
 from s04_time_gaps_analysis import time_gaps_analysis
 from s05_core_activity_analysis import core_activity_analysis
@@ -40,7 +41,8 @@ def run_all(log_filename, timestat=None, core=None, rolling_window_size=None, dr
     basic_network_activity_analysis(log_filename)
     print 'log', log_filename
     print 'folder', folder
-    generate_weighted_network(log_filename, draw=draw_network)
+    #generate_weighted_network(log_filename, draw=draw_network)
+    generate_network(log_filename, draw=draw_network)
     core_activity_analysis(log_filename, core=0)
     extract_binned_posts_replies(log_filename, core=0)
 
@@ -89,6 +91,14 @@ if __name__ == '__main__':
     #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
     #            rolling_window_size=1, draw_network=draw_network)
 
-    auto_decide("/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted", core=0, rolling_window_size=1, draw_network=draw_network)
+    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
+    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
+    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
+    try:
+        os.rmdir(path+"/")
+    except:
+        print "Could not delete: " + path
+
+    auto_decide(path, core=0, rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'
