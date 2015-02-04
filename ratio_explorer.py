@@ -6,12 +6,13 @@ from graph_tool.all import *
 
 debug = False
 
-wiki_selector = 10
+#wiki_selector = 10
+#wiki_selector = -2
 wiki_selector = -2
-wiki_selector = 9
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
-             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
+             "NematodesWIKI", "AWAYCITY", "CDB", "CCC"]
 folders = ["beachapedia_org_change_network.txt.sorted_results",
            "apbrwiki_com_change_network.txt.sorted_results",
            "characterdb_cjklib_org_change_network.txt.sorted_results",
@@ -22,10 +23,16 @@ folders = ["beachapedia_org_change_network.txt.sorted_results",
            "cumbriawindwatch_co_uk_change_network.txt.sorted_results",
            "nobbz_de_change_network.txt.sorted_results",
            "StackOverflow", "EnglishStackExchange",
-           "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+           "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
+           "nematodes_org_collab_network.txt.sorted_results",
+           "awaycity_com_collab_network.txt.sorted_results",
+           "characterdb_cjklib_org_collab_network.txt.sorted_results",
+           "events_ccc_de_collab_network.txt.sorted_results"]
 instance = instances[wiki_selector]
 
-root_path = "/Volumes/DataStorage/Programming/"
+#root_path = "/Volumes/DataStorage/Programming/"
+root_path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/"
+root_path = "/Users/simon/Desktop/"
 #root_path = "/opt/datasets/stackexchange/"
 #root_path = "/Users/simon/Desktop/"
 
@@ -33,7 +40,7 @@ root_path_ratios = root_path + "ActivityDynamics/results/graph_binaries/empirica
 storage_path = root_path_ratios + instance + "_empirical_input.txt"
 init_weights_path = root_path_ratios + instance + "_weights.txt"
 
-source_path = root_path + folders[wiki_selector]+"/"
+source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
 
 print "Processing: {}".format(source_path)
 binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
@@ -50,6 +57,14 @@ shutil.copy(copy_file, fname + gname)
 # loading pickled files
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
+
+print df_posts
+
+print "----"
+
+print df_replies
+
+print "----"
 
 graph = load_graph(source_path + "weighted_net.gt")
 graph.clear_filters()

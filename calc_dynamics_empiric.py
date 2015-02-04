@@ -12,7 +12,7 @@ def create_network(graph_name):
     bg.debug_msg("Loading SMW network!")
     bg.load_graph(graph_name+"_run_"+str(0))
     bg.clear_all_filters()
-    bg.calc_eigenvalues(4)
+    bg.calc_eigenvalues(2)
     bg.add_node_weights()
     bg.collect_colors()
     bg.draw_graph(0)
@@ -55,10 +55,11 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
 
 if __name__ == '__main__':
 
-    empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow"]
-    graph_name = empirical_ds[-1]
+    empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
+                    "NematodesWIKI", "CCC", "CDB"]
+    graph_name = empirical_ds[-2]
     create_network(graph_name)
-    deltatau = 0.001
+    deltatau = 0.01
     store_itas = 10
     calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name)
