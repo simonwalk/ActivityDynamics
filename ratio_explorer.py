@@ -104,8 +104,7 @@ df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0
                                    min_periods=2).shift(-1)
 #resolve user ids to vertex ids
 columns_resolved = np.array(map(int, [id_to_vertex_dict[i] for i in df_posts.columns]))
-df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: [columns_resolved[np.array(x)]],
-                                                                         axis=1)
+df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: ','.joing([columns_resolved[np.array(x)]]), axis=1)
 #sort columns
 df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]
 #FLO END
