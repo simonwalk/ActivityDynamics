@@ -91,6 +91,8 @@ print "Number of Users: {}".format(graph.num_vertices())
 keys = set(id_to_vertex_dict.keys())
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
+df_posts.fillna(0)
+df_replies.fillna(0)
 merged = df_posts + df_replies
 merged.to_csv(source_path + "merged.csv", sep=";")
 for i in xrange(0, max_row):
@@ -124,7 +126,7 @@ for i in xrange(0, max_row):
     posts_next = np.nansum(df_posts.ix[i+1,:])+1
     replies_current = np.nansum(df_replies.ix[i,:])+1
     replies_next = np.nansum(df_replies.ix[i+1,:])+1
-    num_users = np.sum((merged.iloc[[i]]).count())
+    num_users = np.sum((merged.iloc[[i]]).count())+1
     dx = (replies_current + posts_current) - (replies_next + posts_next)
     current_activity = (replies_current + posts_current)
     # write to file
