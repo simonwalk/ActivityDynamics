@@ -93,6 +93,22 @@ df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
 df_posts.fillna(0)
 df_replies.fillna(0)
+#FLO START
+#sum(axis=1) sum over row
+df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1)+1))
+df_result['replies'] = (df_replies.sum(axis=1) + 1)
+df_result['agg_activity'] = df_result['posts'] + df_result['replies'] #attention now you have +2 (+1 from posts & +1 from replies)
+df_result['num_users'] = ((df_replies > 0) | (df_posts > 0)).sum(axis=1)
+# delta x: current agg activity - next agg activity. need to shift with -1, since rolling_apply is shifted by one
+df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0] - x[-1], window=2,
+                                   min_periods=2).shift(-1)
+#resolve user ids to vertex ids
+columns_resolved = np.array([id_to_vertex_dict[i] for i in df_posts.columns])
+df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: columns_resolved[np.array(x)],
+                                                                         axis=1)
+#sort columns
+df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]
+#FLO END
 merged = df_posts + df_replies
 merged.to_csv(source_path + "merged.csv", sep=";")
 for i in xrange(0, max_row):
