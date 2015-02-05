@@ -8,7 +8,8 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = 8
+wiki_selector = 10
+is_wiki = False
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
@@ -40,7 +41,10 @@ root_path_ratios = root_path + "ActivityDynamics/results/graph_binaries/empirica
 storage_path = root_path_ratios + instance + "_empirical_input.txt"
 init_weights_path = root_path_ratios + instance + "_weights.txt"
 
-source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
+if is_wiki:
+    source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
+else:
+    source_path = root_path + folders[wiki_selector]+"/"
 
 print "Processing: {}".format(source_path)
 binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
@@ -87,35 +91,40 @@ print "Number of Users: {}".format(graph.num_vertices())
 keys = set(id_to_vertex_dict.keys())
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
-
+merged = df_posts + df_replies
+merged.to_csv(source_path + "merged.csv", sep=";")
 for i in xrange(0, max_row):
     init_users = set()
     posts_current = np.nansum(df_posts.ix[i,:])+1
-
-    for id in id_to_vertex_dict.keys():
-        try:
-            val = df_posts.iloc[i][id]
-        except:
-            print id
-            val = 0
-        if val < 1:
-            val = 0
-        if val > 0:
-            init_users.add(str(id_to_vertex_dict[id]))
-            #print id
-        try:
-            val = np.array(df_replies.iloc[i][id])
-        except:
-            print id
-            val = 0
-        if val < 1:
-            val = 0
-        if val > 0:
-            init_users.add(str(id_to_vertex_dict[id]))
+    if i == 0:
+        for ndx, id in enumerate(id_to_vertex_dict.keys()):
+            if ndx+1 % 1000 == 0:
+                print "  -- processing node {}".format(ndx+1)
+            try:
+                val = df_posts.iloc[i][id]
+            except:
+                print id
+                val = 0
+            if val < 1:
+                val = 0
+            if val > 0:
+                print val
+                init_users.add(str(id_to_vertex_dict[id]))
+                #print id
+            try:
+                val = np.array(df_replies.iloc[i][id])
+            except:
+                #print id
+                print val
+                val = 0
+            if val < 1:
+                val = 0
+            if val > 0:
+                init_users.add(str(id_to_vertex_dict[id]))
     posts_next = np.nansum(df_posts.ix[i+1,:])+1
     replies_current = np.nansum(df_replies.ix[i,:])+1
     replies_next = np.nansum(df_replies.ix[i+1,:])+1
-    num_users = df_posts.ix[i+1,:].count()+1
+    num_users = np.sum((merged.iloc[[i]]).count())
     dx = (replies_current + posts_current) - (replies_next + posts_next)
     current_activity = (replies_current + posts_current)
     # write to file

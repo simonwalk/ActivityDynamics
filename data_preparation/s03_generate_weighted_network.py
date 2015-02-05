@@ -39,7 +39,10 @@ class MyNet:
         return sum(self.graph.edge_properties['activity'][e] for e in self.graph.edges())
 
     def build_network_per_line(self, df):
+
         for index, row in df.iterrows():
+            if index % 1000 == 0:
+                print "  -- Processing line {}".format(index)
             src = row['source']
             trgt = row['destination']
             ts = row['timestamp']

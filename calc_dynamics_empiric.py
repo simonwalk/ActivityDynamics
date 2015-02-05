@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
                     "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
-    graph_name = empirical_ds[-1]
+    graph_name = empirical_ds[2]
     create_network(graph_name)
     deltatau = 0.01
     store_itas = 10

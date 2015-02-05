@@ -272,8 +272,7 @@ class Network:
         print self.apm[0]
         print self.num_users[0]
         print self.a_c
-        initial_empirical_activity = self.apm[0]/self.graph.num_vertices()/self.a_c
-
+        initial_empirical_activity = self.apm[0]/(self.graph.num_edges()*2)/self.num_users[0]/self.a_c
         print "Init Activity: ", initial_empirical_activity
 
         init_nodes = self.init_users[0]

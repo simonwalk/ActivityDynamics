@@ -94,6 +94,10 @@ if __name__ == '__main__':
     path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
     path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
     path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
+    path = "/Users/simon/Desktop/BeerStackExchange/"
+    path = "/Users/simon/Desktop/MathStackExchange/"
+    path = "/Users/simon/Desktop/EnglishStackExchange/"
+
     try:
         os.rmdir(path+"/")
     except:
