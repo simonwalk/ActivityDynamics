@@ -91,11 +91,11 @@ print "Number of Users: {}".format(graph.num_vertices())
 keys = set(id_to_vertex_dict.keys())
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
-df_posts.fillna(0)
-df_replies.fillna(0)
+df_posts.fillna(0, inplace=True)
+df_replies.fillna(0, inplace=True)
 #FLO START
 #sum(axis=1) sum over row
-df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1)+1))
+df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1) + 1))
 df_result['replies'] = (df_replies.sum(axis=1) + 1)
 df_result['agg_activity'] = df_result['posts'] + df_result['replies'] #attention now you have +2 (+1 from posts & +1 from replies)
 df_result['num_users'] = ((df_replies > 0) | (df_posts > 0)).sum(axis=1)
@@ -103,7 +103,7 @@ df_result['num_users'] = ((df_replies > 0) | (df_posts > 0)).sum(axis=1)
 df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0] - x[-1], window=2,
                                    min_periods=2).shift(-1)
 #resolve user ids to vertex ids
-columns_resolved = np.array([id_to_vertex_dict[i] for i in df_posts.columns])
+columns_resolved = np.array(map(int, [id_to_vertex_dict[i] for i in df_posts.columns]))
 df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: [columns_resolved[np.array(x)]],
                                                                          axis=1)
 #sort columns
