@@ -59,7 +59,7 @@ if __name__ == '__main__':
     empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
                     "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
     graph_name = empirical_ds[3]
-    create_network(graph_name)
+    #create_network(graph_name)
     deltatau = 0.001
     store_itas = 10
     calc_activity(graph_name, store_itas, deltatau)
