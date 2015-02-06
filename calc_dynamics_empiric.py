@@ -6,18 +6,16 @@ from multiprocessing import Pool
 
 
 def create_network(graph_name):
-    graph_source_name = graph_name
-    nw = Network(False, graph_name, run=0)
     bg = Generator(graph_name)
     bg.debug_msg("Loading SMW network!")
     bg.load_graph(graph_name+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    bg.collect_colors()
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    bg.draw_graph(0)
+    #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
@@ -60,9 +58,9 @@ if __name__ == '__main__':
 
     empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
                     "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
-    graph_name = empirical_ds[2]
+    graph_name = empirical_ds[3]
     create_network(graph_name)
-    deltatau = 0.01
+    deltatau = 0.001
     store_itas = 10
     calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name)

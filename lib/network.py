@@ -143,8 +143,8 @@ class Network:
                 self.init_users.append(el[5].split(","))
             except:
                 self.init_users.append(["dummy"])
-            self.num_users.append(len(self.init_users[ldx-1]))
-            self.posts_per_user_per_day.append(float(el[2])/len(self.init_users[ldx-1])/30.0)
+            self.num_users.append(float(el[4]))
+            self.posts_per_user_per_day.append(float(el[2])/float(el[4])/30.0)
         f.close()
 
         self.calc_acs(ac_per_taus)

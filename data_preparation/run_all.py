@@ -91,12 +91,13 @@ if __name__ == '__main__':
     #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
     #            rolling_window_size=1, draw_network=draw_network)
 
-    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
-    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
-    path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
-    path = "/Users/simon/Desktop/BeerStackExchange/"
-    path = "/Users/simon/Desktop/MathStackExchange/"
-    path = "/Users/simon/Desktop/EnglishStackExchange/"
+    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
+    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
+    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
+    #path = "/Users/simon/Desktop/BeerStackExchange/"
+    #path = "/Users/simon/Desktop/MathStackExchange/"
+    #path = "/Users/simon/Desktop/EnglishStackExchange/"
+    path = "/Users/simon/Desktop/StackOverflow/"
 
     try:
         os.rmdir(path+"/")
