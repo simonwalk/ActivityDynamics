@@ -135,8 +135,7 @@ class Network:
             if ldx < 1:
                 continue
             el = line.strip().split("\t")
-            print el
-            print "el[%i]: " % ldx, el[1]
+            print "el[%s]: " % el[0], el[1]
             self.dx.append(float(el[1]))
             self.apm.append(float(el[2]))
             self.posts.append(float(el[3]))
