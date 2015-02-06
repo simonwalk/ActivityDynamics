@@ -11,7 +11,7 @@ def create_network(graph_name):
     bg.load_graph(graph_name+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
-    bg.add_node_weights()
+    #bg.add_node_weights()
     #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)

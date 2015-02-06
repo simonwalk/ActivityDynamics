@@ -135,16 +135,16 @@ class Network:
             if ldx < 1:
                 continue
             el = line.strip().split("\t")
-            self.dx.append(float(el[0]))
-            self.apm.append(float(el[1]))
-            self.posts.append(float(el[2]))
-            self.replies.append(float(el[3]))
+            self.dx.append(float(el[1]))
+            self.apm.append(float(el[2]))
+            self.posts.append(float(el[3]))
+            self.replies.append(float(el[4]))
             try:
-                self.init_users.append(el[5].split(","))
+                self.init_users.append(el[6].split(","))
             except:
                 self.init_users.append(["dummy"])
-            self.num_users.append(float(el[4]))
-            self.posts_per_user_per_day.append(float(el[2])/float(el[4])/30.0)
+            self.num_users.append(float(el[5]))
+            self.posts_per_user_per_day.append(float(el[3])/float(el[5])/30.0)
         f.close()
 
         self.calc_acs(ac_per_taus)
