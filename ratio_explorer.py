@@ -10,6 +10,8 @@ debug = False
 #wiki_selector = -2
 wiki_selector = 9
 is_wiki = False
+is_server = True
+is_notebook = False
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
@@ -31,18 +33,22 @@ folders = ["beachapedia_org_collab_network.txt.sorted_results",
            "events_ccc_de_collab_network.txt.sorted_results"]
 instance = instances[wiki_selector]
 
-root_path = "/Volumes/DataStorage/Programming/"
-#root_path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/"
-#root_path = "/Users/simon/Desktop/"
-#root_path = "/opt/datasets/stackexchange/"
-#root_path = "/Users/simon/Desktop/"
+if is_server:
+    root_path = "/home/swalk/"
+elif is_notebook:
+    root_path = "/Users/simon/Desktop/"
+else:
+    root_path = "/Volumes/DataStorage/Programming/"
 
-root_path_ratios = root_path + "ActivityDynamics/results/graph_binaries/empirical_input/"
-storage_path = root_path_ratios + instance + "_empirical_input.txt"
-init_weights_path = root_path_ratios + instance + "_weights.txt"
+
+root_path_results = root_path + "ActivityDynamics/results/graph_binaries/empirical_input/"
+
+storage_path = root_path_results + instance + "_empirical_input.txt"
 
 if is_wiki:
     source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
+elif is_server:
+    source_path = "/opt/datasets/" + folders[wiki_selector]+"/"
 else:
     source_path = root_path + "ActivityDynamics/datasets/" + folders[wiki_selector]+"/"
 
@@ -82,19 +88,13 @@ df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
 df_posts.fillna(0, inplace=True)
 df_replies.fillna(0, inplace=True)
-#FLO START
-#sum(axis=1) sum over row
 df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1) + 1))
 df_result['replies'] = (df_replies.sum(axis=1) + 1)
 df_result['agg_activity'] = df_result['posts'] + df_result['replies'] #attention now you have +2 (+1 from posts & +1 from replies)
 df_result['num_users'] = ((df_replies > 0) | (df_posts > 0)).sum(axis=1)
-# delta x: current agg activity - next agg activity. need to shift with -1, since rolling_apply is shifted by one
 df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0] - x[-1], window=2,
                                    min_periods=2).shift(-1)
-#resolve user ids to vertex ids
 columns_resolved = np.array(map(int, [id_to_vertex_dict[i] for i in df_posts.columns]))
 df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: ','.join(map(str, columns_resolved[np.array(x)])), axis=1)
-#sort columns
 df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]
-#FLO END
 df_result.to_csv(storage_path, sep="\t", header=True)
