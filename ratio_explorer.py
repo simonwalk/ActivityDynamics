@@ -8,7 +8,7 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = 9
+wiki_selector = 12
 is_wiki = False
 is_server = True
 is_notebook = False
@@ -48,7 +48,7 @@ storage_path = root_path_results + instance + "_empirical_input.txt"
 if is_wiki:
     source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
 elif is_server:
-    source_path = "/opt/datasets/" + folders[wiki_selector]+"/"
+    source_path = "/opt/datasets/stackexchange/" + folders[wiki_selector]+"/"
 else:
     source_path = root_path + "ActivityDynamics/datasets/" + folders[wiki_selector]+"/"
 
