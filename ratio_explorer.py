@@ -8,8 +8,8 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = 8
-is_wiki = True
+wiki_selector = 12
+is_wiki = False
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
@@ -97,4 +97,4 @@ df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=la
 #sort columns
 df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]
 #FLO END
-df_result.to_csv("test.csv", sep=";", header=True)
+df_result.to_csv(storage_path, sep="\t", header=True)

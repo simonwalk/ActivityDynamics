@@ -88,7 +88,7 @@ class Network:
 
     def calc_acs(self, ac_per_taus=None, min_ac=None):
         if ac_per_taus is None:
-            self.a_cs = [max((np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices, min_ac)] * (len(self.replies)-1)
+            self.a_cs = [max((np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices, min_ac)] * (len(self.replies))
         else:
             for i in xrange(len(self.replies)-ac_per_taus):
                 j = i + ac_per_taus
@@ -146,8 +146,9 @@ class Network:
                 self.init_users.append(el[6].split(","))
             except:
                 self.init_users.append(["dummy"])
-            self.num_users.append(float(el[5]))
-            self.posts_per_user_per_day.append(float(el[3])/float(el[5])/30.0)
+            num_users = float(el[5]) + 1
+            self.num_users.append(num_users)
+            self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
         f.close()
 
         self.calc_acs(ac_per_taus)

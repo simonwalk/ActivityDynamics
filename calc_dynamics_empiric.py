@@ -11,17 +11,17 @@ def create_network(graph_name):
     bg.load_graph(graph_name+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
-    #bg.add_node_weights()
-    #bg.collect_colors()
+    bg.add_node_weights()
+    bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    #bg.draw_graph(0)
+    bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
-def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30):
+def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=25):
     nw = Network(False, graph_name, run=rand_iter, deltatau=deltatau, store_iterations=store_itas,
                  tau_in_days=tau_in_days)
 
@@ -58,8 +58,8 @@ if __name__ == '__main__':
 
     empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
                     "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
-    graph_name = empirical_ds[3]
-    #create_network(graph_name)
+    graph_name = empirical_ds[2]
+    create_network(graph_name)
     deltatau = 0.001
     store_itas = 10
     calc_activity(graph_name, store_itas, deltatau)
