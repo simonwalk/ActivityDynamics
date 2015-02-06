@@ -135,8 +135,10 @@ class Network:
             if ldx < 1:
                 continue
             el = line.strip().split("\t")
-            print "el[%s]: " % el[0], el[1]
-            self.dx.append(float(el[1]))
+            try:
+              self.dx.append(float(el[1]))
+            except:
+                break
             self.apm.append(float(el[2]))
             self.posts.append(float(el[3]))
             self.replies.append(float(el[4]))
