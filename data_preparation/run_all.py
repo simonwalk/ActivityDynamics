@@ -97,8 +97,9 @@ if __name__ == '__main__':
     #path = "/Users/simon/Desktop/BeerStackExchange/"
     #path = "/Users/simon/Desktop/MathStackExchange/"
     #path = "/Users/simon/Desktop/EnglishStackExchange/"
-    path = "/Users/simon/Desktop/StackOverflow/"
-
+    #path = "/Users/simon/Desktop/StackOverflow/"
+    path = "/Volumes/DataStorage/Programming/ActivityDynamics/datasets/StackOverflow/"
+    path = "/opt/datasets/stackoverflow/"
     try:
         os.rmdir(path+"/")
     except:

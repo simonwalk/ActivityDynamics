@@ -8,7 +8,7 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = 12
+wiki_selector = 9
 is_wiki = False
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
@@ -31,9 +31,9 @@ folders = ["beachapedia_org_collab_network.txt.sorted_results",
            "events_ccc_de_collab_network.txt.sorted_results"]
 instance = instances[wiki_selector]
 
-#root_path = "/Volumes/DataStorage/Programming/"
-root_path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/"
-root_path = "/Users/simon/Desktop/"
+root_path = "/Volumes/DataStorage/Programming/"
+#root_path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/"
+#root_path = "/Users/simon/Desktop/"
 #root_path = "/opt/datasets/stackexchange/"
 #root_path = "/Users/simon/Desktop/"
 
@@ -44,7 +44,7 @@ init_weights_path = root_path_ratios + instance + "_weights.txt"
 if is_wiki:
     source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
 else:
-    source_path = root_path + folders[wiki_selector]+"/"
+    source_path = root_path + "ActivityDynamics/datasets/" + folders[wiki_selector]+"/"
 
 print "Processing: {}".format(source_path)
 binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
