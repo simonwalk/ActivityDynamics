@@ -374,7 +374,7 @@ class Generator():
                 pos = self.graph.vertex_properties["pos"]
             except:
                 self.debug_msg("  --> Calculating SFDP layout positions!")
-                pos = sfdp_layout(self.graph, max_iter=3, verbose=True, mu=1, p=30)
+                pos = sfdp_layout(self.graph, max_iter=3, verbose=True)
                 self.graph.vertex_properties["pos"] = pos
                 self.debug_msg("  --> Done!")
 

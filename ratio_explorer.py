@@ -8,9 +8,9 @@ debug = False
 
 #wiki_selector = 10
 #wiki_selector = -2
-wiki_selector = 12
-is_wiki = False
-is_server = True
+wiki_selector = 0
+is_wiki = True
+is_server = False
 is_notebook = False
 
 instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
@@ -18,14 +18,14 @@ instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT",
              "NematodesWIKI", "AWAYCITY", "CDB", "CCC"]
 folders = ["beachapedia_org_collab_network.txt.sorted_results",
            "apbrwiki_com_change_network.txt.sorted_results",
-           "characterdb_cjklib_org_change_network.txt.sorted_results",
+           "characterdb_cjklib_org_collab_network.txt.sorted_results",
            "semantic-mediawiki_org_change_network.txt.sorted_results",
-           "wiki_15m_cc_change_network.txt.sorted_results",
+           "wiki_15m_cc_collab_network.txt.sorted_results",
            "aardnoot_nl_change_network.txt.sorted_results",
            "autonomecollective_org_change_network.txt.sorted_results",
            "cumbriawindwatch_co_uk_change_network.txt.sorted_results",
            "nobbz_de_collab_network.txt.sorted_results",
-           "stackoverflow", "EnglishStackExchange",
+           "StackOverflow", "EnglishStackExchange",
            "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
            "nematodes_org_collab_network.txt.sorted_results",
            "awaycity_com_collab_network.txt.sorted_results",

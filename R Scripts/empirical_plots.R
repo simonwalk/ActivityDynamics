@@ -40,19 +40,48 @@ plot(t[,1], t[,2], type="l", pch=1, xlab=expression(tau ~ " (in months)"), ylab=
 x = seq(0,max_x_t,1)
 y = as.numeric(rep(k1, length(x)))
 
+rho = sd(t[,2], na.rm=TRUE)
+rho = rho/as.numeric(k1)
 rob = var(t[,2], na.rm=TRUE)
-print(rob)
 rob = rob/as.numeric(k1)
-print(rob)
 
-print(x)
-print(y)
+act = sum(t[,6], na.rm=TRUE)
+months = max(t[,5], na.rm=T)
+lmact  = t[,6][months+1]
+mean_act = act/months
+print(paste("Sum Act: ", act, sep=""))
+print(paste("Last Month: ", lmact, sep=""))
+print(paste("Mean Month: ", mean_act, sep=""))
+print(paste("Months: ", months, sep=""))
+print(paste("Std Dev: ", rho, sep=""))
+
+print(paste("Var: ", rob, sep=""))
+act_inertia = 1/rho
+print(paste("Inertia (var) :", 1/rob, sep=""))
+print(paste("Inertia (sd) :", 1/rho, sep=""))
+act_mass = 1/rho * act
+mean_momentum = act_mass * mean_act
+curr_momentum = act_mass * lmact
+print(paste("Mass (var) :", 1/rob*act, sep=""))
+print(paste("Mass (sd) :", 1/rho*act, sep=""))
+
+print(paste("ESE", " & ", "$", mean_act ,"$ ($", lmact ,"$)" , " & ",
+"$",rho,"$", " & ", "$",act_inertia,"$", " & ", "$",act_inertia*mean_act,"$ ($",act_inertia*lmact,"$)\\", sep=""))
+
+#print(rob)
+
+#print(round(rob, digits=4))
+rob = round(rho, digits=4)
+
+
+#print(x)
+#print(y)
 title(substitute(atop("Ratio " ~ (frac(lambda,mu)) ~ " over " ~ tau ~ " (in months)", 
                       Delta ~ tau == ~ dt ~ ", " ~ Delta ~ psi == ~ dp ~ ", " ~ kappa[1] == ~ k1 ~ ", " ~ rho == ~ rob),  
-                 list(dt = dtau, dp = dpsi, k1 = k1, rob=round(rob, digits=4))), cex.main=cex_paper)
+                 list(dt = dtau, dp = dpsi, k1 = k1, rob=rob)), cex.main=cex_paper)
 
 lines(x, y, lty=2, col=c2)
-print("blubb")
+#print("blubb")
 grid(col="gray", lwd=1)
 #rect(0, k1, max_x_b, as.numeric(k1)*0.98, col=rgb(0.8, 0.8, 0.8, alpha=0.2), border="transparent") 
 legend("bottomright", pch=c(1,NA), col=c(c1, c2), legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
@@ -65,7 +94,7 @@ y_max = max(intrinsic[,1], extrinsic[,1]+t[,4], t[,4])
 
 #print(length(intrinsic[,1]))
 #print(length(extrinsic[,1]))
-
+print(args[7])
 pdf(paste(args[7], "_activity.pdf", sep=""))
 par(mar=c(5,5,4,5)+.1)
 plot(t[,3], t[,4], type="l", pch=4,xlab=expression(tau ~ " (in months)"), 

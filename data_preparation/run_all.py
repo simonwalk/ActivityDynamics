@@ -91,15 +91,21 @@ if __name__ == '__main__':
     #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
     #            rolling_window_size=1, draw_network=draw_network)
 
-    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
-    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
-    #path = "/Users/simon/Desktop/ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
-    #path = "/Users/simon/Desktop/BeerStackExchange/"
-    #path = "/Users/simon/Desktop/MathStackExchange/"
-    #path = "/Users/simon/Desktop/EnglishStackExchange/"
-    #path = "/Users/simon/Desktop/StackOverflow/"
-    path = "/Volumes/DataStorage/Programming/ActivityDynamics/datasets/StackOverflow/"
-    path = "/opt/datasets/stackoverflow/"
+
+    root_path = "/Volumes/DataStorage/Programming/"
+
+    path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
+    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
+    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
+    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/wiki_15m_cc_collab_network.txt.sorted"
+
+    #path = root_path + "ActivityDynamics/datasets/MathStackExchange/"
+    #path = root_path + "ActivityDynamics/datasets/EnglishStackExchange/"
+    #path = root_path + "ActivityDynamics/datasets/HistoryStackExchange/"
+    #path = root_path + "ActivityDynamics/datasets/StackOverflow/"
+
+    # server paths
+    #path = "/opt/datasets/stackoverflow/"
     try:
         os.rmdir(path+"/")
     except:

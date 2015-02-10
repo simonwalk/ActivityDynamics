@@ -88,7 +88,7 @@ class Network:
 
     def calc_acs(self, ac_per_taus=None, min_ac=None):
         if ac_per_taus is None:
-            self.a_cs = [max((np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices, min_ac)] * (len(self.replies))
+            self.a_cs = [max((np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices, min_ac)] * (len(self.replies)-1)
         else:
             for i in xrange(len(self.replies)-ac_per_taus):
                 j = i + ac_per_taus

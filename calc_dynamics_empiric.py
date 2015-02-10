@@ -56,9 +56,18 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=25)
 
 if __name__ == '__main__':
 
-    empirical_ds = ["BeerStackExchange", "EnglishStackExchange", "MathStackExchange", "StackOverflow",
-                    "NematodesWIKI", "CCC", "CDB", "BEACHAPEDIA", "NOBBZ"]
-    graph_name = empirical_ds[2]
+    empirical_ds = ["BeerStackExchange",    #0
+                    "EnglishStackExchange", #1
+                    "MathStackExchange",    #2
+                    "StackOverflow",        #3
+                    "HistoryStackExchange", #4
+                    "NematodesWIKI",        #5
+                    "CCC",                  #6
+                    "CHARACTERDB",          #7
+                    "BEACHAPEDIA",          #8
+                    "NOBBZ",                #9
+                    "W15M"]                 #10
+    graph_name = empirical_ds[10]
     create_network(graph_name)
     deltatau = 0.001
     store_itas = 10
