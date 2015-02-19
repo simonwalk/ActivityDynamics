@@ -124,12 +124,12 @@ def empirical_result_plot(graph_name, run=0):
     out_file.write(("\t").join(["%.8f" % x for x in x_real_act])+"\n")
     out_file.write(("\t").join(["%.8f" % x for x in y_real_act])+"\n")
     out_file.close()
-    debug_msg(" ---- Calling empirical_plots.R ---- ", level=0)
+    debug_msg("   ** Calling empirical_plots.R", level=0)
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
     subprocess.call([config.r_binary_path, r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
                      pipe_vals[3], graph_name, ipath, epath], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
-    debug_msg(" ---- Done ---- ", level=0)
+    debug_msg("   ** Done", level=0)
 
 
 # plot simulated ratios and kappa 1 (for empirical datasets)
@@ -262,13 +262,13 @@ def plot_weights_over_time(graph_name):
         for seq in y_vals:
             out_file.write(("\t").join([str(x) for x in seq])+"\n")
         out_file.close()
-        debug_msg(" -- Calling weights_over_time.R", level=0)
+        debug_msg("  ** Calling weights_over_time.R", level=0)
         r_script_path = os.path.abspath(config.r_dir + 'weights_over_time.R')
         wd = r_script_path.replace("R Scripts/weights_over_time.R", "") + \
              "results/plots/weights_over_time/"
         subprocess.call([config.r_binary_path, r_script_path, wd, out_path, str(ratio), str(deltatau), graph_name,
                          "%.2f" % ew[0]], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
-        debug_msg(" -- Done", level=0)
+        debug_msg("  ** Done", level=0)
 
 # debug output
 def debug_msg(msg, level=0):

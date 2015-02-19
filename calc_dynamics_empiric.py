@@ -55,7 +55,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=25)
             nw.activity_dynamics(store_weights=True, empirical=True)
     nw.close_weights_files()
     nw.add_graph_properties()
-    nw.store_graph(0, save_specific=True)
+    nw.store_graph(0)
 
 
 if __name__ == '__main__':
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "NOBBZ",                #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[8]
+    graph_name = empirical_ds[0]
     create_network(graph_name)
     deltatau = 0.001
     store_itas = 10
