@@ -1,11 +1,15 @@
-require(graphics)
+#__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
+#__license__ = "GPL"
+#__version__ = "0.0.1"
+#__email__ = "simon.walk@tugraz.at"
+#__status__ = "Development"
 
+require(graphics)
 args <- commandArgs(trailingOnly=T)
-print(" ++ Setting new wd")
+print(" ++ Setting new working directory")
 setwd(args[1])
-print(" ++ Reading table")
+print(" ++ Reading weights table")
 t = read.table(args[2], sep="\t", header=F, fill=T)
-#print(t)
 xlimit = dim(t)[1]
 limit = dim(t)[2]
 x_vals <- as.numeric(t[1,])[1:xlimit-1]
@@ -17,9 +21,7 @@ max_y = max(t, na.rm=T)
 y1 = as.numeric(t[,1])[!is.na(t[,1])]
 num_nodes = length(as.numeric(t[1,])[!is.na(t[1,])])
 cols = rainbow(num_nodes)
-
-print(" ++ Plotting")
-
+print(" ++ Plotting weights")
 cex_paper=1.5
 pdf(paste(args[5], "/", args[5], "_ratio_", ratio, ".pdf", sep=""))
 plot(x_vals[1:length(y1)+1], y1, xlim=c(0, max(x_vals)), type="l", ylim=c(0,max_y), xlab=expression(tau), 

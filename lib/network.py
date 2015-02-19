@@ -1,7 +1,7 @@
 from __future__ import division
 from time import sleep
 
-__author__ = 'Simon Walk, Florian Geigl, Denis Helic, Philipp Koncar'
+__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
 __license__ = "GPL"
 __version__ = "0.0.1"
 __email__ = "simon.walk@tugraz.at"
@@ -34,28 +34,21 @@ class Network:
     #   run                 =   Number of random initializations for activity weights
     #   percentage          =   Percentage of nodes to randomly select for increasing/decreasing ratio
     #   converge_at         =   Minimum difference that has to be reached between two iterations to declare convergence
-    #   ratio               =   The ratio for the spreading of our activities.
+    #   ratios              =   The ratio for the activity dynamics.
     #   deltatau            =   The time that each iteration "represents".
     #   debug_level         =   The level of debug messages to be displayed.
     #   store_iterations    =   The interval for storing iterations (1 = all, 2 = every other, etc.)
-    # Deprecated (soon to be removed):
-    #   plot_with_labels    =   Boolean switch for plotting functions
-    #   debug               =   Boolean switch for outputting debug info
-    #   iterations          =   Max number of activity spreading iterations if not converged/diverged before.
     def __init__(self, directed, graph_name, run=1, converge_at=1e-16, deltatau=0.01, runs = 1,
                  deltapsi=0.0001, debug_level=1, store_iterations=1, ratios=[], ratio_index = 0, tau_in_days=30,
                  num_nodes=None):
-
         # default variables
         self.name_to_id = {}
         self.graph = Graph(directed=directed)
-
         # variables used to store and load files
         self.graph_name = graph_name
         self.run = run
         self.runs = runs
         self.num_nodes = num_nodes
-
         # variables used for activity dynamics modeling process
         self.cur_iteration = 0
         self.ratio_ones = [1.0] * self.graph.num_vertices()
@@ -65,22 +58,17 @@ class Network:
         self.converge_at = float(converge_at)
         self.store_iterations = store_iterations
         self.ratio = None
-
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
-
         # variable needed for adding and removing edges from graph
         self.edge_list = None
-
         # variable storing the eigenvalues for the network
         self.top_eigenvalues = None
         self.debug_level = debug_level
-
         # empirical network variables
         self.ratio_index = ratio_index
         self.ratios = ratios
         self.minimized_error_ratios = []
-
         # synthetic network helper variables
         self.converged = False
         self.diverged = False
@@ -102,10 +90,10 @@ class Network:
         self.a_c = self.a_cs[index]
 
 
-    def calc_ac(self, start_tau=0, end_tau=None, min_ac=40):
-        replies = self.replies[start_tau:end_tau]
-        posts = self.posts[start_tau:end_tau]
-        return max((np.mean(replies) + np.mean(posts)) / self.num_vertices, min_ac)
+    #def calc_ac(self, start_tau=0, end_tau=None, min_ac=40):
+    #    replies = self.replies[start_tau:end_tau]
+    #    posts = self.posts[start_tau:end_tau]
+    #    return max((np.mean(replies) + np.mean(posts)) / self.num_vertices, min_ac)
 
 
     def calc_max_posts_per_day(self, start_tau=0, end_tau=None):
@@ -125,11 +113,10 @@ class Network:
         self.apm = []
         self.posts = []
         self.replies = []
-        self.num_users = [] # self.graph.num_vertices()
+        self.num_users = []
         self.init_users = []
         self.posts_per_user_per_day = []
         self.a_cs = []
-
         f = open(path, "rb")
         for ldx, line in enumerate(f):
             if ldx < 1:
@@ -150,7 +137,6 @@ class Network:
             self.num_users.append(num_users)
             self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
         f.close()
-
         self.calc_acs(ac_per_taus)
         self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
         self.g_per_month = self.calc_g_per_month()
@@ -192,20 +178,19 @@ class Network:
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
                 str(self.run) + "_weights.txt"
-        iname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + "_intrinsic.txt"
-        ename = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + "_extrinsic.txt"
+        #iname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
+        #        str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+        #        str(self.run) + "_intrinsic.txt"
+        #ename = self.graph_name + "_" + str(self.store_iterations) +"_"+\
+        #        str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+        #        str(self.run) + "_extrinsic.txt"
 
         self.weights_file_path = folder+wname
-        self.intrinsic_file_path = folder+iname
-        self.extrinsic_file_path = folder+ename
-
+        #self.intrinsic_file_path = folder+iname
+        #self.extrinsic_file_path = folder+ename
         self.weights_file = open(self.weights_file_path, "wb")
-        self.intrinsic_file = open(self.intrinsic_file_path, "wb")
-        self.extrinsic_file = open(self.extrinsic_file_path, "wb")
+        #self.intrinsic_file = open(self.intrinsic_file_path, "wb")
+        #self.extrinsic_file = open(self.extrinsic_file_path, "wb")
 
 
     def write_weights_to_file(self):
@@ -214,13 +199,13 @@ class Network:
 
     def write_summed_weights_to_file(self):
         self.weights_file.write(str(sum(self.get_node_weights("activity"))) + "\n")
-        self.intrinsic_file.write("0"+"\n")
-        self.extrinsic_file.write("0"+"\n")
+        #self.intrinsic_file.write("0"+"\n")
+        #self.extrinsic_file.write("0"+"\n")
 
     def close_weights_files(self):
         self.weights_file.close()
-        self.intrinsic_file.close()
-        self.extrinsic_file.close()
+        #self.intrinsic_file.close()
+        #self.extrinsic_file.close()
 
 
     def reduce_to_largest_component(self):
@@ -254,7 +239,7 @@ class Network:
             self.set_graph_property("object", self.max_posts_per_day, "max_posts_per_day")
             self.set_graph_property("object", self.g_per_month, "g_per_month")
         except:
-            self.debug_msg("  -> INFO: Could not store empirical activities!", level=1)
+            self.debug_msg("  -> INFO: Could not store empirical activities! ", level=1)
 
 
     # Reset attributes between iterations / runs
@@ -272,7 +257,7 @@ class Network:
 
 
     # init empirical weight as average over all nodes
-    def init_empirical_activity(self, ac_multiplicator=1):
+    def init_empirical_activity(self):
         print self.apm[0]
         print self.num_users[0]
         print self.a_c
@@ -308,10 +293,9 @@ class Network:
     # creating random node weights
     def add_node_weights(self, min=0.0, max=0.1, distribution=[1,0,0]):
         self.debug_msg("Adding random weights between {} and {} to nodes.".format(min, max), level=0)
-        num_nodes = float(self.graph.num_vertices())
+        num_nodes = int(self.graph.num_vertices())
         weights = self.graph.new_vertex_property("double")
-        num_lurker = int(math.ceil(num_nodes*distribution[0]))
-        weights_list = [random.uniform(min, max) for x in xrange(num_lurker)]
+        weights_list = [random.uniform(min, max) for x in xrange(num_nodes)]
         random.shuffle(weights_list)
         for ndx, n in enumerate(self.graph.vertices()):
             weights[n] = weights_list[ndx]
@@ -331,29 +315,16 @@ class Network:
 
 
     # store graph to gt
-    def store_graph(self, run, save_specific=False, postfix=""):
+    def store_graph(self, run, postfix=""):
         self.debug_msg("Storing Graph")
-
-        path_random = config.graph_binary_dir + "/GT/{}/".format(self.graph_name)
-        path_spec = config.graph_binary_dir + "/GT/{}/".format(self.graph_name.replace("RAND", "SPEC"))
-
+        path = config.graph_binary_dir + "/GT/{}/".format(self.graph_name)
         try:
-            if not os.path.exists(path_random):
-                self.debug_msg("Created folder: {}".format(path_random))
-                os.makedirs(path_random)
+            if not os.path.exists(path):
+                self.debug_msg("Created folder: {}".format(path))
+                os.makedirs(path)
         except Exception as e:
             self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-
-        self.graph.save(path_random + "{}_run_{}{}.gt".format(self.graph_name, run, postfix))
-        if save_specific:
-            try:
-
-                if not os.path.exists(path_spec):
-                    self.debug_msg("Created folder: {}".format(path_spec))
-                    os.makedirs(path_spec)
-            except Exception as e:
-                self.debug_msg("\x1b[41mERROR:: {}\x1b[00m".format(e))
-            self.graph.save(path_spec + "{}_run_{}{}.gt".format(self.graph_name.replace("RAND", "SPEC"), run, postfix))
+        self.graph.save(path + "{}_run_{}{}.gt".format(self.graph_name, run, postfix))
 
 
     # sample calculation of g(x)
@@ -471,44 +442,12 @@ class Network:
             return ev_centrality
 
 
-    # # select random nodes equal to percentage for increasing/decreasing ratio
-    # def get_percentage_of_nodes(self, percentage = 0.01, mult_factor = 0.9, specific=False, selector="evc",
-    #                             max_iter=100000, spec_func=None):
-    #
-    #     num_nodes = self.graph.num_vertices()
-    #     selection_limiter = int(math.ceil(num_nodes * percentage))
-    #     self.debug_msg("   *** Collecting a total of {} ({}%) random nodes!".format(self.run, selection_limiter,
-    #                                                                                 round(percentage*100)),level=0)
-    #     if percentage == 0.0:
-    #         return
-    #     if specific:
-    #         if spec_func == None:
-    #             spec_func = self.calc_ev_centrality
-    #         self.graph.vertex_properties[selector] = spec_func(max_iter, selector)
-    #     if not specific:
-    #         counter = 0
-    #         rints = []
-    #         while counter < selection_limiter:
-    #             rint = random.randint(0, num_nodes-1)
-    #             if rint in rints:
-    #                 continue
-    #             else:
-    #                 self.ones_ratio[rint] *= float(mult_factor)
-    #                 rints.append(rint)
-    #                 counter += 1
-    #     else:
-    #         rints = zip(*heapq.nlargest(selection_limiter, enumerate(self.graph.vertex_properties[selector].a),
-    #                                     key=operator.itemgetter(1)))[0]
-    #         for i in rints:
-    #             self.ones_ratio[i] *= float(mult_factor)
-
-
     def calculate_ratios(self):
         for i in xrange(len(self.apm)-1):
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
-            #self.ratio -= 0.01 * activity_current / (self.a_c * self.num_vertices)
+            self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
             self.ratios.append(self.ratio)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
@@ -549,14 +488,13 @@ class Network:
         if ((store_weights and self.cur_iteration % self.store_iterations == 0) and not empirical) or ((self.converged or self.diverged)
                                                                                    and not empirical):
             self.weights_file.write(("\t").join(["%.8f" % x for x in self.get_node_weights("activity")]) + "\n")
-            self.intrinsic_file.write(("\t").join(["%.8f" % x for x in intrinsic_decay + activity_weight]) + "\n")
-            self.extrinsic_file.write(("\t").join(["%.8f" % x for x in extrinsic_influence + activity_weight]) + "\n")
+            #self.intrinsic_file.write(("\t").join(["%.8f" % x for x in intrinsic_decay + activity_weight]) + "\n")
+            #self.extrinsic_file.write(("\t").join(["%.8f" % x for x in extrinsic_influence + activity_weight]) + "\n")
         elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
                                                                                    and empirical):
-            #print "emp"
             self.weights_file.write(str(sum(activity_weight + activity_delta)) + "\n")
-            self.intrinsic_file.write(str(abs(sum(intrinsic_decay))*self.deltatau) + "\n")
-            self.extrinsic_file.write(str(abs(sum(extrinsic_influence))*self.deltatau) + "\n")
+            #self.intrinsic_file.write(str(abs(sum(intrinsic_decay))*self.deltatau) + "\n")
+            #self.extrinsic_file.write(str(abs(sum(extrinsic_influence))*self.deltatau) + "\n")
         # Increment current iteration counter
         self.cur_iteration += 1
 
@@ -588,26 +526,22 @@ class Network:
         gps = self.graph.gp.keys()
         vps = self.graph.vp.keys()
         eps = self.graph.ep.keys()
-
         self.debug_msg(" >> Inspecting graph properties: {}".format((", ").join(gps)), level=1)
         for gp_k in gps:
             self.debug_msg("   \x1b[36m- {}:\x1b[00m {}".format(gp_k, self.graph.gp[gp_k]), level=1)
-
         self.debug_msg(" >> Inspecting vertex properties: {}".format((", ").join(vps)), level=1)
         for vp_k in vps:
             self.debug_msg("   \x1b[32m- {}:\x1b[00m {}".format(vp_k, self.graph.vp[vp_k]), level=1)
-
         self.debug_msg(" >> Inspecting edge properties: {}".format((", ").join(eps)), level=1)
         for ep_k in eps:
             self.debug_msg("   \x1b[37m- {}:\x1b[00m {}".format(ep_k, self.graph.ep[ep_k]), level=1)
+        print "Sum Posts: ", sum(self.graph.gp["posts"])
+        print "Sum Replies: ", sum(self.graph.gp["replies"])
 
-        print "sum posts: ", sum(self.graph.gp["posts"])
-        print "sum replies: ", sum(self.graph.gp["replies"])
 
     def prepare_eigenvalues(self):
         self.top_eigenvalues = self.get_eigenvalues()
         self.k1 = max(self.top_eigenvalues)
-
 
 
     def load_graph_save(self, fpath):
@@ -627,11 +561,9 @@ class Network:
         remove_parallel_edges(self.graph)
         self.debug_msg("  --> Creating ones vector", level=0)
         self.ones_ratio = [1.0] * self.graph.num_vertices()
-        #self.debug_msg("  --> Getting Laplacian Matrix", level=0)
-        #self.L = laplacian(self.graph, weight=None)
         self.debug_msg("  --> Getting Adjacency Matrix", level=0)
         self.A = adjacency(self.graph, weight=None)
         self.num_vertices = self.graph.num_vertices()
         self.num_edges = self.graph.num_edges()
-        self.debug_msg("  --> Counted {} Vertices".format(self.num_vertices), level=0)
-        self.debug_msg("  --> Counted {} Edges".format(self.num_edges), level=0)
+        self.debug_msg("  --> Counted {} vertices".format(self.num_vertices), level=0)
+        self.debug_msg("  --> Counted {} edges".format(self.num_edges), level=0)

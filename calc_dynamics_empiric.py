@@ -1,4 +1,8 @@
-__author__ = 'Simon Walk'
+__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
+__license__ = "GPL"
+__version__ = "0.0.1"
+__email__ = "simon.walk@tugraz.at"
+__status__ = "Development"
 
 from lib.util import *
 from lib.generator import *
@@ -61,13 +65,11 @@ if __name__ == '__main__':
                     "MathStackExchange",    #2
                     "StackOverflow",        #3
                     "HistoryStackExchange", #4
-                    "NematodesWIKI",        #5
-                    "CCC",                  #6
-                    "CHARACTERDB",          #7
-                    "BEACHAPEDIA",          #8
-                    "NOBBZ",                #9
-                    "W15M"]                 #10
-    graph_name = empirical_ds[10]
+                    "CHARACTERDB",          #5
+                    "BEACHAPEDIA",          #6
+                    "NOBBZ",                #7
+                    "W15M"]                 #8
+    graph_name = empirical_ds[8]
     create_network(graph_name)
     deltatau = 0.001
     store_itas = 10

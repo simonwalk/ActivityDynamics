@@ -1,21 +1,16 @@
-import sys
+__author__ = 'Florian Geigl, Simon Walk, Denis Helic'
+__license__ = "GPL"
+__version__ = "0.0.1"
+__email__ = "simon.walk@tugraz.at"
+__status__ = "Development"
+
 import os
-import numpy as np
 import datetime
-import shutil
-from util import prompt_with_timeout
 from s01_extract_log_stackexchange import extract_log_stackexchange
 from s02_basic_network_activity_analysis import basic_network_activity_analysis
-from s02_basic_timeseries_activity_analysis import basic_timeseries_activity_analysis
-from s03_generate_weighted_network import generate_weighted_network
 from s03_generate_weighted_network import generate_network
-from s04_threshold_filter_dataframe import threshold_filter_dataframe
-from s04_time_gaps_analysis import time_gaps_analysis
 from s05_core_activity_analysis import core_activity_analysis
 from s05_extract_binned_posts_replies import extract_binned_posts_replies
-from s06_calc_lambda import calc_lambda
-from s06_calc_mu import calc_mu
-from s07_calc_ratio import calc_ratio
 from optparse import OptionParser
 
 
@@ -35,27 +30,26 @@ def print_timestat(timestat):
     print '=' * 100
 
 
-def run_all(log_filename, timestat=None, core=None, rolling_window_size=None, draw_network=None):
+def run_all(log_filename, draw_network=None):
     print log_filename
     folder = log_filename.rsplit('/', 1)[0] + '/'
     basic_network_activity_analysis(log_filename)
     print 'log', log_filename
     print 'folder', folder
-    #generate_weighted_network(log_filename, draw=draw_network)
     generate_network(log_filename, draw=draw_network)
     core_activity_analysis(log_filename, core=0)
     extract_binned_posts_replies(log_filename, core=0)
 
 
-def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, core=None, rolling_window_size=None, draw_network=None):
+def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, draw_network=None):
     start = now()
     log_filename = extract_log_stackexchange(folder, posts_file, comments_file)
     if timestat is not None:
         timestat['extract log file'] = now() - start
-    run_all(log_filename, timestat=timestat, core=core, rolling_window_size=rolling_window_size, draw_network=draw_network)
+    run_all(log_filename, draw_network=draw_network)
 
 
-def auto_decide(filename, core=0, rolling_window_size=None, draw_network=None):
+def auto_decide(filename, rolling_window_size=None, draw_network=None):
     time_stat = dict()
     if filename.endswith('.7z') or os.path.isdir(filename):
         run_all_stackexchange(filename, timestat=time_stat, core=0, rolling_window_size=rolling_window_size, draw_network=draw_network)
@@ -80,37 +74,8 @@ if __name__ == '__main__':
     core = 0
     rolling_window_size = 1
     draw_network = None
-    #auto_decide("/Volumes/DataStorage/Programming/EnglishStackExchange/", core=core,
-    #            rolling_window_size=1, draw_network=draw_network)
-    #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
-    #            rolling_window_size=1, draw_network=draw_network)
-    #auto_decide("/Volumes/DataStorage/Programming/MathStackExchange/", core=core,
-    #            rolling_window_size=1, draw_network=draw_network)
-    #auto_decide("/Volumes/DataStorage/Programming/StackOverflow/", core=core,
-    #            rolling_window_size=1, draw_network=draw_network)
-    #auto_decide("/Volumes/DataStorage/Programming/BeerStackExchange/", core=core,
-    #            rolling_window_size=1, draw_network=draw_network)
-
-
-    root_path = "/Volumes/DataStorage/Programming/"
-
-    path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/characterdb_cjklib_org_collab_network.txt.sorted"
-    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/beachapedia_org_collab_network.txt.sorted"
-    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/nobbz_de_collab_network.txt.sorted"
-    #path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/wiki_15m_cc_collab_network.txt.sorted"
-
-    #path = root_path + "ActivityDynamics/datasets/MathStackExchange/"
-    #path = root_path + "ActivityDynamics/datasets/EnglishStackExchange/"
-    #path = root_path + "ActivityDynamics/datasets/HistoryStackExchange/"
-    #path = root_path + "ActivityDynamics/datasets/StackOverflow/"
-
-    # server paths
-    #path = "/opt/datasets/stackoverflow/"
-    try:
-        os.rmdir(path+"/")
-    except:
-        print "Could not delete: " + path
-
+    root_path = "/Path/to/Datasets/"
+    path = root_path + "DSFolder"
     auto_decide(path, core=0, rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

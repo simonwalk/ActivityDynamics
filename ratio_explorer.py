@@ -1,3 +1,9 @@
+__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
+__license__ = "GPL"
+__version__ = "0.0.1"
+__email__ = "simon.walk@tugraz.at"
+__status__ = "Development"
+
 import pandas as pd
 import numpy as np
 import os
@@ -6,51 +12,22 @@ from graph_tool.all import *
 
 debug = False
 
-#wiki_selector = 10
-#wiki_selector = -2
-wiki_selector = 0
-is_wiki = True
-is_server = False
-is_notebook = False
+instance_selector = 0
 
-instances = ["BEACHAPEDIA", "APBR", "CHARACTERDB", "SMWORG", "W15M", "AARDNOOT", "AUTOCOLLECTIVE", "CWW", "NOBBZ",
-             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
-             "NematodesWIKI", "AWAYCITY", "CDB", "CCC"]
+instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
+             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange"]
 folders = ["beachapedia_org_collab_network.txt.sorted_results",
-           "apbrwiki_com_change_network.txt.sorted_results",
            "characterdb_cjklib_org_collab_network.txt.sorted_results",
-           "semantic-mediawiki_org_change_network.txt.sorted_results",
            "wiki_15m_cc_collab_network.txt.sorted_results",
-           "aardnoot_nl_change_network.txt.sorted_results",
-           "autonomecollective_org_change_network.txt.sorted_results",
-           "cumbriawindwatch_co_uk_change_network.txt.sorted_results",
            "nobbz_de_collab_network.txt.sorted_results",
-           "StackOverflow", "EnglishStackExchange",
-           "HistoryStackExchange", "MathStackExchange", "BeerStackExchange",
-           "nematodes_org_collab_network.txt.sorted_results",
-           "awaycity_com_collab_network.txt.sorted_results",
-           "characterdb_cjklib_org_collab_network.txt.sorted_results",
-           "events_ccc_de_collab_network.txt.sorted_results"]
-instance = instances[wiki_selector]
+           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange"]
+instance = instances[instance_selector]
 
-if is_server:
-    root_path = "/home/swalk/"
-elif is_notebook:
-    root_path = "/Users/simon/Desktop/"
-else:
-    root_path = "/Volumes/DataStorage/Programming/"
+root_path = "../"
+root_path_results = root_path + "results/graph_binaries/empirical_data"
+storage_path = root_path_results + instance + "_empirical.txt"
+source_path = root_path + "/datasets/"+folders[instance_selector]+"/"
 
-
-root_path_results = root_path + "ActivityDynamics/results/graph_binaries/empirical_input/"
-
-storage_path = root_path_results + instance + "_empirical_input.txt"
-
-if is_wiki:
-    source_path = root_path + "ActivityDynamics/results/graph_sources/collaboration_networks/"+folders[wiki_selector]+"/"
-elif is_server:
-    source_path = "/opt/datasets/stackexchange/" + folders[wiki_selector]+"/"
-else:
-    source_path = root_path + "ActivityDynamics/datasets/" + folders[wiki_selector]+"/"
 
 print "Processing: {}".format(source_path)
 binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
@@ -90,7 +67,7 @@ df_posts.fillna(0, inplace=True)
 df_replies.fillna(0, inplace=True)
 df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1) + 1))
 df_result['replies'] = (df_replies.sum(axis=1) + 1)
-df_result['agg_activity'] = df_result['posts'] + df_result['replies'] #attention now you have +2 (+1 from posts & +1 from replies)
+df_result['agg_activity'] = df_result['posts'] + df_result['replies']
 df_result['num_users'] = ((df_replies > 0) | (df_posts > 0)).sum(axis=1)
 df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0] - x[-1], window=2,
                                    min_periods=2).shift(-1)

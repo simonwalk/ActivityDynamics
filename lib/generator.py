@@ -367,6 +367,7 @@ class Generator():
         degree = self.graph.degree_property_map("total")
         self.graph.vertex_properties["degree"] = degree
 
+
     def draw_specific_graph(self, colors, color_type_in_outfname, output_size, label_color, edge_color, mi, ma, labels,
                             run, appendix, file_format, label_pos=0, pos=None, v_size_prop_map=None):
         if pos is None:
@@ -377,19 +378,18 @@ class Generator():
                 pos = sfdp_layout(self.graph, max_iter=3, verbose=True)
                 self.graph.vertex_properties["pos"] = pos
                 self.debug_msg("  --> Done!")
-
         if v_size_prop_map is None:
             try:
                 v_size_prop_map = self.graph.vertex_properties["activity"]
             except:
                 self.add_node_weights(0.0, 0.1)
                 v_size_prop_map = self.graph.vertex_properties["activity"]
-
         graph_draw(self.graph, vertex_fill_color=colors, edge_color=edge_color, output_size=(output_size, output_size),
                    vertex_text_color=label_color, pos=pos, vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)),
                    vertex_text=labels, vertex_text_position=label_pos,
                    output=config.graph_dir + "{}_{}_run_{}{}.{}".format(self.graph_name, color_type_in_outfname, run,
                                                                         appendix, file_format))
+
 
     # plot graph to file
     def draw_graph(self, run=0, min_nsize=None, max_nsize=None, size_property=None, file_format="png",

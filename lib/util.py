@@ -1,4 +1,4 @@
-__author__ = 'Simon Walk, Florian Geigl, Denis Helic, Philipp Koncar'
+__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
 __license__ = "GPL"
 __version__ = "0.0.1"
 __email__ = "simon.walk@tugraz.at"
@@ -19,8 +19,11 @@ from decimal import *
 from textwrap import wrap
 import pandas as pd
 
+# set level of debug output
 DEBUG_LEVEL = 0
 
+
+# retrieve parameters stored in binary graph file
 def get_network_details(graph_name, run=0, path=config.graph_binary_dir):
     graph = load_graph(path + "GT/" + graph_name + "/" + graph_name + "_run_" + str(run) + ".gt")
     ratios = graph.graph_properties["ratios"]
@@ -43,7 +46,7 @@ def prepare_folders():
     flist = [config.graph_binary_dir,
              config.graph_binary_dir + "GT/",
              config.graph_binary_dir + "ratios/",
-             config.graph_binary_dir + "empirical_input/",
+             config.graph_binary_dir + "empirical_data/",
              config.graph_source_dir + "empirical_results/",
              config.graph_source_dir,
              config.graph_source_dir + "weights",
@@ -51,10 +54,8 @@ def prepare_folders():
              config.plot_dir,
              config.plot_dir + "eigenvalues",
              config.plot_dir + "functions",
-             config.plot_dir + "scatterplots",
              config.plot_dir + "weights_over_time",
              config.plot_dir + "average_weights_over_tau",
-             config.plot_dir + "ratios_over_time",
              config.plot_dir + "empirical_results"]
 
     for fname in flist:
@@ -67,35 +68,37 @@ def create_folder(folder):
         os.makedirs(folder)
 
 
+# helper functions to get filename
 def get_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
     return config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_weights.txt"
 
+
+# helper function to get filename for intrinsic activity
 def get_intrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
     return config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_intrinsic.txt"
 
+
+# helper function to get filename for extrinsic activity
 def get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
     return config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_extrinsic.txt"
 
 
+# plot empirical activity (left y-axis) vs. observed activity (right y-axis) for empirical datasets
 def empirical_result_plot(graph_name, run=0):
     import subprocess
     import os
-
     source_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + ".txt")
     out_file = open(source_path, "wb")
-
     debug_msg("  >>> Creating empirical result plot", level=0)
     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, \
     cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
-
     pipe_vals = [str(deltatau), "%.4f" % deltapsi, "%.2f" % a_cs[0], "%.2f" % ew[0]]
-
     debug_msg("    ** Preparing Ratios", level=0)
     x_ratios = [(float(x)+1) for x in range(len(ratios))]
     y_ratios = ratios
@@ -124,11 +127,12 @@ def empirical_result_plot(graph_name, run=0):
     debug_msg(" ---- Calling empirical_plots.R ---- ", level=0)
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call(['/usr/bin/RScript', r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
-                     pipe_vals[3], graph_name, ipath, epath])#, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+    subprocess.call([config.r_binary_path, r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
+                     pipe_vals[3], graph_name, ipath, epath], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     debug_msg(" ---- Done ---- ", level=0)
 
 
+# plot simulated ratios and kappa 1 (for empirical datasets)
 def plot_empirical_ratios(graph_name, run=0):
     debug_msg("  >>> Drawing Ratios over Tau", level=0)
     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
@@ -136,8 +140,6 @@ def plot_empirical_ratios(graph_name, run=0):
     debug_msg("    ++ Processing graph = {}, deltatau = {}, deltapsi = {}".format(graph_name, deltatau, deltapsi),
               level=0)
     x_vals = [(float(x)+1) for x in range(len(ratios))]
-    #x_vals.append((float(lidx)+1)*deltatau/deltapsi*store_iterations)
-    #x_vals = [((float(x)+1)*store_iterations) for x in range(len(ratios))]
     y_vals = ratios
     plt.plot(x_vals, y_vals, alpha=0.5)
     max_x = max(x_vals)
@@ -161,12 +163,11 @@ def plot_empirical_ratios(graph_name, run=0):
     plt.close("all")
 
 
+# plot average activity over tau (for empirical networks)
 def avrg_activity_over_tau_empirical(graph_name, run=0):
     debug_msg("  >>> Drawing Average Activity over Tau", level=0)
-
     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, \
     ew, random_inits, a_cs = get_network_details(graph_name, run)
-
     storage_folder = config.plot_dir + "average_weights_over_tau/" + graph_name + "/"
     debug_msg("    ++ Processing graph = {}, deltatau = {}, deltapsi = {}".format(graph_name, deltatau, deltapsi),
               level=0)
@@ -180,7 +181,6 @@ def avrg_activity_over_tau_empirical(graph_name, run=0):
         print sum([float(x) for x in l.split("\t")])
         y_vals.append(sum([float(x) for x in l.split("\t")]))
     plt.plot(x_vals, y_vals, alpha=0.5)
-    #plt.plot(range(len(cas)), cas, "ro", alpha=0.5)
     pf.close()
     plt.title("Activity in Network over "+r"$\tau$"+"\n"
               +r"$\Delta\tau$"+"={}, ".format(deltatau)
@@ -195,7 +195,7 @@ def avrg_activity_over_tau_empirical(graph_name, run=0):
     plt.close("all")
 
 
-
+# plot average activity over tau (for synthetical datasets)
 def avrg_activity_over_tau(graph_name):
     debug_msg("  >>> Drawing Average Activity over Tau", level=0)
     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, cas, \
@@ -233,6 +233,7 @@ def avrg_activity_over_tau(graph_name):
         plt.close("all")
 
 
+# function to call R Script for plotting weights over time
 def plot_weights_over_time(graph_name):
     import subprocess
     import os
@@ -265,236 +266,11 @@ def plot_weights_over_time(graph_name):
         r_script_path = os.path.abspath(config.r_dir + 'weights_over_time.R')
         wd = r_script_path.replace("R Scripts/weights_over_time.R", "") + \
              "results/plots/weights_over_time/"
-        subprocess.call(['/usr/bin/RScript', r_script_path, wd, out_path, str(ratio), str(deltatau), graph_name,
+        subprocess.call([config.r_binary_path, r_script_path, wd, out_path, str(ratio), str(deltatau), graph_name,
                          "%.2f" % ew[0]], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
         debug_msg(" -- Done", level=0)
 
-        # backup method if R is not present on system!
-        # plt.figure()
-        # plt.plot(x_vals, y_vals, alpha=0.5)
-        # plt.title("Activity per Node over "+r"$\tau$"+"\n("+r"$\frac{\lambda}{\mu}$"+"={},".format(ratio)+r"$\Delta\tau$"+"={})".format(deltatau))
-        # plt.xlabel(r"$\tau$")
-        # plt.ylabel("Activityratio per Node")
-        # plt.subplots_adjust(bottom=0.15)
-        # ax = plt.axes()
-        # ax.grid(color="gray")
-        # #plt.ylim(0, 100000)
-        # plt.savefig(storage_folder + graph_name + "_" + str(store_iterations) +
-        #             "_iterations_over_time_{}_{}.png".format(str(ratio).replace(".", ""), str(deltatau).replace(".", "")))
-        # plt.close("all")
-
-
-
-# def create_scatterplots(graph_name, graph_source_name, max_iter_ev=100000, max_iter_hits=100000,
-#                         plot_labels=False, alpha=0.75):
-#     if graph_source_name == "":
-#         graph_source_name = graph_name
-#
-#     graph, ratios, deltatau, deltastep, graph_name, store_iterations, cas, ew, random_inits = get_network_details(graph_name)
-#     nw = Network(10000, False, graph_name, plot_with_labels=True)
-#     nw.create_folders()
-#     gml_f = config.graph_binary_dir + "GT/" + graph_source_name + "/" + graph_source_name + "_run_0.gt"
-#     debug_msg("  >>> Creating scatterplots for {}".format(graph_name), level=0)
-#     debug_msg("Loading {}".format(gml_f), level=1)
-#     nw.load_graph(gml_f)
-#
-#     debug_msg("\x1b[35m>> Loading Network Metrics\x1b[00m", level=1)
-#
-#     debug_msg("\x1b[33m  ++ Loading Degree Property Map\x1b[00m", level=1)
-#     degree = nw.graph.vertex_properties["degree"]
-#     node_size = degree.a
-#     node_size_str = "(size=degree)"
-#
-#     debug_msg("\x1b[33m  ++ Loading PageRank\x1b[00m", level=1)
-#     pr = nw.graph.vertex_properties["pagerank"]
-#
-#     debug_msg("\x1b[33m  ++ Loading Clustering Coefficient\x1b[00m", level=1)
-#     clustering = nw.graph.vertex_properties["clustercoeff"]
-#
-#     debug_msg("\x1b[33m  ++ Loading Eigenvector Centrality\x1b[00m", level=1)
-#     ev_centrality = nw.graph.vertex_properties["evcentrality"]
-#
-#     debug_msg("\x1b[33m  ++ Loading HITS\x1b[00m", level=1)
-#     authorities = nw.graph.vertex_properties["authorities"]
-#     hubs = nw.graph.vertex_properties["hubs"]
-#
-#     clist = []
-#     cmap = plt.get_cmap('gist_rainbow')
-#
-#     try:
-#         for v in nw.graph.vertex_properties["colors"].a:
-#             clist.append(v)
-#     except:
-#         norm = matplotlib.colors.Normalize(vmin=0, vmax=nw.graph.num_vertices())
-#         m = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
-#         for x in xrange(nw.graph.num_vertices()):
-#             clist.append(m.to_rgba(x))
-#
-#     for a in a_vals:
-#         for b in b_vals:
-#             fpath = get_avg_weight_fn(a, b, graph_name, num_iterations)
-#             debug_msg("  >>> creating scatterplots for a={}, b={}\x1b[00m".format(a, b), level=1)
-#             f = open(fpath, "rb")
-#             avrg_node_weights_d = defaultdict(float)
-#             num_nodes = 0
-#             for nidx, line in enumerate(f):
-#                 avrg_node_weights_d[nidx] = np.mean(np.array(np.fromstring(line, sep='\t')))
-#                 num_nodes += 1
-#             f.close()
-#             storage_folder = config.plot_dir + "scatterplots/" + graph_name + "/"
-#             try:
-#                 corr, pval = sp.stats.pearsonr(clustering.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#
-#                 debug_msg("  ** plotting: Average Activity vs. Cluster Coeff (corr={})".format(corr), level=1)
-#                 plt.figure()
-#                 plt.scatter(clustering.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("Clustering Coefficient")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.title("Activity vs. Clustering (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, clustering.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label, xy=(x, y), xytext=(-20, 20), textcoords='offset points',
-#                                      ha='right', va='bottom',
-#                                      bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") +
-#                             "_clustering_coefficient_scatterplot.png")
-#                 plt.close("all")
-#             except Exception, e:
-#                 print e
-#
-#             try:
-#                 corr, pval = sp.stats.pearsonr(pr.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#                 debug_msg("  ** plotting: Average Activity vs. PageRank", level=1)
-#                 plt.figure()
-#                 plt.scatter(pr.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("PageRank")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.title("Activity vs. PageRank (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, pr.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label, xy=(x, y), xytext=(-20, 20), textcoords='offset points', ha='right',
-#                                      va='bottom', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") + "_pagerank_scatterplot.png")
-#                 plt.close("all")
-#             except Exception, e:
-#                 print e
-#
-#             try:
-#                 corr, pval = sp.stats.pearsonr(hubs.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#                 debug_msg("  ** plotting: Average Activity vs. Hubs", level=1)
-#                 plt.figure()
-#                 plt.scatter(hubs.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("Hubs")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.title("Activity vs. Hubs (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, hubs.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label,
-#                                      xy=(x, y), xytext=(-20, 20), textcoords='offset points', ha='right', va='bottom',
-#                                      bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
-#                         )
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") + "_hubs_scatterplot.png")
-#                 plt.close("all")
-#                 corr, pval = sp.stats.pearsonr(authorities.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#                 debug_msg("  ** plotting: Average Activity vs. Authorities", level=1)
-#                 plt.figure()
-#                 plt.scatter(authorities.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("Authorities")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.title("Activity vs. Authorities (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, authorities.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label, xy=(x, y), xytext=(-20, 20), textcoords='offset points', ha='right',
-#                                      va='bottom', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") + "_authorities_scatterplot.png")
-#                 plt.close("all")
-#             except Exception, e:
-#                 print e
-#
-#             try:
-#                 corr, pval = sp.stats.pearsonr(degree.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#                 debug_msg("  ** plotting: Average Activity vs. Degrees", level=1)
-#                 plt.figure()
-#                 plt.scatter(degree.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("Degree")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.title("Activity vs. Degree (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, degree.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label, xy=(x, y), xytext=(-20, 20), textcoords='offset points', ha='right',
-#                                      va='bottom', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") + "_degrees_scatterplot.png")
-#                 plt.close("all")
-#             except Exception, e:
-#                 print e
-#
-#             try:
-#                 corr, pval = sp.stats.pearsonr(ev_centrality.a, avrg_node_weights_d.values())
-#                 if pval < 0.01:
-#                     pval_desc = "p-val < 0.01"
-#                 else:
-#                     pval_desc = "p-val = %.2f" % pval
-#                 debug_msg("  ** plotting: Average Activity vs. Eigenvector Centrality", level=1)
-#                 plt.figure()
-#                 plt.scatter(ev_centrality.a, avrg_node_weights_d.values(), cmap=cmap, s=node_size, c=clist, alpha=alpha)
-#                 plt.xlabel("Eigenvector Centrality")
-#                 plt.ylabel("Average Activity")
-#                 plt.grid(color="gray")
-#                 plt.gray()
-#                 plt.title("Activity vs. Eigenvector Centrality (corr={}; {})".format("%.2f" % corr, pval_desc) + node_size_str)
-#                 if plot_labels:
-#                     labels = xrange(0, num_nodes, 1)
-#                     for label, x, y in zip(labels, ev_centrality.a, avrg_node_weights_d.values()):
-#                         plt.annotate(label, xy=(x, y), xytext=(-20, 20), textcoords='offset points', ha='right',
-#                                      va='bottom', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-#                                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
-#                 plt.savefig(storage_folder + graph_name + "_" + str(num_iterations) + "_iterations_" +
-#                             str(a).replace(".", "") + "_" + str(b).replace(".", "") + "_eigenvector_centrality_scatterplot.png")
-#                 plt.close("all")
-#             except Exception, e:
-#                 print e
-
-
+# debug output
 def debug_msg(msg, level=0):
     if level <= DEBUG_LEVEL:
         print "  \x1b[33m-UTL-\x1b[00m [\x1b[36m{}\x1b[00m] \x1b[35m{}\x1b[00m".format(datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"), msg)

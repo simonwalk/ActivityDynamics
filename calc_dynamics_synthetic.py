@@ -1,4 +1,8 @@
-__author__ = 'Simon Walk'
+__author__ = 'Simon Walk, Florian Geigl, Denis Helic'
+__license__ = "GPL"
+__version__ = "0.0.1"
+__email__ = "simon.walk@tugraz.at"
+__status__ = "Development"
 
 from lib.util import *
 from lib.generator import *
@@ -37,18 +41,18 @@ def calc_activity(param):
         nw.close_weights_files()
         if rand_iter == 0:
             nw.add_graph_properties()
-            nw.store_graph(rand_iter, save_specific=True)
+            nw.store_graph(rand_iter)
 
 
 if __name__ == '__main__':
 
     datasets = ["Karate", "PrefAttach", "SBM_SAME", "SBM_ASC", "Random"]
-    synthetic_ds = datasets[3]
+    synthetic_ds = datasets[0]
     num_random_inits = 10
-    ratios = [1, 10, 30, 80, 100, 120, 160]
+    ratios = [1, 10]
     deltatau = 0.01
     deltapsi = 1
-    store_itas = 10
+    store_itas = 1
 
     if synthetic_ds == "Karate":
         graph_name = "Karate"
