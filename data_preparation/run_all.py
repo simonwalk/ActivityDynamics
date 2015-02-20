@@ -52,7 +52,7 @@ def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comment
 def auto_decide(filename, rolling_window_size=None, draw_network=None):
     time_stat = dict()
     if filename.endswith('.7z') or os.path.isdir(filename):
-        run_all_stackexchange(filename, timestat=time_stat, core=0, rolling_window_size=rolling_window_size, draw_network=draw_network)
+        run_all_stackexchange(filename, timestat=time_stat, draw_network=draw_network)
     else:
         new_filename = filename + '_results/' + filename.rsplit('/', 1)[-1]
         try:
@@ -61,7 +61,7 @@ def auto_decide(filename, rolling_window_size=None, draw_network=None):
         except Exception as e:
             print e.args
         filename = new_filename
-        run_all(filename, timestat=time_stat, core=0, rolling_window_size=rolling_window_size, draw_network=draw_network)
+        run_all(filename, draw_network=draw_network)
 
 
 if __name__ == '__main__':
@@ -74,8 +74,8 @@ if __name__ == '__main__':
     core = 0
     rolling_window_size = 1
     draw_network = None
-    root_path = "/Path/to/Datasets/"
-    path = root_path + "DSFolder"
-    auto_decide(path, core=0, rolling_window_size=1, draw_network=draw_network)
+    root_path = "/Users/simon/Desktop/"
+    path = root_path + "BeerStackExchange/"
+    auto_decide(path, rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

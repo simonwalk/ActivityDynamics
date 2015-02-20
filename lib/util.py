@@ -99,12 +99,12 @@ def empirical_result_plot(graph_name, run=0):
     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, \
     cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
     pipe_vals = [str(deltatau), "%.4f" % deltapsi, "%.2f" % a_cs[0], "%.2f" % ew[0]]
-    debug_msg("    ** Preparing Ratios", level=0)
+    debug_msg("   ** Preparing Ratios", level=0)
     x_ratios = [(float(x)+1) for x in range(len(ratios))]
     y_ratios = ratios
     out_file.write(("\t").join(["%.8f" % x for x in x_ratios])+"\n")
     out_file.write(("\t").join(["%.8f" % x for x in y_ratios])+"\n")
-    debug_msg("    ** Preparing Average Activities", level=0)
+    debug_msg("   ** Preparing Average Activities", level=0)
     fpath = get_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0])
     epath = os.path.abspath(get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
     ipath = os.path.abspath(get_intrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
@@ -118,7 +118,7 @@ def empirical_result_plot(graph_name, run=0):
     out_file.write(("\t").join(["%.8f" % x for x in x_activity])+"\n")
     out_file.write(("\t").join(["%.8f" % x for x in y_activity])+"\n")
 
-    debug_msg("    ** Preparing Real Activities", level=0)
+    debug_msg("   ** Preparing Real Activities", level=0)
     y_real_act = cas
     x_real_act = range(len(cas))
     out_file.write(("\t").join(["%.8f" % x for x in x_real_act])+"\n")

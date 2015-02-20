@@ -12,25 +12,25 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 0
+instance_selector = -1
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
-             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange"]
+             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
 folders = ["beachapedia_org_collab_network.txt.sorted_results",
            "characterdb_cjklib_org_collab_network.txt.sorted_results",
            "wiki_15m_cc_collab_network.txt.sorted_results",
            "nobbz_de_collab_network.txt.sorted_results",
-           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange"]
+           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
 instance = instances[instance_selector]
 
-root_path = "../"
-root_path_results = root_path + "results/graph_binaries/empirical_data"
+root_path = ""
+root_path_results = root_path + "results/graph_binaries/empirical_data/"
 storage_path = root_path_results + instance + "_empirical.txt"
-source_path = root_path + "/datasets/"+folders[instance_selector]+"/"
+source_path = root_path + "datasets/"+folders[instance_selector]+"/"
 
 
 print "Processing: {}".format(source_path)
-binaries_path = root_path + "ActivityDynamics/results/graph_binaries/GT/"
+binaries_path = root_path + "results/graph_binaries/GT/"
 gnames = [instance + "_run_0.gt"]
 fnames = [binaries_path + instance + "/"]
 copy_file = source_path + "net.gt"

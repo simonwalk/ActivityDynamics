@@ -35,7 +35,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=25)
 
     nw.prepare_eigenvalues()
     nw.create_folders()
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_input/" + nw.graph_name + "_empirical_input.txt")
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
