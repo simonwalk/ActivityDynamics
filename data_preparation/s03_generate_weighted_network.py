@@ -6,7 +6,7 @@ from collections import defaultdict
 
 # -----------------------------------------------------------------------------------------------
 class MyNet:
-    def __init__(self, filename=None, create=False):
+    def __init__(self, filename=None, create=False, save_first_activity=False):
         self.filename = filename
         if self.filename is None or create is True:
             self.graph = Graph(directed=False)
@@ -14,6 +14,8 @@ class MyNet:
             self.node_ids = self.graph.new_vertex_property("int")
             self.vertex_mapping = defaultdict(lambda: self.graph.add_vertex())
             self.filename = 'weighted_net.gt' if self.filename is None else self.filename
+            if save_first_activity:
+                self.first_activity = self.graph.new_vertex_property("python::object")
         else:
             print_f('load network:', self.filename)
             if not os.path.isfile(self.filename):
@@ -49,11 +51,16 @@ class MyNet:
 
             if src is not "nan":
                 src_v = self.vertex_mapping[src]
+                if self.first_activity[src_v] is None:
+                    self.first_activity[src_v] = datetime.date(ts.year, ts.month, ts.day)
 
             if not math.isnan(trgt):
                 #print trgt
                 trgt_v = self.vertex_mapping[trgt]
                 edge = self.graph.add_edge(src_v, trgt_v)
+                if self.first_activity[trgt_v] is None:
+                    self.first_activity[trgt_v] = datetime.date(ts.year, ts.month, ts.day)
+
         for orig_id, v in self.vertex_mapping.iteritems():
             self.node_ids[v] = orig_id
         remove_parallel_edges(self.graph)
@@ -145,6 +152,7 @@ class MyNet:
         print_f('store network:', filename)
         self.graph.edge_properties["activity"] = self.edge_prop
         self.graph.vertex_properties["nodeID"] = self.node_ids
+        self.graph.vertex_properties["firstActivity"] = self.first_activity
         self.graph.save(filename)
 
 
@@ -159,7 +167,7 @@ def generate_network(log_filename, draw=False):
     if create_network:
         data_frame = read_log_to_df(log_filename)
         # create graph
-        network = MyNet(network_name, create=True)
+        network = MyNet(network_name, create=True, save_first_activity=True)
         print_f('add edges from df to network cache')
         network.build_network_per_line(data_frame)
         print_f('store network')

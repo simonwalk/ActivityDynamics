@@ -15,6 +15,7 @@ import random
 import numpy as np
 from numpy.lib.type_check import real, imag
 import datetime
+from dateutil.relativedelta import relativedelta
 
 from graph_tool.all import *
 
@@ -73,6 +74,18 @@ class Network:
         self.converged = False
         self.diverged = False
 
+        self.k1_over_epochs = []
+        self.num_vertices_over_epochs = []
+        self.num_edges_over_epochs = []
+        self.g_over_epochs = []
+        self.max_q_over_epochs = []
+        self.mu_over_epochs = []
+        self.deltapsi_over_epochs = []
+
+    def calc_acs_for_epochs(self):
+        for ep in range(0, len(self.dx)):
+            self.a_cs.append((self.replies[ep] + self.posts[ep]) / self.num_vertices_over_epochs[ep])
+        self.set_ac(0)
 
     def calc_acs(self, ac_per_taus=None, min_ac=None):
         if ac_per_taus is None:
@@ -100,15 +113,31 @@ class Network:
         return max(self.posts_per_user_per_day[start_tau:end_tau])
 
 
+    def calc_g_for_epochs(self):
+        for ep in range(0, len(self.dx)):
+            self.g_over_epochs.append(self.max_posts_per_day / (math.sqrt(self.a_cs[ep] ** 2 + self.max_posts_per_day ** 2)))
+
+
     def calc_g_per_month(self):
         return self.max_posts_per_day / (math.sqrt(self.a_c ** 2 + self.max_posts_per_day ** 2))
+
+
+    def calc_max_q_for_epochs(self):
+        for ep in range(0, len(self.dx)):
+            self.max_q_over_epochs.append((self.max_posts_per_day * self.tau_in_days *
+                                          self.num_vertices_over_epochs[ep]) / (2 * self.num_edges_over_epochs[ep] *
+                                                                                self.g_over_epochs[ep]))
 
 
     def calc_max_q(self):
         return (self.max_posts_per_day * self.tau_in_days * self.num_vertices) / (2 * self.num_edges * self.g_per_month)
 
 
-    def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
+    def calc_mu_for_epochs(self):
+        for ep in range(0, len(self.dx)):
+            self.mu_over_epochs.append(self.max_q_over_epochs[ep] / self.a_cs[ep])
+
+    def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None, epoch_mode=False):
         self.dx = []
         self.apm = []
         self.posts = []
@@ -137,17 +166,30 @@ class Network:
             self.num_users.append(num_users)
             self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
         f.close()
-        self.calc_acs(ac_per_taus)
-        self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
-        self.g_per_month = self.calc_g_per_month()
-        self.max_q = self.calc_max_q()
-        self.mu = self.max_q / self.a_c
-        self.deltapsi = self.mu
-        self.debug_msg("max_q: {}".format(self.max_q), level=1)
-        self.debug_msg("deltapsi: {}".format(self.deltapsi), level=1)
-        self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)
-        self.debug_msg("a_c: {}".format(self.a_c), level=1)
-        self.debug_msg("kappa_1: {}".format(self.k1), level=1)
+        if epoch_mode is False:
+            self.calc_acs(ac_per_taus)
+            self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
+            self.g_per_month = self.calc_g_per_month()
+            self.max_q = self.calc_max_q()
+            self.mu = self.max_q / self.a_c
+            self.deltapsi = self.mu
+            self.debug_msg("max_q: {}".format(self.max_q), level=1)
+            self.debug_msg("deltapsi: {}".format(self.deltapsi), level=1)
+            self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)
+            self.debug_msg("a_c: {}".format(self.a_c), level=1)
+            self.debug_msg("kappa_1: {}".format(self.k1), level=1)
+        else:
+            self.calc_acs_for_epochs()
+            self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
+            self.calc_g_for_epochs()
+            self.calc_max_q_for_epochs()
+            self.calc_mu_for_epochs()
+            self.deltapsi_over_epochs = self.mu_over_epochs
+            self.debug_msg("max_q_over_epochs: {}".format(self.max_q_over_epochs), level=1)
+            self.debug_msg("deltapsi_over_epochs: {}".format(self.deltapsi_over_epochs), level=1)
+            self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)
+            self.debug_msg("a_c_over_epochs: {}".format(self.a_cs), level=1)
+            self.debug_msg("kappa_1: {}".format(self.k1), level=1)
 
 
     # Creating all necessary folders for storing results, plots and figures
@@ -257,8 +299,11 @@ class Network:
 
 
     # init empirical weight as average over all nodes
-    def init_empirical_activity(self):
-        initial_empirical_activity = self.apm[0]/(self.graph.num_edges()*2)/self.num_users[0]/self.a_c
+    def init_empirical_activity(self, epoch_mode=False):
+        if epoch_mode is False:
+            initial_empirical_activity = self.apm[0]/(self.graph.num_edges()*2)/self.num_users[0]/self.a_c
+        else:
+            initial_empirical_activity = self.apm[0] / (self.num_edges_over_epochs[0] * 2) / self.num_users[0]/self.a_cs[0]
         init_nodes = self.init_users[0]
         # reset activity!
         for v in self.graph.vertices():
@@ -436,6 +481,14 @@ class Network:
             ev, ev_centrality = eigenvector(self.graph, weight=None, max_iter = max_iter)
             return ev_centrality
 
+    def calc_ratios_for_epochs(self):
+        for i in range(0, len(self.dx)):
+            activity_current = self.apm[i]
+            activity_next = activity_current-self.dx[i]
+            self.ratio = self.k1_over_epochs[i] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[i]
+            self.ratio -= 0.03 * activity_current / (self.a_cs[i] * self.num_vertices_over_epochs[i])
+            self.ratios.append(self.ratio)
+        self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
     def calculate_ratios(self):
         for i in xrange(len(self.apm)-1):
@@ -562,3 +615,39 @@ class Network:
         self.num_edges = self.graph.num_edges()
         self.debug_msg("  --> Counted {} vertices".format(self.num_vertices), level=0)
         self.debug_msg("  --> Counted {} edges".format(self.num_edges), level=0)
+
+    def reduce_network_to_epoch(self, start_date, months):
+        temp_epoch = start_date + relativedelta(months=months)
+        end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
+        self.debug_msg("Getting network epoch from " + str(start_date) + " to " + str(end_day), level=1)
+        self.graph.clear_filters()
+        bool_map = self.graph.new_vertex_property("bool")
+        for v in self.graph.vertices():
+            if self.graph.vertex_properties["firstActivity"][v] > end_day:
+                bool_map[v] = 0
+            else:
+                bool_map[v] = 1
+        self.graph.set_vertex_filter(bool_map)
+        self.num_vertices_over_epochs.append(self.graph.num_vertices())
+        self.num_edges_over_epochs.append(self.graph.num_edges())
+        self.debug_msg("Reduced network to " + str(self.graph.num_vertices()) + " vertices with " +
+                       str(self.graph.num_edges()) + " edges.", level=1)
+
+
+    def calc_eigenvalues_for_epoch(self, num_ev=100):
+        num_ev = min(100, num_ev)
+        self.debug_msg("Extracting adjacency matrix!")
+        A = adjacency(self.graph, weight=None)
+        self.debug_msg("Starting calculation of {} Eigenvalues".format(num_ev))
+        evals_large_sparse, evecs_large_sparse = largest_eigsh(A, num_ev * 2, which='LM')
+        self.debug_msg("Finished calculating Eigenvalues")
+        evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[:num_ev]
+        self.graph.graph_properties["top_eigenvalues"] = self.graph.new_graph_property("object", evs)
+        self.top_eigenvalues = self.get_eigenvalues()
+        self.k1_over_epochs.append(max(self.top_eigenvalues))
+        self.k1 = max(self.top_eigenvalues)
+
+
+    def plot_epoch(self, epoch):
+        pos = self.graph.vertex_properties["pos"]
+        graph_draw(self.graph, pos=pos, output=config.graph_dir + self.graph_name + ".png", fmt="png")
