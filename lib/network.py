@@ -103,6 +103,10 @@ class Network:
         self.a_c = self.a_cs[index]
 
 
+    def set_deltapsi(self, index):
+        self.deltapsi = self.deltapsi_over_epochs[index]
+
+
     #def calc_ac(self, start_tau=0, end_tau=None, min_ac=40):
     #    replies = self.replies[start_tau:end_tau]
     #    posts = self.posts[start_tau:end_tau]
@@ -182,14 +186,16 @@ class Network:
             self.calc_acs_for_epochs()
             self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
             self.calc_g_for_epochs()
+            self.g_per_month = self.g_over_epochs[-1]
             self.calc_max_q_for_epochs()
+            self.max_q = self.max_q_over_epochs[-1]
             self.calc_mu_for_epochs()
             self.deltapsi_over_epochs = self.mu_over_epochs
             self.debug_msg("max_q_over_epochs: {}".format(self.max_q_over_epochs), level=1)
             self.debug_msg("deltapsi_over_epochs: {}".format(self.deltapsi_over_epochs), level=1)
             self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)
             self.debug_msg("a_c_over_epochs: {}".format(self.a_cs), level=1)
-            self.debug_msg("kappa_1: {}".format(self.k1), level=1)
+            self.debug_msg("kappa_1_over_epochs: {}".format(self.k1_over_epochs), level=1)
 
 
     # Creating all necessary folders for storing results, plots and figures
@@ -261,7 +267,7 @@ class Network:
 
 
     # Add calculated graph_properties to graph object
-    def add_graph_properties(self):
+    def add_graph_properties(self, epoch_mode=False):
         self.set_graph_property("object", self.deltatau, "deltatau")
         self.set_graph_property("object", self.deltapsi, "deltapsi")
         self.set_graph_property("float", self.cur_iteration, "cur_iteration")
@@ -270,6 +276,15 @@ class Network:
         self.set_graph_property("object", self.top_eigenvalues, "top_eigenvalues")
         self.set_graph_property("object", self.ratios, "ratios")
         self.set_graph_property("int", self.runs, "runs")
+        if epoch_mode:
+            self.set_graph_property("object", self.k1_over_epochs, "k1_over_epochs")
+            self.set_graph_property("object", self.num_vertices_over_epochs, "num_vertices_over_epochs")
+            self.set_graph_property("object", self.num_edges_over_epochs, "num_edges_over_epochs")
+            self.set_graph_property("object", self.g_over_epochs, "g_over_epochs")
+            self.set_graph_property("object", self.max_q_over_epochs, "max_q_over_epochs")
+            self.set_graph_property("object", self.mu_over_epochs, "mu_over_epochs")
+            self.set_graph_property("object", self.deltapsi_over_epochs, "deltapsi_over_epochs")
+            self.debug_msg("*** Successfully added epochs data to graph ***", level=1)
         try:
             self.set_graph_property("object", self.apm, "activity_per_month")
             self.set_graph_property("object", self.dx, "delta_activity_per_month")
@@ -295,7 +310,7 @@ class Network:
 
     # node weights getter
     def get_node_weights(self, name):
-        return np.array(self.graph.vp[name].a)
+        return np.delete(np.array(self.graph.vp[name].a), np.arange(self.graph.num_vertices(), self.num_vertices))
 
 
     # init empirical weight as average over all nodes
@@ -321,7 +336,9 @@ class Network:
 
 
     def update_node_weights(self, name, added_weight):
-        self.graph.vertex_properties[name].a += added_weight
+        z = np.zeros((self.num_vertices-self.graph.num_vertices(),), dtype=np.int)
+        added_weight = np.concatenate((added_weight, z), axis=1)
+        self.graph.vertex_properties[name].a = added_weight
 
 
     def clear_all_filters(self):
@@ -628,8 +645,6 @@ class Network:
             else:
                 bool_map[v] = 1
         self.graph.set_vertex_filter(bool_map)
-        self.num_vertices_over_epochs.append(self.graph.num_vertices())
-        self.num_edges_over_epochs.append(self.graph.num_edges())
         self.debug_msg("Reduced network to " + str(self.graph.num_vertices()) + " vertices with " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
@@ -647,6 +662,16 @@ class Network:
         self.k1_over_epochs.append(max(self.top_eigenvalues))
         self.k1 = max(self.top_eigenvalues)
 
+
+    def update_num_vertices_edges(self):
+        self.num_vertices_over_epochs.append(self.graph.num_vertices())
+        self.num_edges_over_epochs.append(self.graph.num_edges())
+
+    def update_adjacency(self):
+        self.A = adjacency(self.graph, weight=None)
+
+    def update_ones_ratio(self):
+        self.ones_ratio = [1.0] * self.graph.num_vertices()
 
     def plot_epoch(self, epoch):
         pos = self.graph.vertex_properties["pos"]
