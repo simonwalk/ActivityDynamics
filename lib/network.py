@@ -190,7 +190,7 @@ class Network:
 
 
     # Add calculated graph_properties to graph object
-    def add_graph_properties(self, epoch_mode=False):
+    def add_graph_properties(self):
         self.set_graph_property("object", self.deltatau, "deltatau")
         self.set_graph_property("object", self.deltapsi, "deltapsi")
         self.set_graph_property("float", self.cur_iteration, "cur_iteration")
@@ -199,15 +199,6 @@ class Network:
         self.set_graph_property("object", self.top_eigenvalues, "top_eigenvalues")
         self.set_graph_property("object", self.ratios, "ratios")
         self.set_graph_property("int", self.runs, "runs")
-        if epoch_mode:
-            self.set_graph_property("object", self.k1_over_epochs, "k1_over_epochs")
-            self.set_graph_property("object", self.num_vertices_over_epochs, "num_vertices_over_epochs")
-            self.set_graph_property("object", self.num_edges_over_epochs, "num_edges_over_epochs")
-            self.set_graph_property("object", self.g_over_epochs, "g_over_epochs")
-            self.set_graph_property("object", self.max_q_over_epochs, "max_q_over_epochs")
-            self.set_graph_property("object", self.mu_over_epochs, "mu_over_epochs")
-            self.set_graph_property("object", self.deltapsi_over_epochs, "deltapsi_over_epochs")
-            self.debug_msg("*** Successfully added epochs data to graph ***", level=1)
         try:
             self.set_graph_property("object", self.apm, "activity_per_month")
             self.set_graph_property("object", self.dx, "delta_activity_per_month")

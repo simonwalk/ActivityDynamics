@@ -165,6 +165,17 @@ class DynamicNetwork(Network):
         added_weight = np.concatenate((added_weight, z), axis=1)
         self.graph.vertex_properties[name].a += added_weight
 
+    def add_graph_properties(self):
+        Network.add_graph_properties(self)
+        self.set_graph_property("object", self.k1_over_epochs, "k1_over_epochs")
+        self.set_graph_property("object", self.num_vertices_over_epochs, "num_vertices_over_epochs")
+        self.set_graph_property("object", self.num_edges_over_epochs, "num_edges_over_epochs")
+        self.set_graph_property("object", self.g_over_epochs, "g_over_epochs")
+        self.set_graph_property("object", self.max_q_over_epochs, "max_q_over_epochs")
+        self.set_graph_property("object", self.mu_over_epochs, "mu_over_epochs")
+        self.set_graph_property("object", self.deltapsi_over_epochs, "deltapsi_over_epochs")
+        self.debug_msg("*** Successfully added epochs data to graph ***", level=1)
+
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
             print "  \x1b[34m-DNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m] \x1b[33m{}\x1b[00m".format(

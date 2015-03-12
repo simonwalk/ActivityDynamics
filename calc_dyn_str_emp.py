@@ -77,7 +77,7 @@ def calc_activity():
             nw.activity_dynamics(store_weights=True, empirical=True)
 
     nw.close_weights_files()
-    nw.add_graph_properties(epoch_mode=True)
+    nw.add_graph_properties()
     nw.store_graph(0)
 
 if __name__ == '__main__':
