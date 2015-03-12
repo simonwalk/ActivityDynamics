@@ -312,22 +312,20 @@ class Network:
         return np.delete(np.array(self.graph.vp[name].a), np.arange(self.graph.num_vertices(), self.num_vertices))
 
 
-    # init empirical weight as average over all nodes
+    # fixed initial activity function
     def init_empirical_activity(self, epoch_mode=False):
-        if epoch_mode is False:
-            initial_empirical_activity = self.apm[0]/(self.graph.num_edges()*2)/self.num_users[0]/self.a_c
+        if epoch_mode:
+            initial_empirical_activity = self.apm[0]/self.graph.num_vertices()/self.a_cs[0]
         else:
-            initial_empirical_activity = self.apm[0] / (self.num_edges_over_epochs[0] * 2) / self.num_users[0]/self.a_cs[0]
-        init_nodes = self.init_users[0]
-        # reset activity!
+            initial_empirical_activity = self.apm[0]/self.graph.num_vertices()/self.a_c
+        self.debug_msg("Init Activity: {}".format(initial_empirical_activity), level=1)
+        initial_empirical_activity /= (self.graph.num_edges()*2)
+        self.debug_msg("Init Activity per edge: {}".format(initial_empirical_activity), level=1)
+        self.debug_msg("Total Activity: {}".format(initial_empirical_activity*(self.graph.num_edges()*2)*self.a_c*self.graph.num_vertices()), level=1)
+        self.debug_msg("Control Activity: {}".format(self.apm[0]), level=1)
         for v in self.graph.vertices():
-            self.graph.vp["activity"][v] = 0.0
-
-        # randomly initiate minimal activity
-        for v_id in init_nodes:
-            n = self.graph.vertex(v_id)
-            self.graph.vp["activity"][n] = initial_empirical_activity
-        
+            self.graph.vp["activity"][v] = initial_empirical_activity * v.out_degree()
+        self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
     # node weights setter
     def set_node_weights(self, name, weights):
