@@ -129,7 +129,7 @@ def empirical_result_plot(graph_name, run=0):
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
     subprocess.call([config.r_binary_path, r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
-                     pipe_vals[3], graph_name, ipath, epath], stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
+                     pipe_vals[3], graph_name, ipath, epath], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     debug_msg("   ** Done", level=0)
 
 
