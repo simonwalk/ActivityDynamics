@@ -51,10 +51,10 @@ rho_n = rho/as.numeric(k1)
 #mean_momentum = act_mass * mean_act
 #curr_momentum = act_mass * lmact
 
-rob = round(rho, digits=4)
+rob = round(rho_n, digits=4)
 title(substitute(atop("Ratio " ~ (frac(lambda,mu)) ~ " over " ~ tau ~ " (in months)",
-                      Delta ~ tau == ~ dt ~ ", " ~ Delta ~ psi == ~ dp ~ ", " ~ kappa[1] == ~ k1 ~ ", " ~ rho == ~ rho_n),
-                 list(dt = dtau, dp = dpsi, k1 = k1, rho_n=rho_n)), cex.main=cex_paper)
+                      Delta ~ tau == ~ dt ~ ", " ~ mu == ~ dp ~ ", " ~ kappa[1] == ~ k1 ~ ", " ~ rho == ~ rho_n),
+                 list(dt = dtau, dp = dpsi, k1 = k1, rho_n=rob)), cex.main=cex_paper)
 lines(x, y, lty=2, col=c2)
 grid(col="gray", lwd=1)
 legend("bottomright", pch=c(1,NA), col=c(c1, c2), legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
@@ -67,7 +67,7 @@ plot(t[,3], t[,4], type="l", pch=4,xlab=expression(tau ~ " (in months)"),
      ylab=expression("Simulated Activity over " ~ a[c]), lty=2,
      col=c2, cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)#, ylim=c(y_min, y_max))
 title(substitute(atop("Activity over " ~ tau ~ " (in months)", 
-                      Delta ~ tau == ~ dt ~ ", " ~ Delta ~ psi == ~ dp ~ ", " ~ a[c] == ~ ac),  
+                      Delta ~ tau == ~ dt ~ ", " ~ mu == ~ dp ~ ", " ~ a[c] == ~ ac),
                  list(dt = dtau, dp = dpsi, ac = ac)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
 par(new=TRUE)
