@@ -15,7 +15,6 @@ import random
 import numpy as np
 from numpy.lib.type_check import real, imag
 import datetime
-from dateutil.relativedelta import relativedelta
 
 from graph_tool.all import *
 
