@@ -86,15 +86,8 @@ class Network:
             self.a_cs.append((self.replies[ep] + self.posts[ep]) / self.num_vertices_over_epochs[ep])
         self.set_ac(0)
 
-    def calc_acs(self, ac_per_taus=None, min_ac=None):
-        if ac_per_taus is None:
-            self.a_cs = [max((np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices, min_ac)] * (len(self.replies)-1)
-        else:
-            for i in xrange(len(self.replies)-ac_per_taus):
-                j = i + ac_per_taus
-                curr_ac = (np.mean(self.replies[i:j]) + np.mean(self.posts[i:j])) / self.num_vertices
-                for k in xrange(i+ac_per_taus):
-                    self.a_cs.append(curr_ac)
+    def calc_acs(self):
+        self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))
         self.set_ac(0)
 
 
@@ -170,7 +163,7 @@ class Network:
             self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
         f.close()
         if epoch_mode is False:
-            self.calc_acs(ac_per_taus)
+            self.calc_acs()
             self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
             self.g_per_month = self.calc_g_per_month()
             self.max_q = self.calc_max_q()
@@ -225,19 +218,8 @@ class Network:
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
                 str(self.run) + "_weights.txt"
-        #iname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-        #        str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-        #        str(self.run) + "_intrinsic.txt"
-        #ename = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-        #        str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-        #        str(self.run) + "_extrinsic.txt"
-
         self.weights_file_path = folder+wname
-        #self.intrinsic_file_path = folder+iname
-        #self.extrinsic_file_path = folder+ename
         self.weights_file = open(self.weights_file_path, "wb")
-        #self.intrinsic_file = open(self.intrinsic_file_path, "wb")
-        #self.extrinsic_file = open(self.extrinsic_file_path, "wb")
 
 
     def write_weights_to_file(self):
@@ -246,13 +228,9 @@ class Network:
 
     def write_summed_weights_to_file(self):
         self.weights_file.write(str(sum(self.get_node_weights("activity"))) + "\n")
-        #self.intrinsic_file.write("0"+"\n")
-        #self.extrinsic_file.write("0"+"\n")
 
     def close_weights_files(self):
         self.weights_file.close()
-        #self.intrinsic_file.close()
-        #self.extrinsic_file.close()
 
 
     def reduce_to_largest_component(self):
@@ -321,8 +299,10 @@ class Network:
         self.debug_msg("Init Activity: {}".format(initial_empirical_activity), level=1)
         initial_empirical_activity /= (self.graph.num_edges()*2)
         self.debug_msg("Init Activity per edge: {}".format(initial_empirical_activity), level=1)
-        self.debug_msg("Total Activity: {}".format(initial_empirical_activity*(self.graph.num_edges()*2)*self.a_c*self.graph.num_vertices()), level=1)
-        self.debug_msg("Control Activity: {}".format(self.apm[0]), level=1)
+        ta = initial_empirical_activity*(self.graph.num_edges()*2)*self.a_c*self.graph.num_vertices()
+        ca = self.apm[0]
+        self.debug_msg("Total Activity: {}".format(ta), level=1)
+        self.debug_msg("Control Activity: {}".format(ca), level=1)
         for v in self.graph.vertices():
             self.graph.vp["activity"][v] = initial_empirical_activity * v.out_degree()
         self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
@@ -333,9 +313,9 @@ class Network:
 
 
     def update_node_weights(self, name, added_weight):
-        z = np.zeros((self.num_vertices-self.graph.num_vertices(),), dtype=np.int)
-        added_weight = np.concatenate((added_weight, z), axis=1)
-        self.graph.vertex_properties[name].a = added_weight
+        #z = np.zeros((self.num_vertices-self.graph.num_vertices(),), dtype=np.int)
+        #added_weight = np.concatenate((added_weight, z), axis=1)
+        self.graph.vertex_properties[name].a += added_weight
 
 
     def clear_all_filters(self):
@@ -505,7 +485,7 @@ class Network:
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
     def calculate_ratios(self):
-        for i in xrange(len(self.apm)-1):
+        for i in xrange(len(self.dx)):
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
@@ -526,7 +506,8 @@ class Network:
         ratio_ones = (self.ratio * np.asarray(self.ones_ratio))
         intrinsic_decay = self.activity_decay(activity_weight, ratio_ones)
         extrinsic_influence = self.peer_influence(activity_weight)
-        activity_delta = (intrinsic_decay + extrinsic_influence) * self.deltatau
+        activity_delta = (intrinsic_decay + extrinsic_influence)*self.deltatau
+
         t = 1.0
         # Check if already converged/diverged
         if self.cur_iteration % self.store_iterations == 0:
@@ -546,17 +527,14 @@ class Network:
             self.diverged = True
         # Set new weights
         self.update_node_weights("activity", activity_delta)
+
         # Store weights to file
         if ((store_weights and self.cur_iteration % self.store_iterations == 0) and not empirical) or ((self.converged or self.diverged)
                                                                                    and not empirical):
             self.weights_file.write(("\t").join(["%.8f" % x for x in self.get_node_weights("activity")]) + "\n")
-            #self.intrinsic_file.write(("\t").join(["%.8f" % x for x in intrinsic_decay + activity_weight]) + "\n")
-            #self.extrinsic_file.write(("\t").join(["%.8f" % x for x in extrinsic_influence + activity_weight]) + "\n")
         elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
                                                                                    and empirical):
             self.weights_file.write(str(sum(activity_weight + activity_delta)) + "\n")
-            #self.intrinsic_file.write(str(abs(sum(intrinsic_decay))*self.deltatau) + "\n")
-            #self.extrinsic_file.write(str(abs(sum(extrinsic_influence))*self.deltatau) + "\n")
         # Increment current iteration counter
         self.cur_iteration += 1
 

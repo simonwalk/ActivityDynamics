@@ -74,8 +74,8 @@ if __name__ == '__main__':
     core = 0
     rolling_window_size = 1
     draw_network = None
-    root_path = "/Users/simon/Desktop/"
-    path = root_path + "BeerStackExchange/"
+    root_path = "../datasets/"
+    path = root_path + "HistoryStackExchange/"
     auto_decide(path, rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

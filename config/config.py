@@ -23,6 +23,7 @@ r_binary_path = '/usr/bin/RScript'
 base_dir = "results/"
 graph_binary_dir = base_dir + "graph_binaries/"
 graph_source_dir = base_dir + "graph_sources/"
+ds_source_dir = "datasets/"
 plot_dir = base_dir + "plots/"
 graph_dir = base_dir + "graphs/"
 r_dir = "R Scripts/"

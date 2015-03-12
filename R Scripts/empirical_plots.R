@@ -14,9 +14,9 @@ dtau = args[3]
 dpsi = args[4]
 ac = args[5]
 k1 = args[6]
-intrinsic = read.table(args[8], sep="\t", header=F, fill=T)
-extrinsic = read.table(args[9], sep="\t", header=F, fill=T)
-intrinsic <- abs(intrinsic)
+#intrinsic = read.table(args[8], sep="\t", header=F, fill=T)
+#extrinsic = read.table(args[9], sep="\t", header=F, fill=T)
+#intrinsic <- abs(intrinsic)
 print(" ++ Plotting data (ratios)")
 pdf(paste(args[7], "_ratio.pdf", sep=""))
 max_y_l = max(t[,2], na.rm=T)
@@ -59,13 +59,13 @@ lines(x, y, lty=2, col=c2)
 grid(col="gray", lwd=1)
 legend("bottomright", pch=c(1,NA), col=c(c1, c2), legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
 dev.off()
-y_min = min(intrinsic[,1], min(extrinsic[,1]))
-y_max = max(intrinsic[,1], extrinsic[,1]+t[,4], t[,4])
+#y_min = min(intrinsic[,1], min(extrinsic[,1]))
+#y_max = max(intrinsic[,1], extrinsic[,1]+t[,4], t[,4])
 pdf(paste(args[7], "_activity.pdf", sep=""))
 par(mar=c(5,5,4,5)+.1)
 plot(t[,3], t[,4], type="l", pch=4,xlab=expression(tau ~ " (in months)"), 
      ylab=expression("Simulated Activity over " ~ a[c]), lty=2,
-     col=c2, cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(y_min, y_max))
+     col=c2, cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)#, ylim=c(y_min, y_max))
 title(substitute(atop("Activity over " ~ tau ~ " (in months)", 
                       Delta ~ tau == ~ dt ~ ", " ~ Delta ~ psi == ~ dp ~ ", " ~ a[c] == ~ ac),  
                  list(dt = dtau, dp = dpsi, ac = ac)), cex.main=cex_paper)

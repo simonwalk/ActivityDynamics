@@ -25,7 +25,7 @@ def create_network(graph_name):
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
-def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=25):
+def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30):
     nw = Network(False, graph_name, run=rand_iter, deltatau=deltatau, store_iterations=store_itas,
                  tau_in_days=tau_in_days)
 
@@ -72,6 +72,6 @@ if __name__ == '__main__':
     graph_name = empirical_ds[0]
     create_network(graph_name)
     deltatau = 0.001
-    store_itas = 10
+    store_itas = 1
     calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name)
