@@ -1,5 +1,6 @@
 from lib.util import *
 from lib.generator import *
+from lib.dynamic_network import DynamicNetwork
 import time
 from multiprocessing import Pool
 
@@ -16,7 +17,7 @@ def create_network():
     bg.load_graph(emp_data_set+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
-    bg.add_node_weights()
+    bg.add_node_weights(0.0, 0.0)
     bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
@@ -41,7 +42,7 @@ def create_network_epochs():
 
 
 def calc_activity():
-    nw = Network(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=25)
+    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=25)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading " + fpath)
     nw.load_graph(fpath)
@@ -53,8 +54,9 @@ def calc_activity():
         nw.calc_eigenvalues_for_epoch(2)
 
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt", epoch_mode=True)
-    nw.init_empirical_activity(epoch_mode=True)
-    nw.calc_ratios_for_epochs()
+    nw.reduce_network_to_epoch(start_date, 1)
+    nw.init_empirical_activity()
+    nw.calculate_ratios()
     nw.open_weights_files()
     nw.write_summed_weights_to_file()
     for i in range(0, network_epochs):
@@ -82,7 +84,7 @@ if __name__ == '__main__':
     create_network()
     #create_network_epochs()
     calc_activity()
-    #empirical_result_plot(emp_data_set)
+    empirical_result_plot(emp_data_set)
     sys.exit()
     # for v in nw.graph.vertices():
     #     print "NODE: " + str(nw.graph.vertex_properties["nodeID"][v])
