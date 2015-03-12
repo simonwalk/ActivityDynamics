@@ -42,7 +42,7 @@ def create_network_epochs():
 
 
 def calc_activity():
-    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=25)
+    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=30)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading " + fpath)
     nw.load_graph(fpath)
@@ -53,7 +53,7 @@ def calc_activity():
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(2)
 
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt", epoch_mode=True)
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
     nw.reduce_network_to_epoch(start_date, 1)
     nw.init_empirical_activity()
     nw.calculate_ratios()

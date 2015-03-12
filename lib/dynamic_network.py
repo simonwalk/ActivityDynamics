@@ -100,7 +100,7 @@ class DynamicNetwork(Network):
             self.mu_over_epochs.append(self.max_q_over_epochs[ep] / self.a_cs[ep])
 
     # Overridden methods
-    def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None, epoch_mode=False):
+    def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
         self.apm = []
         self.posts = []
