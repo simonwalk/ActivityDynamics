@@ -23,6 +23,18 @@ import pandas as pd
 DEBUG_LEVEL = 0
 
 
+def get_network_details_for_epochs(graph_name):
+    graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
+    a_cs = graph.graph_properties["a_cs"]
+    ratios = graph.graph_properties["ratios"]
+    k1s = graph.graph_properties["k1_over_epochs"]
+    gs = graph.graph_properties["g_over_epochs"]
+    max_qs = graph.graph_properties["max_q_over_epochs"]
+    mus = graph.graph_properties["mu_over_epochs"]
+    num_epochs = len(a_cs)
+    return num_epochs, a_cs, ratios, k1s, gs, max_qs, mus
+
+
 # retrieve parameters stored in binary graph file
 def get_network_details(graph_name, run=0, path=config.graph_binary_dir):
     graph = load_graph(path + "GT/" + graph_name + "/" + graph_name + "_run_" + str(run) + ".gt")
@@ -88,6 +100,27 @@ def get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratio)
     return config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_extrinsic.txt"
+
+
+def empirical_result_plot_for_epochs(graph_name):
+    debug_msg("*** Start plotting of empirical results ***")
+    import subprocess
+    import os
+    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_all_epochs.txt")
+    debug_msg("--> Start collecting data of: " + graph_name)
+    num_epochs, a_cs, ratios, k1s, gs, max_qs, mus = get_network_details_for_epochs(graph_name)
+    debug_msg("--> Done with collecting data")
+    debug_msg("--> Starting combination of data")
+    combined_data = [a_cs, ratios, k1s, gs, max_qs, mus]
+    header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus"
+    np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
+    debug_msg("--> Data successfully combined")
+    debug_msg("--> Calling empirical_plots_epochs.R")
+    r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
+    wd = r_script_path.replace("R Scripts/empirical_plots_epochs.R", "") + config.plot_dir + "empirical_results/"
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, graph_name])
+                    #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
+    debug_msg("*** Successfully plotted empirical results ***")
 
 
 # plot empirical activity (left y-axis) vs. observed activity (right y-axis) for empirical datasets
