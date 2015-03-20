@@ -58,7 +58,8 @@ def calc_activity():
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.open_weights_files()
-    nw.write_summed_weights_to_file()
+    nw.open_taus_files()
+    #nw.write_summed_weights_to_file()
     for i in range(0, network_epochs):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
         nw.reduce_network_to_epoch(start_date, i+1)
@@ -74,9 +75,10 @@ def calc_activity():
                          "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
                                                                     int(nw.deltapsi/nw.deltatau)), level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, empirical=True)
+            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
 
     nw.close_weights_files()
+    nw.close_taus_files()
     nw.add_graph_properties()
     nw.store_graph(0)
 
@@ -84,9 +86,5 @@ if __name__ == '__main__':
     create_network()
     #create_network_epochs()
     calc_activity()
-    empirical_result_plot(emp_data_set)
+    empirical_result_plot_for_epochs(emp_data_set)
     sys.exit()
-    # for v in nw.graph.vertices():
-    #     print "NODE: " + str(nw.graph.vertex_properties["nodeID"][v])
-    #     print "FIRST ACTIVITY: " + str(nw.graph.vertex_properties["firstActivity"][v])
-    #     print "***"

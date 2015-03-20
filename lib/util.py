@@ -32,7 +32,8 @@ def get_network_details_for_epochs(graph_name):
     max_qs = graph.graph_properties["max_q_over_epochs"]
     mus = graph.graph_properties["mu_over_epochs"]
     num_epochs = len(a_cs)
-    return num_epochs, a_cs, ratios, k1s, gs, max_qs, mus
+    apm = graph.graph_properties["activity_per_month"]
+    return num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm
 
 
 # retrieve parameters stored in binary graph file
@@ -88,6 +89,12 @@ def get_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_weights.txt"
 
 
+def get_abs_path(graph_name, suffix, store_iterations, ratio, deltatau=0.001, run=0):
+    return os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
+           "_" + str(store_iterations).replace(".", "") + "_" + \
+           str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + suffix + ".txt")
+
+
 # helper function to get filename for intrinsic activity
 def get_intrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
     return config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
@@ -108,17 +115,25 @@ def empirical_result_plot_for_epochs(graph_name):
     import os
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_all_epochs.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    num_epochs, a_cs, ratios, k1s, gs, max_qs, mus = get_network_details_for_epochs(graph_name)
+    num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm = get_network_details_for_epochs(graph_name)
     debug_msg("--> Done with collecting data")
+    real_act_y = apm
+    real_act_x = range(len(apm))
+    debug_msg("--> Real activity data included")
     debug_msg("--> Starting combination of data")
-    combined_data = [a_cs, ratios, k1s, gs, max_qs, mus]
-    header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus"
+    combined_data = [a_cs, ratios, k1s, gs, max_qs, mus, real_act_x, real_act_y]
+    header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus\treal_act_x\treal_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
+    debug_msg("--> Getting weight file and tau file path")
+    weights_path = get_abs_path(graph_name, "_weights", 1, ratios[-1])
+    debug_msg("----> " + weights_path)
+    taus_path = get_abs_path(graph_name, "_taus", 1, ratios[-1])
+    debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots_epochs.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
     wd = r_script_path.replace("R Scripts/empirical_plots_epochs.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, graph_name])
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name])
                     #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
     debug_msg("*** Successfully plotted empirical results ***")
 

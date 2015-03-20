@@ -58,6 +58,8 @@ class Network:
         self.converge_at = float(converge_at)
         self.store_iterations = store_iterations
         self.ratio = None
+        self.last_tau = 0
+        self.tau_helper = 0
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
         # variable needed for adding and removing edges from graph
@@ -167,6 +169,13 @@ class Network:
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
 
+    def open_taus_files(self):
+        folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
+        wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
+                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(self.run) + "_taus.txt"
+        self.taus_file_path = folder+wname
+        self.taus_file = open(self.taus_file_path, "wb")
 
     def write_weights_to_file(self):
         self.weights_file.write(("\t").join(["%.8f" % float(x) for x in self.get_node_weights("activity")]) + "\n")
@@ -178,6 +187,8 @@ class Network:
     def close_weights_files(self):
         self.weights_file.close()
 
+    def close_taus_files(self):
+        self.taus_file.close()
 
     def reduce_to_largest_component(self):
         fl = label_largest_component(self.graph)
@@ -420,7 +431,7 @@ class Network:
         self.ratio = self.ratios[index]
 
 
-    def activity_dynamics(self, store_weights=False, empirical=False):
+    def activity_dynamics(self, store_weights=False, store_taus=False, empirical=False):
         # Collect required input
         activity_weight = np.asarray(self.get_node_weights("activity"))
         # Calculate deltax
@@ -456,6 +467,30 @@ class Network:
         elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
                                                                                    and empirical):
             self.weights_file.write(str(sum(activity_weight + activity_delta)) + "\n")
+
+        # Store taus to file
+        if store_taus and empirical:
+            tau = (float(self.cur_iteration)+1)*self.deltatau/self.deltapsi*self.store_iterations
+
+            if tau < self.last_tau:
+                # print "Cur Iter: " + str(self.cur_iteration)
+                # print "Tau: " + str(tau)
+                # print "Last Tau: " + str(self.last_tau)
+                # print "calc back..."
+                real_iter = (self.last_tau * self.deltapsi * self.store_iterations) / self.deltatau
+                # print "Real iter: " + str(real_iter)
+                # print "Real iter (round): " + str(round(real_iter, 0))
+                self.tau_helper = int(round(real_iter, 0)) - self.cur_iteration
+                # print "Iter Diff: " + str(self.tau_helper)
+                # real_tau = (round(real_iter, 0)+1)*self.deltatau/self.deltapsi*self.store_iterations
+                # print "Real Tau: " + str(real_tau)
+                tau = (float(self.cur_iteration + self.tau_helper)+1)*self.deltatau/self.deltapsi*self.store_iterations
+            #    sys.exit()
+            #    self.tau_helper = self.last_tau - tau
+            #    tau = self.last_tau + self.tau_helper
+            self.last_tau = tau
+            self.taus_file.write(str(tau) + "\n")
+
         # Increment current iteration counter
         self.cur_iteration += 1
 
