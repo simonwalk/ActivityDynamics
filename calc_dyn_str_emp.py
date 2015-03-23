@@ -59,7 +59,8 @@ def calc_activity():
     nw.calculate_ratios()
     nw.open_weights_files()
     nw.open_taus_files()
-    #nw.write_summed_weights_to_file()
+    nw.write_summed_weights_to_file()
+    nw.write_initial_tau_to_file()
     for i in range(0, network_epochs):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
         nw.reduce_network_to_epoch(start_date, i+1)
@@ -69,6 +70,7 @@ def calc_activity():
         nw.set_ac(i)
         nw.set_ratio(i)
         nw.set_deltapsi(i)
+        nw.reset_tau_iter()
         nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m and "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "

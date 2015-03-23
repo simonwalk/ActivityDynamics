@@ -58,8 +58,7 @@ class Network:
         self.converge_at = float(converge_at)
         self.store_iterations = store_iterations
         self.ratio = None
-        self.last_tau = 0
-        self.tau_helper = 0
+        self.tau_iter = 0
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
         # variable needed for adding and removing edges from graph
@@ -180,9 +179,11 @@ class Network:
     def write_weights_to_file(self):
         self.weights_file.write(("\t").join(["%.8f" % float(x) for x in self.get_node_weights("activity")]) + "\n")
 
-
     def write_summed_weights_to_file(self):
         self.weights_file.write(str(sum(self.get_node_weights("activity"))) + "\n")
+
+    def write_initial_tau_to_file(self):
+        self.taus_file.write(str(float(0)) + "\n")
 
     def close_weights_files(self):
         self.weights_file.close()
@@ -425,11 +426,12 @@ class Network:
             self.ratios.append(self.ratio)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
-
     def set_ratio(self, index):
         self.ratio_index = index
         self.ratio = self.ratios[index]
 
+    def reset_tau_iter(self, iter=0):
+        self.tau_iter = iter
 
     def activity_dynamics(self, store_weights=False, store_taus=False, empirical=False):
         # Collect required input
@@ -470,26 +472,10 @@ class Network:
 
         # Store taus to file
         if store_taus and empirical:
-            tau = (float(self.cur_iteration)+1)*self.deltatau/self.deltapsi*self.store_iterations
-
-            if tau < self.last_tau:
-                # print "Cur Iter: " + str(self.cur_iteration)
-                # print "Tau: " + str(tau)
-                # print "Last Tau: " + str(self.last_tau)
-                # print "calc back..."
-                real_iter = (self.last_tau * self.deltapsi * self.store_iterations) / self.deltatau
-                # print "Real iter: " + str(real_iter)
-                # print "Real iter (round): " + str(round(real_iter, 0))
-                self.tau_helper = int(round(real_iter, 0)) - self.cur_iteration
-                # print "Iter Diff: " + str(self.tau_helper)
-                # real_tau = (round(real_iter, 0)+1)*self.deltatau/self.deltapsi*self.store_iterations
-                # print "Real Tau: " + str(real_tau)
-                tau = (float(self.cur_iteration + self.tau_helper)+1)*self.deltatau/self.deltapsi*self.store_iterations
-            #    sys.exit()
-            #    self.tau_helper = self.last_tau - tau
-            #    tau = self.last_tau + self.tau_helper
-            self.last_tau = tau
+            tau = (float(self.tau_iter)+1)*self.deltatau/self.deltapsi
+            tau += self.ratio_index
             self.taus_file.write(str(tau) + "\n")
+            self.tau_iter += 1
 
         # Increment current iteration counter
         self.cur_iteration += 1
