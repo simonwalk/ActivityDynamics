@@ -34,6 +34,7 @@ class DynamicNetwork(Network):
         self.k1_over_epochs = []
         self.num_vertices_over_epochs = []
         self.num_edges_over_epochs = []
+        self.max_posts_per_day_over_epochs = []
         self.g_over_epochs = []
         self.max_q_over_epochs = []
         self.mu_over_epochs = []
@@ -86,18 +87,28 @@ class DynamicNetwork(Network):
 
     def calc_gs(self):
         for ep in range(0, len(self.dx)):
-            self.g_over_epochs.append(self.max_posts_per_day / (math.sqrt(self.a_cs[ep] ** 2 +
-                                                                          self.max_posts_per_day ** 2)))
+            self.g_over_epochs.append(self.max_posts_per_day_over_epochs[ep] / (math.sqrt(self.a_cs[ep] ** 2 +
+                                                                          self.max_posts_per_day_over_epochs[ep] ** 2)))
 
     def calc_max_qs(self):
         for ep in range(0, len(self.dx)):
-            self.max_q_over_epochs.append((self.max_posts_per_day * self.tau_in_days *
+            self.max_q_over_epochs.append((self.max_posts_per_day_over_epochs[ep] * self.tau_in_days *
                                           self.num_vertices_over_epochs[ep]) / (2 * self.num_edges_over_epochs[ep] *
                                                                                 self.g_over_epochs[ep]))
 
     def calc_mus(self):
         for ep in range(0, len(self.dx)):
             self.mu_over_epochs.append(self.max_q_over_epochs[ep] / self.a_cs[ep])
+
+    def update_activity(self):
+        self.graph.vp["activity"].a *= self.a_cs[self.ratio_index - 1]
+        self.graph.vp["activity"].a *= self.num_vertices_over_epochs[self.ratio_index - 1]
+        self.graph.vp["activity"].a /= self.a_c
+        self.graph.vp["activity"].a /= self.graph.num_vertices()
+
+    def calc_max_posts_per_day(self):
+        for ep in range(0, len(self.dx)):
+            self.max_posts_per_day_over_epochs.append(max(self.posts_per_user_per_day[0 + ep:1 + ep]))
 
     # Overridden methods
     def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
@@ -130,13 +141,15 @@ class DynamicNetwork(Network):
             self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
         f.close()
         self.calc_acs()
-        self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
+        self.calc_max_posts_per_day()
+        self.max_posts_per_day = Network.calc_max_posts_per_day(self)#self.max_posts_per_day_over_epochs[-1]
         self.calc_gs()
         self.g_per_month = self.g_over_epochs[-1]
         self.calc_max_qs()
         self.max_q = self.max_q_over_epochs[-1]
         self.calc_mus()
         self.deltapsi_over_epochs = self.mu_over_epochs
+        self.debug_msg("max_posts_per_day_over_epochs: {}".format(self.max_posts_per_day_over_epochs), level=1)
         self.debug_msg("max_q_over_epochs: {}".format(self.max_q_over_epochs), level=1)
         self.debug_msg("deltapsi_over_epochs: {}".format(self.deltapsi_over_epochs), level=1)
         self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)

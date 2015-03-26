@@ -180,7 +180,7 @@ class Network:
         self.weights_file.write(("\t").join(["%.8f" % float(x) for x in self.get_node_weights("activity")]) + "\n")
 
     def write_summed_weights_to_file(self):
-        self.weights_file.write(str(sum(self.get_node_weights("activity"))) + "\n")
+        self.weights_file.write(str(sum(self.get_node_weights("activity")) * self.a_c * self.graph.num_vertices()) + "\n")
 
     def write_initial_tau_to_file(self):
         self.taus_file.write(str(float(0)) + "\n")
@@ -249,6 +249,15 @@ class Network:
         self.debug_msg("Control Activity: {}".format(ca), level=1)
         for v in self.graph.vertices():
             self.graph.vp["activity"][v] = initial_empirical_activity * v.out_degree()
+        self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
+
+    def update_init_empirical_activity(self):
+        current_activity = sum(self.graph.vp["activity"].a)
+        self.debug_msg("Current Activity: " + str(current_activity), level=1)
+        current_activity /= (self.graph.num_edges() * 2)
+        self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
+        for v in self.graph.vertices():
+            self.graph.vp["activity"][v] = current_activity * v.out_degree()
         self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
     # node weights setter
@@ -468,7 +477,7 @@ class Network:
             self.weights_file.write(("\t").join(["%.8f" % x for x in self.get_node_weights("activity")]) + "\n")
         elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
                                                                                    and empirical):
-            self.weights_file.write(str(sum(activity_weight + activity_delta)) + "\n")
+            self.weights_file.write(str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices()) + "\n")
 
         # Store taus to file
         if store_taus and empirical:
