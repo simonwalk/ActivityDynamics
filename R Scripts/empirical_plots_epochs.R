@@ -74,11 +74,24 @@ grid(col="gray", lwd=1)
 legend("topright", pch=c(NA,NA), col=c("#000000", "#858585"), legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
 dev.off()
 
-print(" ++ Plotting RMSE")
-error <- data$real_act_y - sim_act_y
-#print(error)
-rmse <- sqrt(mean(error^2))
+print(" ++ Plotting Variation")
+sim_act_list <- list()
+i = 1
+while(i <= length(data$real_act_x)) {
+  #print(i)
+  closest_tau = which(abs(sim_act_x - data$real_act_x[i])==min(abs(sim_act_x - data$real_act_x[i])))
+  #print(closest_tau)
+  sim_act_list[length(sim_act_list) + 1] <- sim_act_y[closest_tau,]
+  i = i + 1
+}
+print(length(data$real_act_y))
+print(length(sim_act_list))
+errors <- as.numeric(sim_act_list) - data$real_act_y 
+#print(errors)
+rmse <- sqrt(mean(errors^2))
 print(rmse)
-pdf(paste(graph_name, "_rmse.pdf", sep=""))
-plot(rmse, type="l", xlab=expression(tau ~ " (in days)"), ylab="RMSE", lty=1, col="#000000")
+pdf(paste(graph_name, "_variation.pdf", sep=""))
+plot(errors, type="l", xlab=expression(tau ~ " (in days)"), ylab="Variation", lty=1, col="#000000")
+title("Variation of Simulated Events from\nObserved Events per Day", cex.main=cex_paper)
+grid(col="gray", lwd=1)
 dev.off()

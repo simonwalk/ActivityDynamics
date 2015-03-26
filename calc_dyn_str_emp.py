@@ -9,7 +9,7 @@ emp_data_set = "BeerStackExchange"
 start_date = datetime.date(2014, 1, 21)
 network_epochs = 235
 
-deltatau = 0.001
+deltatau = 0.01
 store_itas = 1
 
 def create_network():
