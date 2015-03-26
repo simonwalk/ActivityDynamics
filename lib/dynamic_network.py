@@ -11,6 +11,8 @@ from graph_tool.all import *
 
 import math
 
+import sys
+
 import numpy as np
 
 # Needed to update eigenvalues
@@ -40,9 +42,15 @@ class DynamicNetwork(Network):
         self.mu_over_epochs = []
         self.deltapsi_over_epochs = []
 
-    def reduce_network_to_epoch(self, start_date, months):
-        temp_epoch = start_date + relativedelta(months=months)
-        end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
+    def reduce_network_to_epoch(self, start_date, timedelta, mode=None):
+        if mode is None:
+            self.debug_msg("No mode given for reduce_network_to_epoch! Aborting...", level=1)
+            sys.exit()
+        elif mode is "months":
+            temp_epoch = start_date + relativedelta(months=timedelta)
+            end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
+        elif mode is "days":
+            end_day = start_date + datetime.timedelta(days=timedelta)
         self.debug_msg("Getting network epoch from " + str(start_date) + " to " + str(end_day), level=1)
         self.graph.clear_filters()
         bool_map = self.graph.new_vertex_property("bool")
@@ -138,7 +146,7 @@ class DynamicNetwork(Network):
                 self.init_users.append(["dummy"])
             num_users = float(el[5]) + 1
             self.num_users.append(num_users)
-            self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
+            self.posts_per_user_per_day.append(float(el[3])/num_users/self.tau_in_days)
         f.close()
         self.calc_acs()
         self.calc_max_posts_per_day()

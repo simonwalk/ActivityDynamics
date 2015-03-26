@@ -7,14 +7,17 @@ def bin_date(timestamp):
     return timestamp.replace(microsecond=0, second=0, minute=0, hour=0)
 
 
-def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample_size=-1):
+def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample_size=-1, mode="months"):
     print_f('start extraction of binned posts & replies')
     folder_name = log_filename.rsplit('/', 1)[0] + '/'
     network_name = folder_name + 'weighted_net.gt' if net_filename is None else net_filename
 
     data_frame = read_log_to_df(log_filename)
     print_f('simplify timestamps')
-    data_frame['timestamp'] = data_frame['timestamp'].map(lambda x: x.date().replace(day=1))
+    if mode is "months":
+        data_frame['timestamp'] = data_frame['timestamp'].map(lambda x: x.date().replace(day=1))
+    elif mode is "days":
+        data_frame['timestamp'] = data_frame['timestamp'].map(lambda x: x.date())
     core = 0
     if core > 0:
         graph = read_graph(network_name, activity_threshold=core, largest_component=False)
@@ -34,7 +37,10 @@ def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample
     #    print_f('sample', sample_size, 'users')
     #    user_ids = set(random.sample(user_ids, sample_size))
     print_f('calc time-span...')
-    min_date, max_date = np.min(data_frame['timestamp']).replace(day=1), np.max(data_frame['timestamp']).replace(day=1)
+    if mode is "months":
+        min_date, max_date = np.min(data_frame['timestamp']).replace(day=1), np.max(data_frame['timestamp']).replace(day=1)
+    elif mode is "days":
+        min_date, max_date = np.min(data_frame['timestamp']), np.max(data_frame['timestamp'])
     dates_index = []
     date_stamp = min_date
     print 'min date:', min_date
@@ -43,7 +49,10 @@ def extract_binned_posts_replies(log_filename, net_filename=None, core=0, sample
     while date_stamp <= max_date:
         dates_index.append(date_stamp)
         try:
-            date_stamp = date_stamp.replace(month=date_stamp.month + 1)
+            if mode is "months":
+                date_stamp = date_stamp.replace(month=date_stamp.month + 1)
+            elif mode is "days":
+                date_stamp = date_stamp + datetime.timedelta(days=1)
         except:
             date_stamp = date_stamp.replace(year=date_stamp.year + 1, month=1)
     print_f('done')

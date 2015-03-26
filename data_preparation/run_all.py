@@ -38,7 +38,7 @@ def run_all(log_filename, draw_network=None):
     print 'folder', folder
     generate_network(log_filename, draw=draw_network)
     core_activity_analysis(log_filename, core=0)
-    extract_binned_posts_replies(log_filename, core=0)
+    extract_binned_posts_replies(log_filename, core=0, mode="days")
 
 
 def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, draw_network=None):
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     rolling_window_size = 1
     draw_network = None
     root_path = "../datasets/"
-    path = root_path + "HistoryStackExchange/"
+    path = root_path + "BeerStackExchange/"
     auto_decide(path, rolling_window_size=1, draw_network=draw_network)
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'
