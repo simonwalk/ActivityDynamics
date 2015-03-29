@@ -7,10 +7,12 @@ from multiprocessing import Pool
 emp_data_set = "BeerStackExchange"
 
 start_date = datetime.date(2014, 1, 21)
-network_epochs = 235
+mode = "days"  # Possible: Months, Days
+network_epochs = 9
 
-deltatau = 0.01
+deltatau = 0.001
 store_itas = 1
+
 
 def create_network():
     bg = Generator(emp_data_set)
@@ -26,35 +28,20 @@ def create_network():
     bg.store_graph(0)
 
 
-def create_network_epochs():
-    nw = Network(False, emp_data_set)
-    fpath = nw.get_binary_filename(emp_data_set)
-    nw.load_graph(fpath)
-
-    debug_msg("Loaded network: " + str(nw.graph.num_vertices()) + " vertices, " + str(nw.graph.num_edges()) + " edges")
-
-    for epoch in range(1, network_epochs + 1):
-        nw.reduce_network_to_epoch(start_date, epoch)
-        nw.graph_name = emp_data_set + "_epoch_" + str(epoch)
-        #nw.draw_graph(0)
-        nw.plot_epoch(epoch)
-
-
-
 def calc_activity():
-    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=1)
+    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=30)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading " + fpath)
     nw.load_graph(fpath)
     nw.debug_msg("Loaded network: " + str(nw.graph.num_vertices()) + " vertices, " + str(nw.graph.num_edges()) + " edges")
 
     for epoch in range(1, network_epochs):
-        nw.reduce_network_to_epoch(start_date, epoch, mode="days")
+        nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(2)
 
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
-    nw.reduce_network_to_epoch(start_date, 1, mode="days")
+    nw.reduce_network_to_epoch(start_date, 1, mode=mode)
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.create_folders()
@@ -64,7 +51,7 @@ def calc_activity():
     nw.write_initial_tau_to_file()
     for i in range(0, len(nw.ratios)-1):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
-        nw.reduce_network_to_epoch(start_date, i+1, mode="days")
+        nw.reduce_network_to_epoch(start_date, i+1, mode=mode)
         nw.update_ones_ratio()
         nw.update_adjacency()
         nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
@@ -90,7 +77,6 @@ def calc_activity():
 
 if __name__ == '__main__':
     #create_network()
-    #create_network_epochs()
     #calc_activity()
-    empirical_result_plot_for_epochs(emp_data_set)
+    empirical_result_plot_for_epochs(emp_data_set, mode)
     sys.exit()

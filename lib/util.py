@@ -109,7 +109,7 @@ def get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratio)
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_extrinsic.txt"
 
 
-def empirical_result_plot_for_epochs(graph_name):
+def empirical_result_plot_for_epochs(graph_name, mode):
     debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
@@ -133,7 +133,7 @@ def empirical_result_plot_for_epochs(graph_name):
     debug_msg("--> Calling empirical_plots_epochs.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
     wd = r_script_path.replace("R Scripts/empirical_plots_epochs.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name])
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, mode])
                     #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
     debug_msg("*** Successfully plotted empirical results ***")
 
