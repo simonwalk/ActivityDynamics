@@ -25,6 +25,7 @@ DEBUG_LEVEL = 0
 
 def get_network_details_for_epochs(graph_name):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
+    dtau = graph.graph_properties["deltatau"]
     a_cs = graph.graph_properties["a_cs"]
     ratios = graph.graph_properties["ratios"]
     k1s = graph.graph_properties["k1_over_epochs"]
@@ -33,26 +34,37 @@ def get_network_details_for_epochs(graph_name):
     mus = graph.graph_properties["mu_over_epochs"]
     num_epochs = len(a_cs)
     apm = graph.graph_properties["activity_per_month"]
-    return num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm
+    return dtau, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm
+
+
+def get_network_details(graph_name):
+    graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
+    dtau = graph.graph_properties["deltatau"]
+    mu = round(graph.graph_properties["deltapsi"], 2)
+    ac = round(graph.graph_properties["a_c"], 2)
+    ratios = graph.graph_properties["ratios"]
+    k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
+    apm = graph.graph_properties["activity_per_month"]
+    return dtau, mu, ac, ratios, k1, apm
 
 
 # retrieve parameters stored in binary graph file
-def get_network_details(graph_name, run=0, path=config.graph_binary_dir):
-    graph = load_graph(path + "GT/" + graph_name + "/" + graph_name + "_run_" + str(run) + ".gt")
-    ratios = graph.graph_properties["ratios"]
-    deltataus = graph.graph_properties["deltatau"]
-    deltapsi = graph.graph_properties["deltapsi"]
-    ew = graph.graph_properties["top_eigenvalues"]
-    random_inits = graph.graph_properties["runs"]
-    store_iterations = graph.graph_properties["store_iterations"]
-    try:
-        a_cs = graph.graph_properties["a_cs"]
-        cas = graph.graph_properties["activity_per_month"]
-    except:
-        debug_msg(" --> Could not load empirical data!")
-        cas = []
-        a_cs = []
-    return graph, ratios, deltataus, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs
+# def get_network_details(graph_name, run=0, path=config.graph_binary_dir):
+#     graph = load_graph(path + "GT/" + graph_name + "/" + graph_name + "_run_" + str(run) + ".gt")
+#     ratios = graph.graph_properties["ratios"]
+#     deltataus = graph.graph_properties["deltatau"]
+#     deltapsi = graph.graph_properties["deltapsi"]
+#     ew = graph.graph_properties["top_eigenvalues"]
+#     random_inits = graph.graph_properties["runs"]
+#     store_iterations = graph.graph_properties["store_iterations"]
+#     try:
+#         a_cs = graph.graph_properties["a_cs"]
+#         cas = graph.graph_properties["activity_per_month"]
+#     except:
+#         debug_msg(" --> Could not load empirical data!")
+#         cas = []
+#         a_cs = []
+#     return graph, ratios, deltataus, deltapsi, graph_name, store_iterations, cas, ew, random_inits, a_cs
 
 
 def prepare_folders():
@@ -113,9 +125,10 @@ def empirical_result_plot_for_epochs(graph_name, mode):
     debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
-    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_all_epochs.txt")
+    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode +
+                                  "_epochs.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm = get_network_details_for_epochs(graph_name)
+    dtau, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm = get_network_details_for_epochs(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -126,9 +139,9 @@ def empirical_result_plot_for_epochs(graph_name, mode):
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", 1, ratios[-1])
+    weights_path = get_abs_path(graph_name, "_weights", 1, ratios[-1], deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", 1, ratios[-1])
+    taus_path = get_abs_path(graph_name, "_taus", 1, ratios[-1], deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots_epochs.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
@@ -138,47 +151,77 @@ def empirical_result_plot_for_epochs(graph_name, mode):
     debug_msg("*** Successfully plotted empirical results ***")
 
 
-# plot empirical activity (left y-axis) vs. observed activity (right y-axis) for empirical datasets
-def empirical_result_plot(graph_name, run=0):
+def empirical_result_plot(graph_name, mode):
+    debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
-    source_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + ".txt")
-    out_file = open(source_path, "wb")
-    debug_msg("  >>> Creating empirical result plot", level=0)
-    graph, ratios, deltatau, deltapsi, graph_name, store_iterations, \
-    cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
-    pipe_vals = [str(deltatau), "%.4f" % deltapsi, "%.2f" % a_cs[0], "%.2f" % ew[0]]
-    debug_msg("   ** Preparing Ratios", level=0)
-    x_ratios = [(float(x)+1) for x in range(len(ratios))]
-    y_ratios = ratios
-    out_file.write(("\t").join(["%.8f" % x for x in x_ratios])+"\n")
-    out_file.write(("\t").join(["%.8f" % x for x in y_ratios])+"\n")
-    debug_msg("   ** Preparing Average Activities", level=0)
-    fpath = get_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0])
-    epath = os.path.abspath(get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
-    ipath = os.path.abspath(get_intrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
-    x_activity = []
-    y_activity = []
-    pf = open(fpath, "rb")
-    for lidx, l in enumerate(pf):
-        x_activity.append((float(lidx)+1)*deltatau/deltapsi*store_iterations)
-        y_activity.append(sum([float(x) for x in l.split("\t")]))
-    pf.close()
-    out_file.write(("\t").join(["%.8f" % x for x in x_activity])+"\n")
-    out_file.write(("\t").join(["%.8f" % x for x in y_activity])+"\n")
-
-    debug_msg("   ** Preparing Real Activities", level=0)
-    y_real_act = cas
-    x_real_act = range(len(cas))
-    out_file.write(("\t").join(["%.8f" % x for x in x_real_act])+"\n")
-    out_file.write(("\t").join(["%.8f" % x for x in y_real_act])+"\n")
-    out_file.close()
-    debug_msg("   ** Calling empirical_plots.R", level=0)
+    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
+    debug_msg("--> Start collecting data of: " + graph_name)
+    dtau, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    debug_msg("--> Done with collecting data")
+    real_act_y = apm
+    real_act_x = range(len(apm))
+    debug_msg("--> Real activity data included")
+    debug_msg("--> Starting combination of data")
+    combined_data = [ratios, real_act_x, real_act_y]
+    header = "ratios\treal_act_x\treal_act_y"
+    np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
+    debug_msg("--> Data successfully combined")
+    debug_msg("--> Getting weight file and tau file path")
+    weights_path = get_abs_path(graph_name, "_weights", 1, ratios[0], deltatau=dtau)
+    debug_msg("----> " + weights_path)
+    taus_path = get_abs_path(graph_name, "_taus", 1, ratios[0], deltatau=dtau)
+    debug_msg("----> " + taus_path)
+    debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
-                     pipe_vals[3], graph_name, ipath, epath], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
-    debug_msg("   ** Done", level=0)
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, mode,
+                     str(dtau), str(mu), str(ac), str(k1)])
+                    #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
+    debug_msg("*** Successfully plotted empirical results ***")
+
+
+# # plot empirical activity (left y-axis) vs. observed activity (right y-axis) for empirical datasets
+# def empirical_result_plot(graph_name, run=0):
+#     import subprocess
+#     import os
+#     source_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + ".txt")
+#     out_file = open(source_path, "wb")
+#     debug_msg("  >>> Creating empirical result plot", level=0)
+#     graph, ratios, deltatau, deltapsi, graph_name, store_iterations, \
+#     cas, ew, random_inits, a_cs = get_network_details(graph_name, run)
+#     pipe_vals = [str(deltatau), "%.4f" % deltapsi, "%.2f" % a_cs[0], "%.2f" % ew[0]]
+#     debug_msg("   ** Preparing Ratios", level=0)
+#     x_ratios = [(float(x)+1) for x in range(len(ratios))]
+#     y_ratios = ratios
+#     out_file.write(("\t").join(["%.8f" % x for x in x_ratios])+"\n")
+#     out_file.write(("\t").join(["%.8f" % x for x in y_ratios])+"\n")
+#     debug_msg("   ** Preparing Average Activities", level=0)
+#     fpath = get_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0])
+#     epath = os.path.abspath(get_extrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
+#     ipath = os.path.abspath(get_intrinsic_weights_fn(store_iterations, deltatau, run, graph_name, ratios[0]))
+#     x_activity = []
+#     y_activity = []
+#     pf = open(fpath, "rb")
+#     for lidx, l in enumerate(pf):
+#         x_activity.append((float(lidx)+1)*deltatau/deltapsi*store_iterations)
+#         y_activity.append(sum([float(x) for x in l.split("\t")]))
+#     pf.close()
+#     out_file.write(("\t").join(["%.8f" % x for x in x_activity])+"\n")
+#     out_file.write(("\t").join(["%.8f" % x for x in y_activity])+"\n")
+#
+#     debug_msg("   ** Preparing Real Activities", level=0)
+#     y_real_act = cas
+#     x_real_act = range(len(cas))
+#     out_file.write(("\t").join(["%.8f" % x for x in x_real_act])+"\n")
+#     out_file.write(("\t").join(["%.8f" % x for x in y_real_act])+"\n")
+#     out_file.close()
+#     debug_msg("   ** Calling empirical_plots.R", level=0)
+#     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
+#     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
+#     subprocess.call([config.r_binary_path, r_script_path, wd, source_path, pipe_vals[0], pipe_vals[1], pipe_vals[2],
+#                      pipe_vals[3], graph_name, ipath, epath])#, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+#     debug_msg("   ** Done", level=0)
 
 
 # plot simulated ratios and kappa 1 (for empirical datasets)

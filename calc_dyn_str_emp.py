@@ -4,13 +4,14 @@ from lib.dynamic_network import DynamicNetwork
 import time
 from multiprocessing import Pool
 
-emp_data_set = "BeerStackExchange"
+emp_data_set = "EnglishStackExchange"
 
-start_date = datetime.date(2014, 1, 21)
-mode = "days"  # Possible: Months, Days
-network_epochs = 9
+start_date = datetime.date(2009, 06, 16)
+mode = "days"  # Possible: "months", "days"
+network_epochs = 1917
+tid = 1
 
-deltatau = 0.001
+deltatau = 0.0001
 store_itas = 1
 
 
@@ -29,7 +30,7 @@ def create_network():
 
 
 def calc_activity():
-    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=30)
+    nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading " + fpath)
     nw.load_graph(fpath)
@@ -38,7 +39,7 @@ def calc_activity():
     for epoch in range(1, network_epochs):
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
-        nw.calc_eigenvalues_for_epoch(2)
+        nw.calc_eigenvalues_for_epoch(1)
 
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
     nw.reduce_network_to_epoch(start_date, 1, mode=mode)
@@ -76,7 +77,7 @@ def calc_activity():
     nw.store_graph(0)
 
 if __name__ == '__main__':
-    #create_network()
-    #calc_activity()
+    create_network()
+    calc_activity()
     empirical_result_plot_for_epochs(emp_data_set, mode)
     sys.exit()

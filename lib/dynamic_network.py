@@ -114,11 +114,11 @@ class DynamicNetwork(Network):
         self.graph.vp["activity"].a /= self.a_c
         self.graph.vp["activity"].a /= self.graph.num_vertices()
 
+    # Overridden methods
     def calc_max_posts_per_day(self):
         for ep in range(0, len(self.dx)):
             self.max_posts_per_day_over_epochs.append(max(self.posts_per_user_per_day[0 + ep:1 + ep]))
 
-    # Overridden methods
     def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
         self.apm = []

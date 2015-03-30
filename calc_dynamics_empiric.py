@@ -40,11 +40,14 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
     nw.calculate_ratios()
     nw.set_ratio(0)
     nw.open_weights_files()
+    nw.open_taus_files()
     nw.write_summed_weights_to_file()
-    for i in xrange(len(nw.ratios)):
+    nw.write_initial_tau_to_file()
+    for i in xrange(len(nw.ratios) - 1):
         nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
         nw.set_ac(i)
         nw.set_ratio(i)
+        nw.reset_tau_iter()
         nw.debug_msg("Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m and "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
@@ -52,7 +55,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
                                                                     int(nw.deltapsi/nw.deltatau)),
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, empirical=True)
+            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
@@ -70,8 +73,9 @@ if __name__ == '__main__':
                     "NOBBZ",                #7
                     "W15M"]                 #8
     graph_name = empirical_ds[0]
-    create_network(graph_name)
+    #create_network(graph_name)
     deltatau = 0.001
     store_itas = 1
-    calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name)
+    mode = "months"
+    #calc_activity(graph_name, store_itas, deltatau)
+    empirical_result_plot(graph_name, mode)
