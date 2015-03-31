@@ -11,6 +11,8 @@ mode = "days"  # Possible: "months", "days"
 network_epochs = 1917
 tid = 1
 
+plot_fmt = "png"
+
 deltatau = 0.0001
 store_itas = 1
 
@@ -77,7 +79,7 @@ def calc_activity():
     nw.store_graph(0)
 
 if __name__ == '__main__':
-    create_network()
-    calc_activity()
-    empirical_result_plot_for_epochs(emp_data_set, mode)
+    #create_network()
+    #calc_activity()
+    empirical_result_plot_for_epochs(emp_data_set, mode, plot_fmt)
     sys.exit()

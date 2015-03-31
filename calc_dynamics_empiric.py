@@ -8,6 +8,11 @@ from lib.util import *
 from lib.generator import *
 from multiprocessing import Pool
 
+deltatau = 0.001
+store_itas = 1
+mode = "months"
+plot_fmt = "png"
+
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -72,10 +77,7 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "NOBBZ",                #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[0]
-    #create_network(graph_name)
-    deltatau = 0.001
-    store_itas = 1
-    mode = "months"
-    #calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name, mode)
+    graph_name = empirical_ds[1]
+    create_network(graph_name)
+    calc_activity(graph_name, store_itas, deltatau)
+    empirical_result_plot(graph_name, mode, plot_fmt)

@@ -9,10 +9,11 @@ print(" ++ Reading weights data")
 sim_act_y = read.table(args[3], header=F)
 graph_name = paste(args[5], args[6], sep="_")
 mode = args[6]
-dtau = args[7]
-mu = args[8]
-ac = args[9]
-k1 = args[10]
+format = args[7]
+dtau = args[8]
+mu = args[9]
+ac = args[10]
+k1 = args[11]
 cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585")
@@ -24,13 +25,12 @@ if (args[6] == "days") {
   linetype = "l"
   pchstyle = NA
 }
+print(paste(" ++ Plot Format: ", format, sep=""))
 
 print(" ++ Plotting ratios and k1")
-pdf(paste(graph_name, "_ratios.pdf", sep=""))
+if (format == "pdf") pdf(paste(graph_name, "_ratios.pdf", sep="")) else png(paste(graph_name, "_ratios.png", sep=""))
 min_y = min(data$ratios)
 max_y = max(data$ratios)
-print(min_y)
-print(max_y)
 k1_x = seq(1,length(data$ratios),1)
 k1_y = as.numeric(rep(k1, length(k1_x)))
 plot(data$ratios, type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
@@ -46,7 +46,7 @@ legend("bottomright", pch=c(pchstyle,NA), col=colors, legend=c("Ratio", expressi
 dev.off()
 
 print(" ++ Plotting activity")
-pdf(paste(graph_name, "_activity.pdf", sep=""))
+if (format == "pdf") pdf(paste(graph_name, "_activity.pdf", sep="")) else png(paste(graph_name, "_activity.png", sep=""))
 min_y = min(min(sim_act_y), min(data$real_act_y))
 max_y = max(max(sim_act_y), max(data$real_act_y))
 par(mar=c(5,5,4,5)+.1)
@@ -63,7 +63,6 @@ grid(col="gray", lwd=1)
 #mtext("Real Activity",side=4,line=3, cex=cex_paper)
 legend("topright", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
 dev.off()
-
 
 print(" ++ Plotting Error of Simulation")
 sim_act_list <- list()
@@ -82,7 +81,7 @@ errors_x <- seq(0,length(errors) - 1,1)
 #print(errors)
 rmse <- sqrt(mean(errors^2))
 #print(rmse)
-pdf(paste(graph_name, "_error.pdf", sep=""))
+if (format == "pdf") pdf(paste(graph_name, "_error.pdf", sep="")) else png(paste(graph_name, "_error.png", sep=""))
 plot(errors_x, errors, type="l", xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex.axis=cex_paper, cex.lab=cex_paper)
 title(substitute(atop("Error of Simulation over " ~ tau ~ " (in " * mode * ")",
                       "(RMSE = " ~ rmse ~ ")"), list(rmse=rmse, mode=mode)), cex.main=cex_paper)
