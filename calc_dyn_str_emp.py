@@ -4,16 +4,16 @@ from lib.dynamic_network import DynamicNetwork
 import time
 from multiprocessing import Pool
 
-emp_data_set = "EnglishStackExchange"
+emp_data_set = "HistoryStackExchange"
 
-start_date = datetime.date(2009, 06, 16)
-mode = "days"  # Possible: "months", "days"
-network_epochs = 1917
-tid = 1
+start_date = datetime.date(2011, 5, 1)
+mode = "months"  # Possible: "months", "days"
+network_epochs = 41
+tid = 30
 
 plot_fmt = "png"
 
-deltatau = 0.0001
+deltatau = 0.001
 store_itas = 1
 
 
@@ -38,7 +38,7 @@ def calc_activity():
     nw.load_graph(fpath)
     nw.debug_msg("Loaded network: " + str(nw.graph.num_vertices()) + " vertices, " + str(nw.graph.num_edges()) + " edges")
 
-    for epoch in range(1, network_epochs):
+    for epoch in range(1, network_epochs+1):
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(1)
@@ -52,7 +52,7 @@ def calc_activity():
     nw.open_taus_files()
     nw.write_summed_weights_to_file()
     nw.write_initial_tau_to_file()
-    for i in range(0, len(nw.ratios)-1):
+    for i in range(0, len(nw.ratios) - 1):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
         nw.reduce_network_to_epoch(start_date, i+1, mode=mode)
         nw.update_ones_ratio()
@@ -79,7 +79,7 @@ def calc_activity():
     nw.store_graph(0)
 
 if __name__ == '__main__':
-    #create_network()
-    #calc_activity()
+    create_network()
+    calc_activity()
     empirical_result_plot_for_epochs(emp_data_set, mode, plot_fmt)
     sys.exit()

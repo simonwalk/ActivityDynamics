@@ -10,6 +10,7 @@ from multiprocessing import Pool
 
 deltatau = 0.001
 store_itas = 1
+tid = 30
 mode = "months"
 plot_fmt = "png"
 
@@ -30,7 +31,7 @@ def create_network(graph_name):
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
-def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30):
+def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid):
     nw = Network(False, graph_name, run=rand_iter, deltatau=deltatau, store_iterations=store_itas,
                  tau_in_days=tau_in_days)
 
@@ -49,6 +50,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=30)
     nw.write_summed_weights_to_file()
     nw.write_initial_tau_to_file()
     for i in xrange(len(nw.ratios) - 1):
+        debug_msg("Starting activity dynamics for ratio: " + str(i+1))
         nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
         nw.set_ac(i)
         nw.set_ratio(i)
@@ -77,7 +79,7 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "NOBBZ",                #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[1]
+    graph_name = empirical_ds[4]
     create_network(graph_name)
     calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name, mode, plot_fmt)

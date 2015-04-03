@@ -74,16 +74,20 @@ if (format == "pdf") pdf(paste(graph_name, "_activity.pdf", sep="")) else png(pa
 min_y = min(min(sim_act_y), min(data$real_act_y))
 max_y = max(max(sim_act_y), max(data$real_act_y))
 par(mar=c(5,5,4,5)+.1)
-plot(sim_act_x[,1], sim_act_y[,1], type="l", pch=4, xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
-lines(data$real_act_x, data$real_act_y, type=linetype, lty=1, pch=1, col=colors[2])
+plot(sim_act_x[,1], sim_act_y[,1], type="l", pch=4, xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)#, ylim=c(min_y, max_y))
+#lines(data$real_act_x, data$real_act_y, type=linetype, lty=1, pch=1, col=colors[2])
+par(new=T)
+plot(data$real_act_x, data$real_act_y, type="o", lty=1, pch=2,xaxt="n",yaxt="n",xlab="",ylab="", 
+     col=colors[2], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
 title(substitute("Activity over " ~ tau ~ " (in " * mode * ")", list(mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
+axis(4)
 #par(new=TRUE)
 #plot(data$real_act_x, data$real_act_y, type="o", lty=1, pch=2,xaxt="n",yaxt="n",xlab="",ylab="", 
 #     col="#858585", cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
 #axis(4, cex.axis=cex_paper)
 #mtext("Real Activity",side=4,line=3, cex=cex_paper)
-legend("topright", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
+#legend("topright", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
 dev.off()
 
 print(" ++ Plotting Error of Simulation")

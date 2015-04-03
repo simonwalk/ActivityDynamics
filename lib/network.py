@@ -78,7 +78,6 @@ class Network:
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))
         self.set_ac(0)
 
-
     def set_ac(self, index):
         self.a_c = self.a_cs[index]
 
@@ -123,7 +122,7 @@ class Network:
                 self.init_users.append(["dummy"])
             num_users = float(el[5]) + 1
             self.num_users.append(num_users)
-            self.posts_per_user_per_day.append(float(el[3])/num_users/30.0)
+            self.posts_per_user_per_day.append(float(el[3])/num_users/self.tau_in_days)
         f.close()
         self.calc_acs()
         self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
@@ -431,7 +430,7 @@ class Network:
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
-            self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
+            #self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
             self.ratios.append(self.ratio)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 

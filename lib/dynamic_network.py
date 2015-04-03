@@ -25,8 +25,8 @@ from dateutil.relativedelta import relativedelta
 
 class DynamicNetwork(Network):
 
-    def __init__(self, directed, graph_name, run=1, converge_at=1e-16, deltatau=0.01, runs = 1,
-                 deltapsi=0.0001, debug_level=1, store_iterations=1, ratios=[], ratio_index = 0, tau_in_days=30,
+    def __init__(self, directed, graph_name, run=1, converge_at=1e-16, deltatau=0.01, runs=1,
+                 deltapsi=0.0001, debug_level=1, store_iterations=1, ratios=[], ratio_index=0, tau_in_days=30,
                  num_nodes=None):
 
         Network.__init__(self, directed, graph_name, run, converge_at, deltatau, runs, deltapsi, debug_level,
@@ -134,9 +134,12 @@ class DynamicNetwork(Network):
                 continue
             el = line.strip().split("\t")
             try:
-              self.dx.append(float(el[1]))
+                self.dx.append(float(el[1]))
             except:
-                break
+                print "last line"
+                print len(self.num_vertices_over_epochs)
+                print len(self.dx)
+                #break
             self.apm.append(float(el[2]))
             self.posts.append(float(el[3]))
             self.replies.append(float(el[4]))
@@ -173,8 +176,9 @@ class DynamicNetwork(Network):
         for ep in range(0, len(self.dx)):
             activity_current = self.apm[ep]
             activity_next = activity_current-self.dx[ep]
+            #print activity_current, activity_next, (activity_next/activity_current), math.log(activity_next/activity_current)
             self.ratio = self.k1_over_epochs[ep] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[ep]
-            self.ratio -= 0.03 * activity_current / (self.a_cs[ep] * self.num_vertices_over_epochs[ep])
+            #self.ratio -= 0.03 * activity_current / (self.a_cs[ep] * self.num_vertices_over_epochs[ep])
             self.ratios.append(self.ratio)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
