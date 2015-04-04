@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = -1
+instance_selector = -3
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -56,7 +56,7 @@ id_to_vertex_dict = {int(id_pmap[v]): v for v in graph.vertices()}
 max_row = len(df_posts.index)
 print "Sum of Posts: {}".format(np.nansum(df_posts))
 print "Sum of Replies: {}".format(np.nansum(df_replies))
-print "Number of months: {}".format(len(df_posts))
+print "Number of epochs: {}".format(len(df_posts))
 print "Number of Users: {}".format(graph.num_vertices())
 
 
