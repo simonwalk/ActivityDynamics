@@ -4,17 +4,17 @@ from lib.dynamic_network import DynamicNetwork
 import time
 from multiprocessing import Pool
 
+
 emp_data_set = "HistoryStackExchange"
-
-start_date = datetime.date(2011, 5, 1)
-mode = "months"  # Possible: "months", "days"
-network_epochs = 41
 tid = 30
-
 plot_fmt = "pdf"
-
 deltatau = 0.001
 store_itas = 10
+mode = "months"  # Possible: "months", "days"
+
+# TODO: this should be calculated and set automatically (default values, which can be manually ste if needed)!
+start_date = datetime.date(2011, 5, 1)
+network_epochs = 41
 
 
 def create_network():
