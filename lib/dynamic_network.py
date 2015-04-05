@@ -119,6 +119,15 @@ class DynamicNetwork(Network):
         for ep in range(0, len(self.dx)):
             self.max_posts_per_day_over_epochs.append(max(self.posts_per_user_per_day[0 + ep:1 + ep]))
 
+
+    def update_dynamic_model_params(self, index):
+        self.set_ac(index)
+        self.set_ratio(index)
+        self.set_deltapsi(index)
+        self.reset_tau_iter(index)
+        self.k1 = self.k1_over_epochs[index]
+
+
     def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
         self.apm = []

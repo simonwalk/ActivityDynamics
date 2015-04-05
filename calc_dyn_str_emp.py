@@ -11,10 +11,10 @@ mode = "months"  # Possible: "months", "days"
 network_epochs = 41
 tid = 30
 
-plot_fmt = "png"
+plot_fmt = "pdf"
 
 deltatau = 0.001
-store_itas = 1
+store_itas = 10
 
 
 def create_network():
@@ -57,22 +57,22 @@ def calc_activity():
         nw.reduce_network_to_epoch(start_date, i+1, mode=mode)
         nw.update_ones_ratio()
         nw.update_adjacency()
-        nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
-        nw.set_ac(i)
-        nw.set_ratio(i)
-        nw.set_deltapsi(i)
-        nw.reset_tau_iter()
+        #nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
+        nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
+        nw.update_dynamic_model_params(i)
+
         if i > 0:
             nw.update_activity()
             nw.update_init_empirical_activity()
         nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
-                         "with \x1b[32m ratio={}\x1b[00m and "
+                         "with \x1b[32m ratio={}\x1b[00m, "
+                         "\x1b[32mk1={}\x1b[00m, \x1b[32m ratio-k1={}\x1b[00m, "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                         "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
+                         "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.k1, nw.ratio-nw.k1, nw.deltatau, nw.deltapsi,
                                                                     int(nw.deltapsi/nw.deltatau)), level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
-
+        nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
     nw.close_weights_files()
     nw.close_taus_files()
     nw.add_graph_properties()

@@ -252,12 +252,14 @@ class Network:
 
     def update_init_empirical_activity(self):
         current_activity = sum(self.graph.vp["activity"].a)
-        self.debug_msg("Current Activity: " + str(current_activity), level=1)
+        #empirical_activity = current_activity/self.a_c
+        #self.debug_msg("Current Activity: " + str(current_activity), level=1)
         current_activity /= (self.graph.num_edges() * 2)
-        self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
+        #self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
         for v in self.graph.vertices():
-            self.graph.vp["activity"][v] = current_activity * v.out_degree()
-        self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
+            if self.graph.vp["activity"][v] == 0:
+                self.graph.vp["activity"][v] = 0.001*self.a_c#empirical_activity * v.out_degree()
+        #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
     # node weights setter
     def set_node_weights(self, name, weights):
@@ -476,10 +478,11 @@ class Network:
             self.weights_file.write(("\t").join(["%.8f" % x for x in self.get_node_weights("activity")]) + "\n")
         elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
                                                                                    and empirical):
+            #self.debug_msg(" --> Sum of weights at \x1b[32m{}\x1b[30m is \x1b[32m{}\x1b[30m".format(self.cur_iteration, str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices())), level=1)
             self.weights_file.write(str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices()) + "\n")
 
         # Store taus to file
-        if store_taus and empirical:
+        if store_taus and empirical and self.cur_iteration % self.store_iterations == 0:
             tau = (float(self.tau_iter)+1)*self.deltatau/self.deltapsi
             tau += self.ratio_index
             self.taus_file.write(str(tau) + "\n")
@@ -539,7 +542,7 @@ class Network:
             self.load_graph(fpath)
         except Exception as e:
             self.debug_msg(e.message, level=0)
-            self.debug_msg(" ### Sleeping for 100 seconds before trying to store again!", level=0)
+            self.debug_msg(" ### Sleeping for 100 seconds before trying to load again!", level=0)
             sleep(100)
             self.load_graph(fpath)
 
