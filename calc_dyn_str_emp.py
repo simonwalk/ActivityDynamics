@@ -6,15 +6,14 @@ from multiprocessing import Pool
 
 
 emp_data_set = "HistoryStackExchange"
-tid = 30
+mode = "months"  # Possible: "months", "days"
 plot_fmt = "pdf"
+tid = 30
 deltatau = 0.001
 store_itas = 10
-mode = "months"  # Possible: "months", "days"
 
-# TODO: this should be calculated and set automatically (default values, which can be manually ste if needed)!
-start_date = datetime.date(2011, 5, 1)
-network_epochs = 41
+manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
+manual_network_epochs = None  # Set to None to set number of network epochs automatically. (Type: int)
 
 
 def create_network():
@@ -32,13 +31,27 @@ def create_network():
 
 
 def calc_activity():
+    debug_msg(" *** Starting activity dynamics *** ")
     nw = DynamicNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading " + fpath)
     nw.load_graph(fpath)
     nw.debug_msg("Loaded network: " + str(nw.graph.num_vertices()) + " vertices, " + str(nw.graph.num_edges()) + " edges")
 
-    for epoch in range(1, network_epochs+1):
+    if manual_start_date is None and manual_network_epochs is None:
+        start_date, network_epochs = nw.get_epochs_info(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+        debug_msg("Automatically set start date to: " + str(start_date))
+        debug_msg("Automatically set network epochs to: " + str(network_epochs))
+    elif manual_start_date is not None and manual_network_epochs is not None:
+        start_date = manual_start_date
+        network_epochs = manual_network_epochs
+        debug_msg("Manually set start date to: " + str(start_date))
+        debug_msg("Manually set network epochs to: " + str(network_epochs))
+    else:
+        debug_msg("Cannot automatically set only one value! Aborting...")
+        sys.exit()
+
+    for epoch in range(1, network_epochs):
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(1)
@@ -57,7 +70,6 @@ def calc_activity():
         nw.reduce_network_to_epoch(start_date, i+1, mode=mode)
         nw.update_ones_ratio()
         nw.update_adjacency()
-        #nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
         nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
         nw.update_dynamic_model_params(i)
 
@@ -77,6 +89,7 @@ def calc_activity():
     nw.close_taus_files()
     nw.add_graph_properties()
     nw.store_graph(0)
+    debug_msg(" *** Done with activity dynamics *** ")
 
 if __name__ == '__main__':
     create_network()

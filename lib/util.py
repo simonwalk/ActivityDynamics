@@ -134,10 +134,6 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     real_act_x = range(len(apm))
     debug_msg("--> Real activity data included")
     debug_msg("--> Starting combination of data")
-    del k1s[-1]
-    del real_act_y[-1]
-    del real_act_x[-1]
-    print len(a_cs), len(ratios), len(k1s), len(gs), len(max_qs), len(mus), len(real_act_x), len(real_act_y)
     combined_data = [a_cs, ratios, k1s, gs, max_qs, mus, real_act_x, real_act_y]
     header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus\treal_act_x\treal_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")

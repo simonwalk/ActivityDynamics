@@ -121,6 +121,18 @@ class DynamicNetwork(Network):
         self.reset_tau_iter()
         self.k1 = self.k1_over_epochs[index]
 
+    def get_epochs_info(self, path):
+        file = open(path, "rb")
+        for ldx, line in enumerate(file):
+            if ldx < 1:
+                continue
+            elif ldx is 1:
+                el = line.strip().split("\t")
+                start_date = datetime.datetime.strptime(el[0], "%Y-%m-%d").date()
+            else:
+                pass
+        return start_date, ldx
+
     # Overridden methods
     def calc_max_posts_per_day(self):
         for ep in range(0, len(self.dx)):
@@ -143,10 +155,7 @@ class DynamicNetwork(Network):
             try:
                 self.dx.append(float(el[1]))
             except:
-                print "last line"
-                print len(self.num_vertices_over_epochs)
-                print len(self.dx)
-                #break
+                break
             self.apm.append(float(el[2]))
             self.posts.append(float(el[3]))
             self.replies.append(float(el[4]))
