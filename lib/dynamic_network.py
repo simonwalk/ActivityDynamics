@@ -133,6 +133,21 @@ class DynamicNetwork(Network):
                 pass
         return start_date, ldx
 
+    def update_init_empirical_activity(self):
+        current_activity = sum(self.graph.vp["activity"].a)
+        #empirical_activity = current_activity/self.a_c
+        #self.debug_msg("Current Activity: " + str(current_activity), level=1)
+        current_activity /= (self.graph.num_edges() * 2)
+        #self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
+        for v in self.graph.vertices():
+            try:
+                if not self.graph.vertex_properties["weight_initialized"][v]:
+                    self.graph.vertex_properties["activity"][v] = 0.001*self.a_c#empirical_activity * v.out_degree()
+                    self.graph.vertex_properties["weight_initialized"][v] = True
+            except:
+                sys.exit("Tracking of weight initialization is disabled or failed! Aborting...")
+        #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
+
     # Overridden methods
     def calc_max_posts_per_day(self):
         for ep in range(0, len(self.dx)):

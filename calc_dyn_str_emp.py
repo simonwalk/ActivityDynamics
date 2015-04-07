@@ -21,7 +21,9 @@ def create_network():
     bg.load_graph(emp_data_set+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
-    bg.add_node_weights(0.0, 0.0)
+    bg.track_weight_initialization()
+    #del bg.graph.vertex_properties["weight_initialized"]
+    #bg.add_node_weights(0.0, 0.0)
     bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
@@ -72,7 +74,6 @@ def calc_activity():
         nw.update_adjacency()
         nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
         nw.update_dynamic_model_params(i)
-
         if i > 0:
             nw.update_activity()
             nw.update_init_empirical_activity()

@@ -475,6 +475,12 @@ class Generator():
         self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(),
                                                                         self.graph.num_edges()))
 
+    def track_weight_initialization(self):
+        bools = self.graph.new_vertex_property("bool")
+        for v in self.graph.vertices():
+            bools[v] = False
+        self.graph.vertex_properties["weight_initialized"] = bools
+        self.debug_msg("Enabled tracking of weight initialization")
 
     # randomly create node weights
     def add_node_weights(self, min=0.0, max=0.1, distribution=[1, 0, 0]):
@@ -490,6 +496,10 @@ class Generator():
         shuffle(weights_list)
         for ndx, n in enumerate(self.graph.vertices()):
             weights[n] = weights_list[ndx]
+            try:
+                self.graph.vertex_properties["weight_initialized"][n] = True
+            except:
+                pass
         self.graph.vertex_properties["activity"] = weights
 
 

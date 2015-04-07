@@ -247,19 +247,12 @@ class Network:
         self.debug_msg("Total Activity: {}".format(ta), level=1)
         self.debug_msg("Control Activity: {}".format(ca), level=1)
         for v in self.graph.vertices():
-            self.graph.vp["activity"][v] = initial_empirical_activity * v.out_degree()
+            self.graph.vertex_properties["activity"][v] = initial_empirical_activity * v.out_degree()
+            try:
+                self.graph.vertex_properties["weight_initialized"][v] = True
+            except:
+                pass
         self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
-
-    def update_init_empirical_activity(self):
-        current_activity = sum(self.graph.vp["activity"].a)
-        #empirical_activity = current_activity/self.a_c
-        #self.debug_msg("Current Activity: " + str(current_activity), level=1)
-        current_activity /= (self.graph.num_edges() * 2)
-        #self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
-        for v in self.graph.vertices():
-            if self.graph.vp["activity"][v] == 0:
-                self.graph.vp["activity"][v] = 0.001*self.a_c#empirical_activity * v.out_degree()
-        #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
     # node weights setter
     def set_node_weights(self, name, weights):
