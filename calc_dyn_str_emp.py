@@ -14,7 +14,7 @@ store_itas = 10
 
 manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
 manual_network_epochs = None  # Set to None to set number of network epochs automatically. (Type: int)
-sleep_after_set = 3  # Time to wait after data is set automatically (in seconds).
+sleep_after_set = 3  # Time to wait after data is set automatically in order to check values (in seconds)
 
 
 def create_network():
