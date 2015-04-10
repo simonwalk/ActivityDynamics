@@ -41,18 +41,18 @@ def run_all(log_filename, draw_network=None, mode="months"):
     extract_binned_posts_replies(log_filename, core=0, mode=mode)
 
 
-def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, draw_network=None):
+def run_all_stackexchange(folder, posts_file='Posts.xml', comments_file='Comments.xml', timestat=None, draw_network=None, mode="months"):
     start = now()
     log_filename = extract_log_stackexchange(folder, posts_file, comments_file)
     if timestat is not None:
         timestat['extract log file'] = now() - start
-    run_all(log_filename, draw_network=draw_network)
+    run_all(log_filename, draw_network=draw_network, mode=mode)
 
 
 def auto_decide(filename, rolling_window_size=None, draw_network=None, mode="months"):
     time_stat = dict()
     if filename.endswith('.7z') or os.path.isdir(filename):
-        run_all_stackexchange(filename, timestat=time_stat, draw_network=draw_network)
+        run_all_stackexchange(filename, timestat=time_stat, draw_network=draw_network, mode=mode)
     else:
         new_filename = filename + '_results/' + filename.rsplit('/', 1)[-1]
         try:
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     draw_network = None
     root_path = "../datasets/"
     #path = root_path + "Beachpedia/beachapedia_org_collab_network.txt.sorted"
-    path = root_path + "HistoryStackExchange/"
-    auto_decide(path, rolling_window_size=1, draw_network=draw_network, mode="months")
+    path = root_path + "BeerStackExchange/"
+    auto_decide(path, rolling_window_size=1, draw_network=draw_network, mode="days")
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

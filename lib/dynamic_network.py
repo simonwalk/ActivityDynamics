@@ -1,3 +1,5 @@
+from __future__ import division
+
 __author__ = "Philipp Koncar"
 __version__ = "0.0.1"
 __email__ = "p.koncar@student.tugraz.at"
@@ -135,14 +137,28 @@ class DynamicNetwork(Network):
 
     def update_init_empirical_activity(self):
         current_activity = sum(self.graph.vp["activity"].a)
+        print self.a_c
+        print current_activity
         #empirical_activity = current_activity/self.a_c
         #self.debug_msg("Current Activity: " + str(current_activity), level=1)
-        current_activity /= (self.graph.num_edges() * 2)
+        current_activity_per_edge = current_activity / (self.num_edges_over_epochs[self.ratio_index - 1] * 2)
+        print current_activity_per_edge
         #self.debug_msg("Current Activity per edge: " + str(current_activity), level=1)
+        num_edges_diff = (self.graph.num_edges() / self.num_edges_over_epochs[self.ratio_index - 1])
+        num_edges_diff_2 = self.num_edges_over_epochs[self.ratio_index - 1] / self.graph.num_edges()
+        num_edges_diff_2 *= 2
+        print num_edges_diff
+        print num_edges_diff_2
+        if num_edges_diff is not 1.0:
+            num_edges_diff /= self.a_c
+        #current_activity_per_edge *= num_edges_diff
+        #current_activity_per_edge /= self.a_c
+        #print current_activity
+        print current_activity_per_edge
         for v in self.graph.vertices():
             try:
                 if not self.graph.vertex_properties["weight_initialized"][v]:
-                    self.graph.vertex_properties["activity"][v] = 0.001*self.a_c#empirical_activity * v.out_degree()
+                    self.graph.vertex_properties["activity"][v] = current_activity_per_edge * self.a_c * (num_edges_diff_2 + 1) #v.out_degree()#* v.out_degree() # *2 #0.0006*self.a_c#empirical_activity * v.out_degree()
                     self.graph.vertex_properties["weight_initialized"][v] = True
             except:
                 sys.exit("Tracking of weight initialization is disabled or failed! Aborting...")

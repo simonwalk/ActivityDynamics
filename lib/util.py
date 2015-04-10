@@ -26,6 +26,7 @@ DEBUG_LEVEL = 0
 def get_network_details_for_epochs(graph_name):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
     dtau = graph.graph_properties["deltatau"]
+    store_itas = graph.graph_properties["store_iterations"]
     a_cs = graph.graph_properties["a_cs"]
     ratios = graph.graph_properties["ratios"]
     k1s = graph.graph_properties["k1_over_epochs"]
@@ -34,18 +35,19 @@ def get_network_details_for_epochs(graph_name):
     mus = graph.graph_properties["mu_over_epochs"]
     num_epochs = len(a_cs)
     apm = graph.graph_properties["activity_per_month"]
-    return dtau, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm
+    return dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm
 
 
 def get_network_details(graph_name):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
     dtau = graph.graph_properties["deltatau"]
+    store_itas = graph.graph_properties["store_iterations"]
     mu = round(graph.graph_properties["deltapsi"], 2)
     ac = round(graph.graph_properties["a_c"], 2)
     ratios = graph.graph_properties["ratios"]
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
-    return dtau, mu, ac, ratios, k1, apm
+    return dtau, store_itas, mu, ac, ratios, k1, apm
 
 
 # retrieve parameters stored in binary graph file
@@ -128,7 +130,7 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode +
                                   "_epochs.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm = get_network_details_for_epochs(graph_name)
+    dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm = get_network_details_for_epochs(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -139,9 +141,9 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", 10, ratios[-1], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[-1], deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", 10, ratios[-1], deltatau=dtau)
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[-1], deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots_epochs.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
@@ -158,7 +160,7 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     import os
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    dtau, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -169,9 +171,9 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", 1, ratios[0], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[0], deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", 1, ratios[0], deltatau=dtau)
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[0], deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')

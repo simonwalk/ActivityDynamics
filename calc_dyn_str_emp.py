@@ -14,6 +14,7 @@ store_itas = 10
 
 manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
 manual_network_epochs = None  # Set to None to set number of network epochs automatically. (Type: int)
+sleep_after_set = 3  # Time to wait after data is set automatically (in seconds).
 
 
 def create_network():
@@ -22,8 +23,7 @@ def create_network():
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.track_weight_initialization()
-    #del bg.graph.vertex_properties["weight_initialized"]
-    #bg.add_node_weights(0.0, 0.0)
+    bg.add_node_weights(0.0, 0.0)
     bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
@@ -52,6 +52,8 @@ def calc_activity():
     else:
         debug_msg("Cannot automatically set only one value! Aborting...")
         sys.exit()
+    debug_msg("Waiting " + str(sleep_after_set) + " seconds...")
+    sleep(sleep_after_set)
 
     for epoch in range(1, network_epochs):
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)

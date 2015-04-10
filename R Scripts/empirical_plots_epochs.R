@@ -24,7 +24,6 @@ if (args[6] == "days") {
 
 print(" ++ Plotting acs")
 if (format == "pdf") pdf(paste(graph_name, "_acs.pdf", sep="")) else png(paste(graph_name, "_acs.png", sep=""))
-print(data$a_cs)
 min_y = min(data$a_cs)
 max_y = max(data$a_cs)
 plot(data$a_cs, type=linetype, col=colors[1], xlab=xlabel, ylab=expression("a"[c]), cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
@@ -75,7 +74,7 @@ if (format == "pdf") pdf(paste(graph_name, "_activity.pdf", sep="")) else png(pa
 min_y = min(min(sim_act_y), min(data$real_act_y))
 max_y = max(max(sim_act_y), max(data$real_act_y))
 par(mar=c(5,5,4,5)+.1)
-plot(sim_act_x[,1], sim_act_y[,1], type="l", pch=4, xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)#, ylim=c(min_y, max_y))
+plot(sim_act_x[,1], sim_act_y[,1], type="l", pch=4, xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
 lines(data$real_act_x, data$real_act_y, type=linetype, lty=1, pch=1, col=colors[2])
 title(substitute("Activity over " ~ tau ~ " (in " * mode * ")", list(mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)

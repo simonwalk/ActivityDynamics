@@ -479,7 +479,7 @@ class Network:
             tau = (float(self.tau_iter)+1)*self.deltatau/self.deltapsi
             tau += self.ratio_index
             self.taus_file.write(str(tau) + "\n")
-            self.tau_iter += 1
+        self.tau_iter += 1
 
         # Increment current iteration counter
         self.cur_iteration += 1
