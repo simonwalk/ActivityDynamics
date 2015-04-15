@@ -5,7 +5,7 @@ import time
 from multiprocessing import Pool
 
 
-emp_data_set = "HistoryStackExchange"
+emp_data_set = "BeerStackExchange"
 mode = "months"  # Possible: "months", "days"
 plot_fmt = "pdf"
 tid = 30
@@ -59,8 +59,10 @@ def calc_activity():
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(1)
+        nw.calc_new_users_num_edges_vertices()
+        print nw.num_new_user_vertices, nw.num_new_user_edges
 
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt", start_date)
     nw.reduce_network_to_epoch(start_date, 1, mode=mode)
     nw.init_empirical_activity()
     nw.calculate_ratios()
@@ -78,7 +80,8 @@ def calc_activity():
         nw.update_dynamic_model_params(i)
         if i > 0:
             nw.update_activity()
-            nw.update_init_empirical_activity()
+            #nw.update_init_empirical_activity()
+            nw.init_empirical_activity_new_users()
         nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m, "
                          "\x1b[32mk1={}\x1b[00m, \x1b[32m ratio-k1={}\x1b[00m, "

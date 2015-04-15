@@ -43,6 +43,9 @@ class DynamicNetwork(Network):
         self.max_q_over_epochs = []
         self.mu_over_epochs = []
         self.deltapsi_over_epochs = []
+        self.appeared_users = []
+        self.num_new_user_vertices = []
+        self.num_new_user_edges = []
 
     def reduce_network_to_epoch(self, start_date, timedelta, mode=None):
         if mode is None:
@@ -149,12 +152,48 @@ class DynamicNetwork(Network):
                 sys.exit("Tracking of weight initialization is disabled or failed! Aborting...")
         #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
+    def init_empirical_activity_new_users(self):
+        print self.agg_act_new_users[self.ratio_index], self.num_new_user_vertices[self.ratio_index], self.num_new_user_edges[self.ratio_index]*2
+        initial_empirical_activity = self.agg_act_new_users[self.ratio_index]/self.num_new_user_vertices[self.ratio_index]/self.a_c
+        self.debug_msg("Init Activity: {}".format(initial_empirical_activity), level=1)
+        initial_empirical_activity /= (self.num_new_user_edges[self.ratio_index]*2)
+        self.debug_msg("Init Activity per edge: {}".format(initial_empirical_activity), level=1)
+        #ta = initial_empirical_activity*(self.graph.num_edges()*2)*self.a_c*self.graph.num_vertices()
+        #ca = self.apm[0]
+        #self.debug_msg("Total Activity: {}".format(ta), level=1)
+        #self.debug_msg("Control Activity: {}".format(ca), level=1)
+        for v in self.graph.vertices():
+            self.graph.vertex_properties["activity"][v] = initial_empirical_activity * v.out_degree()
+            try:
+                self.graph.vertex_properties["weight_initialized"][v] = True
+            except:
+                pass
+        self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
+
+    def calc_new_users_num_edges_vertices(self):
+        new_users_id = []
+        new_users_bool_list = self.graph.new_vertex_property("bool")
+
+        num_new_users = 0
+        for v in self.graph.vertices():
+
+            if self.graph.vertex_properties["nodeID"][v] not in self.appeared_users:
+                new_users_id.append(self.graph.vertex_properties["nodeID"][v])
+                new_users_bool_list[v] = True
+                num_new_users += 1
+                for neighbour in v.all_neighbours():
+                    new_users_bool_list[neighbour] = True
+        self.num_new_user_vertices.append(num_new_users)
+        self.graph.set_vertex_filter(new_users_bool_list)
+        self.num_new_user_edges.append(self.graph.num_edges())
+        self.appeared_users = self.appeared_users + new_users_id
+
     # Overridden methods
     def calc_max_posts_per_day(self):
         for ep in range(0, len(self.dx)):
             self.max_posts_per_day_over_epochs.append(max(self.posts_per_user_per_day[0 + ep:1 + ep]))
 
-    def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
+    def get_empirical_input(self, path, start_date, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
         self.apm = []
         self.posts = []
@@ -163,11 +202,15 @@ class DynamicNetwork(Network):
         self.init_users = []
         self.posts_per_user_per_day = []
         self.a_cs = []
+        self.agg_act_new_users = []
         f = open(path, "rb")
         for ldx, line in enumerate(f):
             if ldx < 1:
                 continue
             el = line.strip().split("\t")
+            if datetime.datetime.strptime(el[0], "%Y-%m-%d").date() < start_date:
+                self.debug_msg("Skipped epoch: " + el[0], level=1)
+                continue
             try:
                 self.dx.append(float(el[1]))
             except:
@@ -182,6 +225,7 @@ class DynamicNetwork(Network):
             num_users = float(el[5]) + 1
             self.num_users.append(num_users)
             self.posts_per_user_per_day.append(float(el[3])/num_users/self.tau_in_days)
+            self.agg_act_new_users.append(float(el[7]))
         f.close()
         self.calc_acs()
         self.calc_max_posts_per_day()
@@ -192,6 +236,8 @@ class DynamicNetwork(Network):
         self.max_q = self.max_q_over_epochs[-1]
         self.calc_mus()
         self.deltapsi_over_epochs = self.mu_over_epochs
+        self.debug_msg("apm: {}".format(self.apm), level=1)
+        self.debug_msg("agg_act_new_users: {}".format(self.agg_act_new_users), level=1)
         self.debug_msg("max_posts_per_day_over_epochs: {}".format(self.max_posts_per_day_over_epochs), level=1)
         self.debug_msg("max_q_over_epochs: {}".format(self.max_q_over_epochs), level=1)
         self.debug_msg("deltapsi_over_epochs: {}".format(self.deltapsi_over_epochs), level=1)
