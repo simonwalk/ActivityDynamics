@@ -14,6 +14,7 @@ cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585")
 xlabel = substitute(tau ~ " (in " * mode * ")", list(mode=mode))
+xvalues <- seq(0,length(data$ratios) - 1,1)
 if (args[6] == "days") {
   linetype = "l"
   pchstyle = NA
@@ -33,10 +34,12 @@ dev.off()
 
 print(" ++ Plotting ratios and k1s")
 if (format == "pdf") pdf(paste(graph_name, "_ratios.pdf", sep="")) else png(paste(graph_name, "_ratios.png", sep=""))
-min_y = min(min(data$ratios), min(data$k1s))
-max_y = max(max(data$ratios), max(data$k1s))
-plot(data$ratios, type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
-lines(data$k1s, col=colors[2], lty=2)
+clean_ratios <- data$ratios[!is.na(data$ratios)]
+min_y = min(min(clean_ratios), min(data$k1s))
+max_y = max(max(clean_ratios), max(data$k1s))
+par(mar=c(5,5,4,5)+.1)
+plot(xvalues, data$ratios, type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
+lines(xvalues, data$k1s, col=colors[2], lty=2)
 title(substitute("Ratio " ~ (frac(lambda,mu)) ~ " over " ~ tau ~ " (in " * mode * ")", list(mode=mode)))
 legend("bottomright", pch=c(pchstyle,NA), col=colors, legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
 grid(col="gray", lwd=1)

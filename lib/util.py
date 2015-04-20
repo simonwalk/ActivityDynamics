@@ -29,7 +29,7 @@ def get_network_details_for_epochs(graph_name):
     store_itas = graph.graph_properties["store_iterations"]
     a_cs = graph.graph_properties["a_cs"]
     ratios = graph.graph_properties["ratios"]
-    ratios.append(np.nan)
+    ratios = [np.nan] + ratios
     k1s = graph.graph_properties["k1_over_epochs"]
     gs = graph.graph_properties["g_over_epochs"]
     max_qs = graph.graph_properties["max_q_over_epochs"]
@@ -145,9 +145,9 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[0], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[0], deltatau=dtau)
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots_epochs.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots_epochs.R')
