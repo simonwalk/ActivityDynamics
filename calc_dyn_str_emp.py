@@ -10,10 +10,10 @@ mode = "months"  # Possible: "months", "days"
 plot_fmt = "pdf"
 tid = 30
 deltatau = 0.001
-store_itas = 10
+store_itas = 1
 
 manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
-manual_network_epochs = None  # Set to None to set number of network epochs automatically. (Type: int)
+manual_network_epochs = None  # Set to None to setBeer number of network epochs automatically. (Type: int)
 sleep_after_set = 3  # Time to wait after data is set automatically in order to check values (in seconds)
 
 
@@ -55,17 +55,19 @@ def calc_activity():
     debug_msg("Waiting " + str(sleep_after_set) + " seconds...")
     sleep(sleep_after_set)
 
-    for epoch in range(1, network_epochs):
+    for epoch in range(0, network_epochs - 1):
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(1)
-        nw.calc_new_users_num_edges_vertices()
-        print nw.num_new_user_vertices, nw.num_new_user_edges
+        #nw.calc_new_users_num_edges_vertices()
+        #print nw.num_new_user_vertices, nw.num_new_user_edges
 
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt", start_date)
-    nw.reduce_network_to_epoch(start_date, 1, mode=mode)
+    nw.reduce_network_to_epoch(start_date, 0, mode=mode)
     nw.init_empirical_activity()
+    nw.sapm.append(round(sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()))
     nw.calculate_ratios()
+    nw.set_ratio(0)
     nw.create_folders()
     nw.open_weights_files()
     nw.open_taus_files()
@@ -73,15 +75,15 @@ def calc_activity():
     nw.write_initial_tau_to_file()
     for i in range(0, len(nw.ratios) - 1):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
-        nw.reduce_network_to_epoch(start_date, i+1, mode=mode)
+        nw.reduce_network_to_epoch(start_date, i + 1, mode=mode)
         nw.update_ones_ratio()
         nw.update_adjacency()
         nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
         nw.update_dynamic_model_params(i)
         if i > 0:
             nw.update_activity()
-            #nw.update_init_empirical_activity()
-            nw.init_empirical_activity_new_users()
+            nw.update_init_empirical_activity()
+            #nw.init_empirical_activity_new_users()
         nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m, "
                          "\x1b[32mk1={}\x1b[00m, \x1b[32m ratio-k1={}\x1b[00m, "
@@ -91,6 +93,10 @@ def calc_activity():
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
         nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
+        nw.sapm.append(round(sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()))
+    nw.debug_msg("Observed activity over epochs: {}".format(nw.apm), level=1)
+    nw.debug_msg("Simulated activity over epochs: {}".format(nw.sapm), level=1)
+    nw.debug_msg(" --> Difference: {}".format(np.subtract(nw.sapm, nw.apm)), level=1)
     nw.close_weights_files()
     nw.close_taus_files()
     nw.add_graph_properties()

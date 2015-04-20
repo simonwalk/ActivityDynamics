@@ -59,6 +59,7 @@ class Network:
         self.store_iterations = store_iterations
         self.ratio = None
         self.tau_iter = 0
+        self.sapm = []
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
         # variable needed for adding and removing edges from graph
@@ -220,6 +221,7 @@ class Network:
             self.set_graph_property("object", self.max_q, "max_q")
             self.set_graph_property("object", self.max_posts_per_day, "max_posts_per_day")
             self.set_graph_property("object", self.g_per_month, "g_per_month")
+            self.set_graph_property("object", self.sapm, "simulated_activity_per_month")
         except:
             self.debug_msg("  -> INFO: Could not store empirical activities! ", level=1)
 

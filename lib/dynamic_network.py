@@ -48,6 +48,7 @@ class DynamicNetwork(Network):
         self.num_new_user_edges = []
 
     def reduce_network_to_epoch(self, start_date, timedelta, mode=None):
+        timedelta += 1
         if mode is None:
             self.debug_msg("No mode given for reduce_network_to_epoch! Aborting...", level=1)
             sys.exit()
@@ -122,9 +123,9 @@ class DynamicNetwork(Network):
     def update_dynamic_model_params(self, index):
         self.set_ac(index)
         self.set_ratio(index)
-        self.set_deltapsi(index)
+        self.set_deltapsi(index + 1)
         self.reset_tau_iter()
-        self.k1 = self.k1_over_epochs[index]
+        self.k1 = self.k1_over_epochs[index + 1]
 
     def get_epochs_info(self, path):
         file = open(path, "rb")
@@ -141,13 +142,13 @@ class DynamicNetwork(Network):
     def update_init_empirical_activity(self):
         current_activity = sum(self.graph.vp["activity"].a)
         current_activity_per_edge = current_activity / (self.num_edges_over_epochs[self.ratio_index - 1] * 2)
-        num_edges_diff = (self.graph.num_edges() / self.num_edges_over_epochs[self.ratio_index - 1])
-        num_edges_diff /= 2
+        #num_edges_diff = (self.graph.num_edges() / self.num_edges_over_epochs[self.ratio_index - 1])
+        #num_edges_diff /= 2
         for v in self.graph.vertices():
             try:
-                if not self.graph.vertex_properties["weight_initialized"][v]:
-                    self.graph.vertex_properties["activity"][v] = current_activity_per_edge * num_edges_diff / self.a_c
-                    self.graph.vertex_properties["weight_initialized"][v] = True
+                #if not self.graph.vertex_properties["weight_initialized"][v]:
+                self.graph.vertex_properties["activity"][v] = current_activity_per_edge * v.out_degree()#num_edges_diff / self.a_c
+                self.graph.vertex_properties["weight_initialized"][v] = True
             except:
                 sys.exit("Tracking of weight initialization is disabled or failed! Aborting...")
         #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
@@ -251,13 +252,14 @@ class DynamicNetwork(Network):
         self.set_ac(0)
 
     def calculate_ratios(self):
-        for ep in range(0, len(self.dx)):
+        for ep in range(0, len(self.dx) - 1):
             activity_current = self.apm[ep]
             activity_next = activity_current-self.dx[ep]
             #print activity_current, activity_next, (activity_next/activity_current), math.log(activity_next/activity_current)
-            self.ratio = self.k1_over_epochs[ep] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[ep]
+            self.ratio = self.k1_over_epochs[ep + 1] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[ep+1]
             #self.ratio -= 0.03 * activity_current / (self.a_cs[ep] * self.num_vertices_over_epochs[ep])
             self.ratios.append(self.ratio)
+        self.ratios.append(-1.0)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
     def get_node_weights(self, name):
