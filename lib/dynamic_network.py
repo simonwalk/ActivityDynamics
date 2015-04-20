@@ -256,10 +256,9 @@ class DynamicNetwork(Network):
             activity_current = self.apm[ep]
             activity_next = activity_current-self.dx[ep]
             #print activity_current, activity_next, (activity_next/activity_current), math.log(activity_next/activity_current)
-            self.ratio = self.k1_over_epochs[ep + 1] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[ep+1]
+            self.ratio = self.k1_over_epochs[ep + 1] - math.log(activity_next/activity_current) / self.deltapsi_over_epochs[ep + 1]
             #self.ratio -= 0.03 * activity_current / (self.a_cs[ep] * self.num_vertices_over_epochs[ep])
             self.ratios.append(self.ratio)
-        self.ratios.append(-1.0)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
     def get_node_weights(self, name):

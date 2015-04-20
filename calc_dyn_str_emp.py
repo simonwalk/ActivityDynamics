@@ -59,6 +59,7 @@ def calc_activity():
         nw.reduce_network_to_epoch(start_date, epoch, mode=mode)
         nw.update_num_vertices_edges()
         nw.calc_eigenvalues_for_epoch(1)
+        # TODO: remove calc_new_users_num_edges_vertices() here and in dynamic_network
         #nw.calc_new_users_num_edges_vertices()
         #print nw.num_new_user_vertices, nw.num_new_user_edges
 
@@ -73,7 +74,7 @@ def calc_activity():
     nw.open_taus_files()
     nw.write_summed_weights_to_file()
     nw.write_initial_tau_to_file()
-    for i in range(0, len(nw.ratios) - 1):
+    for i in range(0, len(nw.ratios)):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
         nw.reduce_network_to_epoch(start_date, i + 1, mode=mode)
         nw.update_ones_ratio()

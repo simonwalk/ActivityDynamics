@@ -29,6 +29,7 @@ def get_network_details_for_epochs(graph_name):
     store_itas = graph.graph_properties["store_iterations"]
     a_cs = graph.graph_properties["a_cs"]
     ratios = graph.graph_properties["ratios"]
+    ratios.append(np.nan)
     k1s = graph.graph_properties["k1_over_epochs"]
     gs = graph.graph_properties["g_over_epochs"]
     max_qs = graph.graph_properties["max_q_over_epochs"]
