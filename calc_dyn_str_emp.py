@@ -1,16 +1,21 @@
+from __future__ import division
 from lib.util import *
 from lib.generator import *
 from lib.dynamic_network import DynamicNetwork
+from lib.alpha_beta_filter import AlphaBetaFilter
 import time
 from multiprocessing import Pool
 
 
-emp_data_set = "BeerStackExchange"
+emp_data_set = "HistoryStackExchange"
 mode = "months"  # Possible: "months", "days"
 plot_fmt = "pdf"
 tid = 30
 deltatau = 0.001
 store_itas = 1
+
+alpha = 0.85
+beta = 0.005
 
 manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
 manual_network_epochs = None  # Set to None to setBeer number of network epochs automatically. (Type: int)
@@ -22,6 +27,7 @@ def create_network():
     bg.load_graph(emp_data_set+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
+    #TODO: Remove tracking of weight initialization. Not needed anymore.
     bg.track_weight_initialization()
     bg.add_node_weights(0.0, 0.0)
     bg.collect_colors()
@@ -64,7 +70,7 @@ def calc_activity():
         #print nw.num_new_user_vertices, nw.num_new_user_edges
 
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt", start_date)
-    nw.reduce_network_to_epoch(start_date, 0, mode=mode)
+    nw.reduce_network_to_epoch(start_date, 1, mode=mode)
     nw.init_empirical_activity()
     nw.sapm.append(round(sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()))
     nw.calculate_ratios()
@@ -74,6 +80,9 @@ def calc_activity():
     nw.open_taus_files()
     nw.write_summed_weights_to_file()
     nw.write_initial_tau_to_file()
+
+    ab_filter = AlphaBetaFilter(alpha, beta, nw.apm[0])
+
     for i in range(0, len(nw.ratios)):
         debug_msg("Starting activity dynamics for epoch: " + str(i+1))
         nw.reduce_network_to_epoch(start_date, i + 1, mode=mode)
@@ -95,9 +104,12 @@ def calc_activity():
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
         nw.debug_msg(" --> Sum of weights: \x1b[33m{}\x1b[0m with \x1b[33m{}\x1b[0m nodes".format(str(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices()), nw.graph.num_vertices()), level=1)
         nw.sapm.append(round(sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()))
+        ab_filter.filter(sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices(), 1 / network_epochs)
     nw.debug_msg("Observed activity over epochs: {}".format(nw.apm), level=1)
     nw.debug_msg("Simulated activity over epochs: {}".format(nw.sapm), level=1)
-    nw.debug_msg(" --> Difference: {}".format(np.subtract(nw.sapm, nw.apm)), level=1)
+    ab_filter.debug_msg("Filtered activity over epochs: {}".format(ab_filter.filtered_activity))
+    nw.debug_msg(" --> Difference measured: {}".format(np.subtract(nw.sapm, nw.apm)), level=1)
+    ab_filter.debug_msg(" --> Difference filtered: {}".format(np.subtract(nw.apm, ab_filter.filtered_activity)))
     nw.close_weights_files()
     nw.close_taus_files()
     nw.add_graph_properties()

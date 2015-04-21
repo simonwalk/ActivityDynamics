@@ -116,7 +116,7 @@ class DynamicNetwork(Network):
 
     def update_activity(self):
         self.graph.vp["activity"].a *= self.a_cs[self.ratio_index - 1]
-        self.graph.vp["activity"].a *= self.num_vertices_over_epochs[self.ratio_index - 1]
+        self.graph.vp["activity"].a *= self.num_vertices_over_epochs[self.ratio_index]
         self.graph.vp["activity"].a /= self.a_c
         self.graph.vp["activity"].a /= self.graph.num_vertices()
 
@@ -141,14 +141,12 @@ class DynamicNetwork(Network):
 
     def update_init_empirical_activity(self):
         current_activity = sum(self.graph.vp["activity"].a)
-        current_activity_per_edge = current_activity / (self.num_edges_over_epochs[self.ratio_index - 1] * 2)
-        #num_edges_diff = (self.graph.num_edges() / self.num_edges_over_epochs[self.ratio_index - 1])
-        #num_edges_diff /= 2
+        current_activity_per_edge = current_activity / (self.graph.num_edges() * 2)
         for v in self.graph.vertices():
             try:
-                #if not self.graph.vertex_properties["weight_initialized"][v]:
-                self.graph.vertex_properties["activity"][v] = current_activity_per_edge * v.out_degree()#num_edges_diff / self.a_c
-                self.graph.vertex_properties["weight_initialized"][v] = True
+                if not self.graph.vertex_properties["weight_initialized"][v]:
+                    self.graph.vertex_properties["activity"][v] = current_activity_per_edge * v.out_degree()#num_edges_diff / self.a_c
+                    self.graph.vertex_properties["weight_initialized"][v] = True
             except:
                 sys.exit("Tracking of weight initialization is disabled or failed! Aborting...")
         #self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
