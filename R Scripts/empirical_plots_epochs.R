@@ -12,7 +12,7 @@ mode = args[6]
 format = args[7]
 cex_paper = 1.5
 cex_size = 0.6
-colors = c("#000000", "#858585")
+colors = c("#000000", "#858585", "#FF0000")
 xlabel = substitute(tau ~ " (in " * mode * ")", list(mode=mode))
 xvalues <- seq(0,length(data$ratios) - 1,1)
 if (args[6] == "days") {
@@ -96,9 +96,10 @@ max_y = max(max(data$sim_act_y), max(data$real_act_y))
 par(mar=c(5,5,4,5)+.1)
 plot(data$sim_act_x, data$sim_act_y, type="l", pch=4, xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
 lines(data$real_act_x, data$real_act_y, type=linetype, lty=1, pch=1, col=colors[2])
+lines(data$fil_act_x, data$fil_act_y, type=linetype, lty=1, pch=1, col=colors[3])
 title(substitute("Activity over " ~ tau ~ " (in " * mode * ")", list(mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
-legend("topright", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
+legend("top", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity", "Filtered Activity"), lty=c(1,1,1), cex=1)
 dev.off()
 
 print(" ++ Plotting Error of Simulation")

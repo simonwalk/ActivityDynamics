@@ -26,6 +26,11 @@ class AlphaBetaFilter():
         self.v_estimate = vk
         self.filtered_activity.append(round(self.x_estimate))
 
+    def save_to_network(self, nw):
+        prop = nw.graph.new_graph_property("object", self.filtered_activity)
+        nw.graph.graph_properties["filtered_activity"] = prop
+        self.debug_msg("Saved to network.")
+
     @staticmethod
     def debug_msg(msg):
         print "  \x1b[31m-ABF-\x1b[00m [\x1b[36m{}\x1b[00m] \x1b[31m{}\x1b[00m".format(datetime.datetime.now().strftime("%H:%M:%S"), msg)

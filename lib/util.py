@@ -37,7 +37,8 @@ def get_network_details_for_epochs(graph_name):
     num_epochs = len(a_cs)
     apm = graph.graph_properties["activity_per_month"]
     sapm = graph.graph_properties["simulated_activity_per_month"]
-    return dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm, sapm
+    fapm = graph.graph_properties["filtered_activity"]
+    return dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm, sapm, fapm
 
 
 def get_network_details(graph_name):
@@ -132,16 +133,18 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode +
                                   "_epochs.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm, sapm = get_network_details_for_epochs(graph_name)
+    dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm, sapm, fapm = get_network_details_for_epochs(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
     sim_act_y = sapm
     sim_act_x = range(len(apm))
+    fil_act_y = fapm
+    fil_act_x = range(len(fapm))
     debug_msg("--> Real activity data included")
     debug_msg("--> Starting combination of data")
-    combined_data = [a_cs, ratios, k1s, gs, max_qs, mus, real_act_x, real_act_y, sim_act_x, sim_act_y]
-    header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus\treal_act_x\treal_act_y\tsim_act_x\tsim_act_y"
+    combined_data = [a_cs, ratios, k1s, gs, max_qs, mus, real_act_x, real_act_y, sim_act_x, sim_act_y, fil_act_x, fil_act_y]
+    header = "a_cs\tratios\tk1s\tgs\tmax_qs\tmus\treal_act_x\treal_act_y\tsim_act_x\tsim_act_y\tfil_act_x\tfil_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")

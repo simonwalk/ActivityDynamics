@@ -15,7 +15,7 @@ deltatau = 0.001
 store_itas = 1
 
 alpha = 0.85
-beta = 0.005
+beta = 0.001
 
 manual_start_date = None  # Set to None to set start date automatically. (Type: datetime.date)
 manual_network_epochs = None  # Set to None to setBeer number of network epochs automatically. (Type: int)
@@ -112,12 +112,13 @@ def calc_activity():
     ab_filter.debug_msg(" --> Difference filtered: {}".format(np.subtract(nw.apm, ab_filter.filtered_activity)))
     nw.close_weights_files()
     nw.close_taus_files()
+    ab_filter.save_to_network(nw)
     nw.add_graph_properties()
     nw.store_graph(0)
     debug_msg(" *** Done with activity dynamics *** ")
 
 if __name__ == '__main__':
-    create_network()
-    calc_activity()
+    #create_network()
+    #calc_activity()
     empirical_result_plot_for_epochs(emp_data_set, mode, plot_fmt)
     sys.exit()
