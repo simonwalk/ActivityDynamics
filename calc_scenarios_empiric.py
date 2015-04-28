@@ -10,7 +10,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "png"
-random_itas = 10
+rand_itas = 5
 
 data_sets = ["BeerStackExchange",
              "HistoryStackExchange"]
@@ -88,37 +88,41 @@ def calc_activity(scenario):
     nw.store_graph(0)
 
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
-    nw.set_ratio(0)
-    nw.open_weights_files(scenario)
-    nw.open_taus_files(scenario)
-    nw.graph.vertex_properties["activity"] = scenario_init_activity
-    nw.cur_iteration = scenario_init_iter
-    debug_msg(" --> Reset activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
-              ", cur_iteration to " + str(scenario_init_iter))
+    for rand_iter in range(0, rand_itas):
+        debug_msg(" --> Starting iteration " + str(rand_iter))
+        nw.run = rand_iter
+        nw.set_ratio(0)
+        nw.open_weights_files(scenario)
+        nw.open_taus_files(scenario)
+        nw.graph.vertex_properties["activity"] = scenario_init_activity.copy()
+        nw.cur_iteration = scenario_init_iter
+        debug_msg(" --> Reset activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
+                  ", cur_iteration to " + str(scenario_init_iter))
+        for i in range(scenario_marker, len(nw.ratios)):
+            debug_msg("Starting activity dynamics for ratio: " + str(i+1))
+            nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
+            nw.set_ac(i)
+            nw.set_ratio(i)
+            nw.reset_tau_iter()
+            nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
+                             "with \x1b[32m ratio={}\x1b[00m and "
+                             "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
+                             "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
+                                                                        int(nw.deltapsi/nw.deltatau)),
+                                 level=1)
+            for j in xrange(int(nw.deltapsi/nw.deltatau)):
+                nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
 
-    for i in range(scenario_marker, len(nw.ratios)):
-        debug_msg("Starting activity dynamics for ratio: " + str(i+1))
-        nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
-        nw.set_ac(i)
-        nw.set_ratio(i)
-        nw.reset_tau_iter()
-        nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
-                         "with \x1b[32m ratio={}\x1b[00m and "
-                         "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                         "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
-                                                                    int(nw.deltapsi/nw.deltatau)),
-                             level=1)
-        for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
+        nw.close_weights_files()
+        nw.close_taus_files()
 
-    nw.close_weights_files()
-    nw.close_taus_files()
-
+    calc_random_inits_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
     debug_msg(" *** Done with activity dynamics *** ")
 
 
 if __name__ == '__main__':
-    #create_network()
+    create_network()
     for scenario in scenarios:
-    #    calc_activity(scenario)
+        calc_activity(scenario)
+
         plot_scenario_results(emp_data_set, scenario, plot_fmt)

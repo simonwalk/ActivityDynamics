@@ -374,8 +374,23 @@ def plot_weights_over_time(graph_name):
         debug_msg("  ** Done", level=0)
 
 
+def calc_random_inits_average(graph_name, scenario, rand_itas, store_itas, ratio, dtau, delFiles=False):
+    debug_msg("*** Starting combination of random iterations ***")
+    output_path = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
+                                  str(store_itas) + "_" + str(float(dtau)).replace(".", "") + "_" +
+                                  str(ratio).replace(".", "") + "_run_average_" + scenario + ".txt")
+    average = []
+    for i in range(0, rand_itas):
+        weight_path = get_abs_path(graph_name, "_" + scenario + "_weights", store_itas, ratio, deltatau=dtau,
+                                   run=i)
+        average.append(np.loadtxt(weight_path))
+        if delFiles:
+            os.remove(weight_path)
+    np.savetxt(output_path, np.mean(average, axis=0))
+
+
 def plot_scenario_results(graph_name, scenario, plot_fmt):
-    debug_msg("*** Start plotting of scenario results ***")
+    debug_msg("*** Starting plotting of scenario results ***")
     import subprocess
     import os
     output_path_data = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_scenarios.txt")
@@ -402,7 +417,7 @@ def plot_scenario_results(graph_name, scenario, plot_fmt):
     combined_data.append(np.loadtxt(taus_path))
     header = "sim_act\ttaus"
     len_tau = len(combined_data[1])
-    weights_path = get_abs_path(graph_name, "_" + scenario + "_weights", store_itas, ratios[1], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_" + scenario, store_itas, ratios[1], deltatau=dtau, run="average")
     debug_msg("----> " + weights_path)
     temp = np.loadtxt(weights_path)
     len_temp = len_tau - len(temp)
