@@ -160,19 +160,23 @@ class Network:
 
 
     # Methods to manage the files to store the weights over all iterations
-    def open_weights_files(self):
+    def open_weights_files(self, suffix=""):
+        if suffix is not "":
+            suffix = "_" + suffix
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + "_weights.txt"
+                str(self.run) + suffix + "_weights.txt"
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
 
-    def open_taus_files(self):
+    def open_taus_files(self, suffix=""):
+        if suffix is not "":
+            suffix = "_" + suffix
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + "_taus.txt"
+                str(self.run) + suffix + "_taus.txt"
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
 
@@ -423,7 +427,7 @@ class Network:
             return ev_centrality
 
     def calculate_ratios(self):
-        for i in xrange(len(self.dx)):
+        for i in xrange(len(self.dx) - 1):
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi

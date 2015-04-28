@@ -48,6 +48,7 @@ def get_network_details(graph_name):
     mu = round(graph.graph_properties["deltapsi"], 2)
     ac = round(graph.graph_properties["a_c"], 2)
     ratios = graph.graph_properties["ratios"]
+    ratios = [np.nan] + ratios
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
     return dtau, store_itas, mu, ac, ratios, k1, apm
@@ -178,9 +179,9 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[0], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[0], deltatau=dtau)
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
@@ -371,6 +372,55 @@ def plot_weights_over_time(graph_name):
         subprocess.call([config.r_binary_path, r_script_path, wd, out_path, str(ratio), str(deltatau), graph_name,
                          "%.2f" % ew[0]], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
         debug_msg("  ** Done", level=0)
+
+
+def plot_scenario_results(graph_name, scenario, plot_fmt):
+    debug_msg("*** Start plotting of scenario results ***")
+    import subprocess
+    import os
+    output_path_data = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_scenarios.txt")
+    output_path_weights = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
+                                          scenario + "_combined.txt")
+    debug_msg("--> Collection graph data...")
+    dtau, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    debug_msg("--> Done with collecting graph data.")
+    real_act_y = apm
+    real_act_x = range(len(apm))
+    debug_msg("--> Real activity data included")
+    debug_msg("--> Combining graph data...")
+    combined_data = [ratios, real_act_x, real_act_y]
+    header = "ratios\treal_act_x\treal_act_y"
+    np.savetxt(output_path_data, np.array(combined_data).T, delimiter="\t", header=header, comments="")
+    debug_msg("--> Graph data successfully combined")
+    debug_msg("--> Combining weights and tau data...")
+    combined_data = []
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
+    debug_msg("----> " + weights_path)
+    combined_data.append(np.loadtxt(weights_path))
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
+    debug_msg("----> " + taus_path)
+    combined_data.append(np.loadtxt(taus_path))
+    header = "sim_act\ttaus"
+    len_tau = len(combined_data[1])
+    weights_path = get_abs_path(graph_name, "_" + scenario + "_weights", store_itas, ratios[1], deltatau=dtau)
+    debug_msg("----> " + weights_path)
+    temp = np.loadtxt(weights_path)
+    len_temp = len_tau - len(temp)
+    temp_array = np.empty(len_temp)
+    temp_array.fill(np.nan)
+    temp = list(temp_array) + list(temp)
+    combined_data.append(temp)
+    header += "\t" + scenario
+    np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
+               comments="")
+    debug_msg("--> Weights and tau data successfully combined")
+    debug_msg("--> Calling empirical_scenarios_plots.R")
+    r_script_path = os.path.abspath(config.r_dir + 'empirical_scenarios_plots.R')
+    wd = r_script_path.replace("R Scripts/empirical_scenarios_plots.R", "") + config.plot_dir + "empirical_results/"
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path_data, output_path_weights, graph_name, scenario,
+                     plot_fmt, str(dtau), str(mu), str(ac), str(k1)])
+    debug_msg("*** Successfully plotted scenario results ***")
+
 
 # debug output
 def debug_msg(msg, level=0):

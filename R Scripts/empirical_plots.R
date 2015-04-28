@@ -29,8 +29,9 @@ print(paste(" ++ Plot Format: ", format, sep=""))
 
 print(" ++ Plotting ratios and k1")
 if (format == "pdf") pdf(paste(graph_name, "_ratios.pdf", sep="")) else png(paste(graph_name, "_ratios.png", sep=""))
-min_y = min(data$ratios)
-max_y = max(data$ratios)
+clean_ratios <- data$ratios[!is.na(data$ratios)]
+min_y = min(clean_ratios)
+max_y = max(clean_ratios)
 k1_x = seq(1,length(data$ratios),1)
 k1_y = as.numeric(rep(k1, length(k1_x)))
 plot(data$ratios, type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
