@@ -1,3 +1,5 @@
+from __future__ import division
+
 __author__ = "Philipp Koncar"
 __version__ = "0.0.1"
 __email__ = "p.koncar@student.tugraz.at"
@@ -14,6 +16,10 @@ class ScenarioNetwork(Network):
 
         Network.__init__(self, directed, graph_name, run, converge_at, deltatau, runs, deltapsi, debug_level,
                          store_iterations, ratios, ratio_index, tau_in_days, num_nodes)
+
+        self.graph_copy = None
+        self.troll_ids = []
+        self.entities_ids = []
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -58,6 +64,7 @@ class ScenarioNetwork(Network):
             else:
                 bool_map[v] = 1
         self.graph.set_vertex_filter(bool_map)
+        self.graph.purge_vertices()
         self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
@@ -73,5 +80,44 @@ class ScenarioNetwork(Network):
             else:
                 bool_map[e] = 1
         self.graph.set_edge_filter(bool_map)
+        self.graph.purge_edges()
         self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
+
+    def add_users_by_num(self, num_users):
+        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        old_num_users = self.graph.num_vertices()
+        self.debug_msg(" --> Going to add " + str(num_users) + " new users with degree " + str(average_degree) +
+                       " to the network...", level=1)
+        for i in range(0, num_users):
+            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            v = self.graph.add_vertex()
+            for t in targets:
+                self.graph.add_edge(v, t)
+        self.debug_msg(" --> Added " + str(num_users) + " users to the network (was: " + str(old_num_users) + ", now: " +
+                       str(self.graph.num_vertices()) + ").", level=1)
+
+    def add_edges_by_num(self, num_edges):
+        pass
+
+    def add_trolls_by_num(self, num_trolls, negative_activity):
+        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        self.troll_ids = self.graph.add_vertex(num_trolls)
+        for troll in self.troll_ids:
+            self.graph.vertex_properties["activity"][troll] = negative_activity
+            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            for tgt in targets:
+                self.graph.add_edge(troll, tgt)
+        self.debug_msg(" --> Added " + str(num_trolls) + " trolls with activity " + str(negative_activity) +
+                       " to the network.", level=1)
+
+    def add_entities_by_num(self, num_entities, activity):
+        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        self.entities_ids = self.graph.add_vertex(num_entities)
+        for entity in self.entities_ids:
+            self.graph.vertex_properties["activity"][entity] = activity
+            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            for tgt in targets:
+                self.graph.add_edge(entity, tgt)
+        self.debug_msg(" --> Added " + str(num_entities) + " entities with activity " + str(activity) +
+                       " to the network.", level=1)

@@ -21,12 +21,12 @@ data_sets = ["BeerStackExchange",           # 0
 emp_data_set = data_sets[0]
 
 scenarios = [
-             "Remove Users",
+             #"Remove Users",
              #"Remove Connections",
-             #"add_users",
-             #"add_connections",
-             #"add_troll",
-             #"add_entities"
+             #"Add Users",
+             #"Add Connections",
+             #"Add Trolls",
+             "Add Entities"
             ]
 
 percentage_steps = [5, 10, 15, 20, 25]
@@ -83,9 +83,10 @@ def calc_activity(scenario):
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
         if i is scenario_marker - 1:
-            scenario_init_activity = nw.graph.vertex_properties["activity"].copy()
+            nw.graph_copy = Graph(nw.graph)
             scenario_init_iter = nw.cur_iteration
-            debug_msg(" --> Ratio == " + str(scenario_marker) + ". Saved activity: " + str(sum(scenario_init_activity.a)) +
+            debug_msg(" --> Ratio == " + str(scenario_marker) + ". Saved activity: " +
+                      str(sum(nw.graph.vertex_properties["activity"].a)) +
                       ", cur_iteration: " + str(scenario_init_iter))
     nw.close_weights_files()
     nw.close_taus_files()
@@ -96,35 +97,66 @@ def calc_activity(scenario):
     def remove_users(percentage):
         debug_msg(" --> Doing remove users stuff...")
         nw.remove_users_by_percentage(percentage)
-        debug_msg(" --> Done with remove users.")
+        nw.update_ones_ratio()
+        nw.update_adjacency()
+        debug_msg(" --> Done with removing users.")
 
     def remove_connections(percentage):
-        debug_msg(" --> Doing remove users stuff...")
+        debug_msg(" --> Doing remove edges stuff...")
         nw.remove_edges_by_percentage(percentage)
-        debug_msg(" --> Done with remove users.")
+        debug_msg(" --> Done with removing edges.")
+
+    def add_users():
+        debug_msg(" --> Doing add users stuff...")
+        nw.add_users_by_num(100)
+        nw.update_ones_ratio()
+        nw.update_adjacency()
+        debug_msg(" --> Done with adding users.")
+
+    def add_connections():
+        debug_msg(" --> Doing add connections stuff...")
+
+        debug_msg(" --> Done with adding connections.")
+
+    def add_trolls():
+        debug_msg(" --> Doing add troll stuff...")
+        nw.add_trolls_by_num(100, -0.01)
+        nw.update_ones_ratio()
+        nw.update_adjacency()
+        debug_msg(" --> Done with adding trolls.")
+
+    def add_entities():
+        debug_msg(" --> Doing add entities stuff...")
+        nw.add_entities_by_num(2, 0.1)
+        nw.update_ones_ratio()
+        nw.update_adjacency()
+        debug_msg(" --> Done with adding entities.")
 
     scenario_dispatcher = {"Remove Users": remove_users,
-                           "Remove Connections": remove_connections}
+                           "Remove Connections": remove_connections,
+                           "Add Users": add_users,
+                           "Add Connections": add_connections,
+                           "Add Trolls": add_trolls,
+                           "Add Entities": add_entities}
 
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
     for rand_iter in range(0, rand_itas):
         debug_msg(" --> Starting iteration " + str(rand_iter + 1))
-        nw.clear_all_filters()
         nw.run = rand_iter
         nw.set_ratio(0)
         nw.open_weights_files(scenario)
         nw.open_taus_files(scenario)
-        nw.graph.vertex_properties["activity"] = scenario_init_activity.copy()
         nw.cur_iteration = scenario_init_iter
-        debug_msg(" --> Reset activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
+        nw.graph = Graph(nw.graph_copy)
+        debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
                   ", cur_iteration to " + str(scenario_init_iter))
 
         nw.write_summed_weights_to_file()
 
-        scenario_dispatcher[scenario](50)
-
-        #nw.update_ones_ratio()
-        #nw.update_adjacency()
+        if "Remove" in scenario:
+            scenario_dispatcher[scenario](20)
+        else:
+            scenario_dispatcher[scenario]()
 
         for i in range(scenario_marker, len(nw.ratios)):
             debug_msg("Starting activity dynamics for ratio: " + str(i+1))
