@@ -374,7 +374,7 @@ def plot_weights_over_time(graph_name):
         debug_msg("  ** Done", level=0)
 
 
-def calc_random_inits_average(graph_name, scenario, rand_itas, store_itas, ratio, dtau, delFiles=False):
+def calc_random_itas_average(graph_name, scenario, rand_itas, store_itas, ratio, dtau, delFiles=False):
     debug_msg("*** Starting combination of random iterations ***")
     output_path = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
                                   str(store_itas) + "_" + str(float(dtau)).replace(".", "") + "_" +
@@ -389,7 +389,7 @@ def calc_random_inits_average(graph_name, scenario, rand_itas, store_itas, ratio
     np.savetxt(output_path, np.mean(average, axis=0))
 
 
-def plot_scenario_results(graph_name, scenario, plot_fmt):
+def plot_scenario_results(graph_name, scenario, plot_fmt, rand_itas):
     debug_msg("*** Starting plotting of scenario results ***")
     import subprocess
     import os
@@ -432,8 +432,8 @@ def plot_scenario_results(graph_name, scenario, plot_fmt):
     debug_msg("--> Calling empirical_scenarios_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_scenarios_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_scenarios_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, output_path_data, output_path_weights, graph_name, scenario,
-                     plot_fmt, str(dtau), str(mu), str(ac), str(k1)])
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path_data, output_path_weights, graph_name,
+                     scenario, plot_fmt, str(rand_itas)])
     debug_msg("*** Successfully plotted scenario results ***")
 
 

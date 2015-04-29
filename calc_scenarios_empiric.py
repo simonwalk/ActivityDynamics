@@ -6,10 +6,12 @@ __status__ = "Development"
 
 from lib.generator import *
 
+plot_only = False
+
 deltatau = 0.001
 store_itas = 10
 tid = 30
-plot_fmt = "png"
+plot_fmt = "pdf"
 rand_itas = 5
 
 data_sets = ["BeerStackExchange",
@@ -18,7 +20,7 @@ data_sets = ["BeerStackExchange",
 emp_data_set = data_sets[0]
 
 scenarios = [
-             "remove_users",
+             "Remove Users",
              #"remove_connections",
              #"add_users",
              #"add_connections",
@@ -116,13 +118,14 @@ def calc_activity(scenario):
         nw.close_weights_files()
         nw.close_taus_files()
 
-    calc_random_inits_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
+    calc_random_itas_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
     debug_msg(" *** Done with activity dynamics *** ")
 
 
 if __name__ == '__main__':
-    create_network()
+    if not plot_only:
+        create_network()
     for scenario in scenarios:
-        calc_activity(scenario)
-
-        plot_scenario_results(emp_data_set, scenario, plot_fmt)
+        if not plot_only:
+            calc_activity(scenario)
+        plot_scenario_results(emp_data_set, scenario, plot_fmt, rand_itas)
