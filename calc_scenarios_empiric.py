@@ -5,6 +5,7 @@ __email__ = "p.koncar@student.tugraz.at"
 __status__ = "Development"
 
 from lib.generator import *
+from lib.scenario_network import ScenarioNetwork
 
 plot_only = False
 
@@ -14,19 +15,21 @@ tid = 30
 plot_fmt = "pdf"
 rand_itas = 5
 
-data_sets = ["BeerStackExchange",
-             "HistoryStackExchange"]
+data_sets = ["BeerStackExchange",           # 0
+             "HistoryStackExchange"]        # 1
 
 emp_data_set = data_sets[0]
 
 scenarios = [
              "Remove Users",
-             #"remove_connections",
+             #"Remove Connections",
              #"add_users",
              #"add_connections",
              #"add_troll",
              #"add_entities"
             ]
+
+percentage_steps = [5, 10, 15, 20, 25]
 
 
 def create_network():
@@ -46,7 +49,7 @@ def create_network():
 
 def calc_activity(scenario):
     debug_msg(" *** Starting activity dynamics *** ")
-    nw = Network(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid)
+    nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid)
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph(fpath)
@@ -89,9 +92,24 @@ def calc_activity(scenario):
     nw.add_graph_properties()
     nw.store_graph(0)
 
+    # Helper functions
+    def remove_users(percentage):
+        debug_msg(" --> Doing remove users stuff...")
+        nw.remove_users_by_percentage(percentage)
+        debug_msg(" --> Done with remove users.")
+
+    def remove_connections(percentage):
+        debug_msg(" --> Doing remove users stuff...")
+        nw.remove_edges_by_percentage(percentage)
+        debug_msg(" --> Done with remove users.")
+
+    scenario_dispatcher = {"Remove Users": remove_users,
+                           "Remove Connections": remove_connections}
+
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
     for rand_iter in range(0, rand_itas):
-        debug_msg(" --> Starting iteration " + str(rand_iter))
+        debug_msg(" --> Starting iteration " + str(rand_iter + 1))
+        nw.clear_all_filters()
         nw.run = rand_iter
         nw.set_ratio(0)
         nw.open_weights_files(scenario)
@@ -100,6 +118,14 @@ def calc_activity(scenario):
         nw.cur_iteration = scenario_init_iter
         debug_msg(" --> Reset activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
                   ", cur_iteration to " + str(scenario_init_iter))
+
+        nw.write_summed_weights_to_file()
+
+        scenario_dispatcher[scenario](50)
+
+        #nw.update_ones_ratio()
+        #nw.update_adjacency()
+
         for i in range(scenario_marker, len(nw.ratios)):
             debug_msg("Starting activity dynamics for ratio: " + str(i+1))
             nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
@@ -118,7 +144,7 @@ def calc_activity(scenario):
         nw.close_weights_files()
         nw.close_taus_files()
 
-    calc_random_itas_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
+    calc_random_itas_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=False)
     debug_msg(" *** Done with activity dynamics *** ")
 
 

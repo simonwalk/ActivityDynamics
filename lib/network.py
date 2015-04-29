@@ -160,23 +160,19 @@ class Network:
 
 
     # Methods to manage the files to store the weights over all iterations
-    def open_weights_files(self, suffix=""):
-        if suffix is not "":
-            suffix = "_" + suffix
+    def open_weights_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + suffix + "_weights.txt"
+                str(self.run) + "_weights.txt"
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
 
-    def open_taus_files(self, suffix=""):
-        if suffix is not "":
-            suffix = "_" + suffix
+    def open_taus_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
                 str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
-                str(self.run) + suffix + "_taus.txt"
+                str(self.run) + "_taus.txt"
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
 
