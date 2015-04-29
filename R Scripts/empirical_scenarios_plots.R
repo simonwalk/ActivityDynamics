@@ -13,7 +13,7 @@ cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585", "red", "green", "blue", "pink")
 legend_text = c("Simulated Activity", "Observed Activity")
-#c("Simulated Activity", "Observed Activity")
+file_name = paste(paste(graph_name, gsub(" ", "_", scenario), sep="_"), ".pdf", sep="")
 
 clean_ratios <- data$ratios[!is.na(data$ratios)]
 marker = floor((length(clean_ratios) / 3) * 2)
@@ -21,7 +21,7 @@ marker = floor((length(clean_ratios) / 3) * 2)
 print(paste("Marker: ", marker, sep=""))
 
 print(" ++ Plotting activity")
-if (format == "pdf") pdf(paste(graph_name, "_scenarios.pdf", sep="")) else png(paste(graph_name, "_scenarios.png", sep=""))
+if (format == "pdf") pdf(file_name) else png(file_name)
 min_y = min(min(weights$sim_act), min(data$real_act_y))
 max_y = max(max(weights$sim_act), max(data$real_act_y))
 par(mar=c(5,5,4,5)+.1)

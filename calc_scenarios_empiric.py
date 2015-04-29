@@ -7,7 +7,7 @@ __status__ = "Development"
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
@@ -25,8 +25,8 @@ scenarios = [
              #"Remove Connections",
              #"Add Users",
              #"Add Connections",
-             #"Add Trolls",
-             "Add Entities"
+             "Add Trolls",
+             #"Add Entities"
             ]
 
 percentage_steps = [5, 10, 15, 20, 25]
@@ -120,7 +120,7 @@ def calc_activity(scenario):
 
     def add_trolls():
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(100, -0.01)
+        nw.add_trolls_by_num(2, -0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
