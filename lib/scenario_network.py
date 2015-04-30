@@ -81,7 +81,7 @@ class ScenarioNetwork(Network):
                 bool_map[e] = 1
         self.graph.set_edge_filter(bool_map)
         self.graph.purge_edges()
-        self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
+        self.debug_msg(" --> Removed Edges. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
     def add_users_by_num(self, num_users):

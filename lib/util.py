@@ -374,22 +374,23 @@ def plot_weights_over_time(graph_name):
         debug_msg("  ** Done", level=0)
 
 
-def calc_random_itas_average(graph_name, scenario, rand_itas, store_itas, ratio, dtau, delFiles=False):
+def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_itas, ratio, dtau, delFiles=False):
     debug_msg("*** Starting combination of random iterations ***")
     output_path = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
                                   str(store_itas) + "_" + str(float(dtau)).replace(".", "") + "_" +
-                                  str(ratio).replace(".", "") + "_run_average_" + scenario + ".txt")
+                                  str(ratio).replace(".", "") + "_run_average_" + scenario + "_" + str(step_value) +
+                                  ".txt")
     average = []
     for i in range(0, rand_itas):
-        weight_path = get_abs_path(graph_name, "_" + scenario + "_weights", store_itas, ratio, deltatau=dtau,
-                                   run=i)
+        weight_path = get_abs_path(graph_name, "_" + scenario + "_" + str(step_value) + "_weights", store_itas, ratio,
+                                   deltatau=dtau, run=i)
         average.append(np.loadtxt(weight_path))
         if delFiles:
             os.remove(weight_path)
     np.savetxt(output_path, np.mean(average, axis=0))
 
 
-def plot_scenario_results(graph_name, scenario, plot_fmt, rand_itas):
+def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas):
     debug_msg("*** Starting plotting of scenario results ***")
     import subprocess
     import os
@@ -417,23 +418,31 @@ def plot_scenario_results(graph_name, scenario, plot_fmt, rand_itas):
     combined_data.append(np.loadtxt(taus_path))
     header = "sim_act\ttaus"
     len_tau = len(combined_data[1])
-    weights_path = get_abs_path(graph_name, "_" + scenario, store_itas, ratios[1], deltatau=dtau, run="average")
-    debug_msg("----> " + weights_path)
-    temp = np.loadtxt(weights_path)
-    len_temp = len_tau - len(temp)
-    temp_array = np.empty(len_temp)
-    temp_array.fill(np.nan)
-    temp = list(temp_array) + list(temp)
-    combined_data.append(temp)
-    header += "\t" + scenario
+    for step_value in step_values:
+        weights_path = get_abs_path(graph_name, "_" + scenario + "_" + str(step_value),
+                                    store_itas, ratios[1], deltatau=dtau, run="average")
+        debug_msg("----> " + weights_path)
+        temp = np.loadtxt(weights_path)
+        len_temp = len_tau - len(temp)
+        temp_array = np.empty(len_temp)
+        temp_array.fill(np.nan)
+        temp = list(temp_array) + list(temp)
+        combined_data.append(temp)
+        header += "\t" + scenario + "_" + str(step_value)
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
                comments="")
     debug_msg("--> Weights and tau data successfully combined")
+    debug_msg("--> Preparing legend values...")
+    legend_values = ""
+    for step_value in step_values:
+        legend_values += str(step_value) + "%, "
+    legend_values = legend_values[:-2]
+    debug_msg("--> Done: " + legend_values)
     debug_msg("--> Calling empirical_scenarios_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_scenarios_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_scenarios_plots.R", "") + config.plot_dir + "empirical_results/"
     subprocess.call([config.r_binary_path, r_script_path, wd, output_path_data, output_path_weights, graph_name,
-                     scenario, plot_fmt, str(rand_itas)])
+                     scenario, plot_fmt, str(rand_itas), legend_values])
     debug_msg("*** Successfully plotted scenario results ***")
 
 

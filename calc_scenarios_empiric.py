@@ -22,14 +22,14 @@ emp_data_set = data_sets[0]
 
 scenarios = [
              #"Remove Users",
-             #"Remove Connections",
+             "Remove Connections",
              #"Add Users",
              #"Add Connections",
-             "Add Trolls",
+             #"Add Trolls",
              #"Add Entities"
             ]
 
-percentage_steps = [5, 10, 15, 20, 25]
+step_values = [1, 5]#, 10, 15, 20, 25]
 
 
 def create_network():
@@ -49,7 +49,7 @@ def create_network():
 
 def calc_activity(scenario):
     debug_msg(" *** Starting activity dynamics *** ")
-    nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid)
+    nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid, ratios=[])
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph(fpath)
@@ -104,6 +104,7 @@ def calc_activity(scenario):
     def remove_connections(percentage):
         debug_msg(" --> Doing remove edges stuff...")
         nw.remove_edges_by_percentage(percentage)
+        nw.update_adjacency()
         debug_msg(" --> Done with removing edges.")
 
     def add_users():
@@ -120,14 +121,14 @@ def calc_activity(scenario):
 
     def add_trolls():
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(2, -0.01)
+        nw.add_trolls_by_num(100, -0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
 
     def add_entities():
         debug_msg(" --> Doing add entities stuff...")
-        nw.add_entities_by_num(2, 0.1)
+        nw.add_entities_by_num(10, 0.1)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
@@ -140,43 +141,41 @@ def calc_activity(scenario):
                            "Add Entities": add_entities}
 
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
-    for rand_iter in range(0, rand_itas):
-        debug_msg(" --> Starting iteration " + str(rand_iter + 1))
-        nw.run = rand_iter
-        nw.set_ratio(0)
-        nw.open_weights_files(scenario)
-        nw.open_taus_files(scenario)
-        nw.cur_iteration = scenario_init_iter
-        nw.graph = Graph(nw.graph_copy)
-        debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
-                  ", cur_iteration to " + str(scenario_init_iter))
+    for step, step_value in enumerate(step_values):
+        debug_msg(" --> Starting step " + str(step + 1) + " with value " + str(step_value))
+        for rand_iter in range(0, rand_itas):
+            debug_msg(" --> Starting iteration " + str(rand_iter + 1))
+            nw.run = rand_iter
+            nw.set_ratio(0)
+            nw.open_weights_files(scenario + "_" + str(step_value))
+            #nw.open_taus_files(scenario + "_" + str(step_value))
+            nw.cur_iteration = scenario_init_iter
+            nw.graph = Graph(nw.graph_copy)
+            debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
+                      ", cur_iteration to " + str(scenario_init_iter))
+            nw.write_summed_weights_to_file()
+            if "Remove" in scenario:
+                scenario_dispatcher[scenario](step_value)
+            else:
+                scenario_dispatcher[scenario]()
+            for i in range(scenario_marker, len(nw.ratios)):
+                debug_msg("Starting activity dynamics for ratio: " + str(i+1))
+                nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
+                nw.set_ac(i)
+                nw.set_ratio(i)
+                nw.reset_tau_iter()
+                nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
+                                 "with \x1b[32m ratio={}\x1b[00m and "
+                                 "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
+                                 "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
+                                                                            int(nw.deltapsi/nw.deltatau)),
+                                     level=1)
+                for j in xrange(int(nw.deltapsi/nw.deltatau)):
+                    nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True)
+            nw.close_weights_files()
+            #nw.close_taus_files()
+        calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
 
-        nw.write_summed_weights_to_file()
-
-        if "Remove" in scenario:
-            scenario_dispatcher[scenario](20)
-        else:
-            scenario_dispatcher[scenario]()
-
-        for i in range(scenario_marker, len(nw.ratios)):
-            debug_msg("Starting activity dynamics for ratio: " + str(i+1))
-            nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
-            nw.set_ac(i)
-            nw.set_ratio(i)
-            nw.reset_tau_iter()
-            nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
-                             "with \x1b[32m ratio={}\x1b[00m and "
-                             "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                             "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
-                                                                        int(nw.deltapsi/nw.deltatau)),
-                                 level=1)
-            for j in xrange(int(nw.deltapsi/nw.deltatau)):
-                nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
-
-        nw.close_weights_files()
-        nw.close_taus_files()
-
-    calc_random_itas_average(emp_data_set, scenario, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=False)
     debug_msg(" *** Done with activity dynamics *** ")
 
 
@@ -186,4 +185,4 @@ if __name__ == '__main__':
     for scenario in scenarios:
         if not plot_only:
             calc_activity(scenario)
-        plot_scenario_results(emp_data_set, scenario, plot_fmt, rand_itas)
+        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas)
