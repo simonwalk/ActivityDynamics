@@ -4,6 +4,9 @@ __version__ = "0.0.1"
 __email__ = "p.koncar@student.tugraz.at"
 __status__ = "Development"
 
+import matplotlib
+matplotlib.use('Agg')
+
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
@@ -18,19 +21,19 @@ rand_itas = 5
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange"]        # 1
 
-emp_data_set = data_sets[1]
+emp_data_set = data_sets[0]
 
 scenarios = [
              #"Remove Users",
-             "Remove Connections",
+             #"Remove Connections",
              #"Add Users",
              #"Add Connections",
              #"Add Trolls",
-             #"Add Entities"
+             "Add Entities"
             ]
 
-step_values = [1, 5]#, 10, 15, 20, 25]
-
+step_values = [1, 5, 10]#, 10, 15, 20, 25]
+legend_suffix = "Trolls"
 
 def create_network():
     bg = Generator(emp_data_set)
@@ -128,7 +131,7 @@ def calc_activity(scenario):
 
     def add_entities(num):
         debug_msg(" --> Doing add entities stuff...")
-        nw.add_entities_by_num(num, 0.1)
+        nw.add_entities_by_num(num, 0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
@@ -154,10 +157,7 @@ def calc_activity(scenario):
             debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
                       ", cur_iteration to " + str(scenario_init_iter))
             nw.write_summed_weights_to_file()
-            if "Remove" in scenario:
-                scenario_dispatcher[scenario](step_value)
-            else:
-                scenario_dispatcher[scenario]()
+            scenario_dispatcher[scenario](step_value)
             for i in range(scenario_marker, len(nw.ratios)):
                 debug_msg("Starting activity dynamics for ratio: " + str(i+1))
                 nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
@@ -171,7 +171,7 @@ def calc_activity(scenario):
                                                                             int(nw.deltapsi/nw.deltatau)),
                                      level=1)
                 for j in xrange(int(nw.deltapsi/nw.deltatau)):
-                    nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True)
+                    nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
             nw.close_weights_files()
             #nw.close_taus_files()
         calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
@@ -185,4 +185,4 @@ if __name__ == '__main__':
     for scenario in scenarios:
         if not plot_only:
             calc_activity(scenario)
-        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas)
+        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas, legend_suffix)

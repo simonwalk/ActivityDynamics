@@ -390,7 +390,7 @@ def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_
     np.savetxt(output_path, np.mean(average, axis=0))
 
 
-def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas):
+def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas, legend_suffix):
     debug_msg("*** Starting plotting of scenario results ***")
     import subprocess
     import os
@@ -435,7 +435,7 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     debug_msg("--> Preparing legend values...")
     legend_values = ""
     for step_value in step_values:
-        legend_values += str(step_value) + "%, "
+        legend_values += str(step_value) + " " + legend_suffix + ", "
     legend_values = legend_values[:-2]
     debug_msg("--> Done: " + legend_values)
     debug_msg("--> Calling empirical_scenarios_plots.R")

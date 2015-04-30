@@ -41,6 +41,60 @@ class ScenarioNetwork(Network):
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
 
+    def activity_dynamics(self, store_weights=False, store_taus=False, empirical=False, scenario=None):
+        # Collect required input
+        activity_weight = np.asarray(self.get_node_weights("activity"))
+        # Calculate deltax
+        ratio_ones = (self.ratio * np.asarray(self.ones_ratio))
+        intrinsic_decay = self.activity_decay(activity_weight, ratio_ones)
+        extrinsic_influence = self.peer_influence(activity_weight)
+        activity_delta = (intrinsic_decay + extrinsic_influence)*self.deltatau
+
+        t = 1.0
+        # Check if already converged/diverged
+        if self.cur_iteration % self.store_iterations == 0:
+            t = np.dot(activity_delta, activity_delta)
+        # Debug output & convergence/divergence criteria check
+        if t < self.converge_at and not empirical:
+            self.debug_msg(" \x1b[32m>>>\x1b[00m Simulation for \x1b[32m'{}'\x1b[00m with \x1b[34mratio={}\x1b[00m and "
+                            "\x1b[34mdtau={}\x1b[00m \x1b[34mconverged\x1b[00m at \x1b[34m{}\x1b[00m with "
+                            "\x1b[34m{}\x1b[00m".format(self.graph_name, self.ratio, self.deltatau, self.cur_iteration+1,
+                                                        t), level=1)
+            self.converged = True
+        if (t == float("Inf") or t == float("NaN")) and not empirical:
+            self.debug_msg(" \x1b[31m>>>\x1b[00m Simulation for \x1b[32m'{}'\x1b[00m with \x1b[34mratio={}\x1b[00m and "
+                            "\x1b[34mdtau={}\x1b[00m \x1b[31mdiverged\x1b[00m at \x1b[34m{}\x1b[00m with "
+                            "\x1b[34m{}\x1b[00m".format(self.graph_name, self.ratio, self.deltatau, self.cur_iteration+1,
+                                                        t), level=1)
+            self.diverged = True
+        # Set new weights
+        self.update_node_weights("activity", activity_delta)
+
+        # Check scenario stuff
+        if scenario is not None and "Trolls" in scenario:
+            self.check_and_set_trolls()
+        elif scenario is not None and "Entities" in scenario:
+            self.set_entities()
+
+        # Store weights to file
+        if ((store_weights and self.cur_iteration % self.store_iterations == 0) and not empirical) or ((self.converged or self.diverged)
+                                                                                   and not empirical):
+            self.weights_file.write(("\t").join(["%.8f" % x for x in self.get_node_weights("activity")]) + "\n")
+        elif ((store_weights and self.cur_iteration % self.store_iterations == 0) and empirical) or ((self.converged or self.diverged)
+                                                                                   and empirical):
+            #self.debug_msg(" --> Sum of weights at \x1b[32m{}\x1b[30m is \x1b[32m{}\x1b[30m".format(self.cur_iteration, str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices())), level=1)
+            self.weights_file.write(str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices()) + "\n")
+
+        # Store taus to file
+        if store_taus and empirical and self.cur_iteration % self.store_iterations == 0:
+            tau = (float(self.tau_iter)+1)*self.deltatau/self.deltapsi
+            tau += self.ratio_index
+            self.taus_file.write(str(tau) + "\n")
+        self.tau_iter += 1
+
+        # Increment current iteration counter
+        self.cur_iteration += 1
+
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
             print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m] \x1b[33m{}\x1b[00m".format(
@@ -101,23 +155,39 @@ class ScenarioNetwork(Network):
         pass
 
     def add_trolls_by_num(self, num_trolls, negative_activity):
-        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.troll_ids = self.graph.add_vertex(num_trolls)
-        for troll in self.troll_ids:
-            self.graph.vertex_properties["activity"][troll] = negative_activity
-            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
-            for tgt in targets:
-                self.graph.add_edge(troll, tgt)
+        #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        self.troll_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
+        for v_id in self.troll_ids:
+            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = negative_activity
+
+        #self.troll_ids = self.graph.add_vertex(num_trolls)
+        #for troll in self.troll_ids:
+        #    self.graph.vertex_properties["activity"][troll] = negative_activity
+        #    targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+        #    for tgt in targets:
+        #        self.graph.add_edge(troll, tgt)
         self.debug_msg(" --> Added " + str(num_trolls) + " trolls with activity " + str(negative_activity) +
                        " to the network.", level=1)
 
     def add_entities_by_num(self, num_entities, activity):
-        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.entities_ids = self.graph.add_vertex(num_entities)
-        for entity in self.entities_ids:
-            self.graph.vertex_properties["activity"][entity] = activity
-            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
-            for tgt in targets:
-                self.graph.add_edge(entity, tgt)
+        #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        self.entities_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
+        for v_id in self.entities_ids:
+            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
+
+        #for entity in self.entities_ids:
+        #    self.graph.vertex_properties["activity"][entity] = activity
+        #    targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+        #    for tgt in targets:
+        #        self.graph.add_edge(entity, tgt)
         self.debug_msg(" --> Added " + str(num_entities) + " entities with activity " + str(activity) +
                        " to the network.", level=1)
+
+    def check_and_set_trolls(self, threshold=0):
+        for v_id in self.troll_ids:
+            if self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] > threshold:
+                self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = threshold
+
+    def set_entities(self, activity=0.1):
+        for v_id in self.entities_ids:
+            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
