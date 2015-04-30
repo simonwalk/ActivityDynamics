@@ -10,8 +10,6 @@ scenario = args[5]
 format = args[6]
 rand_itas = args[7]
 step_values = as.vector(unlist(strsplit(args[8], ", ")), mode="list")
-print(step_values)
-print(c(1, 2))
 cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585", "red", "green", "blue", "pink", "cyan", "darkorange", "brown")

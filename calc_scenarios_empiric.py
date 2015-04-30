@@ -7,7 +7,7 @@ __status__ = "Development"
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = True
+plot_only = False
 
 deltatau = 0.001
 store_itas = 10
@@ -18,7 +18,7 @@ rand_itas = 5
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange"]        # 1
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[1]
 
 scenarios = [
              #"Remove Users",
@@ -107,28 +107,28 @@ def calc_activity(scenario):
         nw.update_adjacency()
         debug_msg(" --> Done with removing edges.")
 
-    def add_users():
+    def add_users(num):
         debug_msg(" --> Doing add users stuff...")
-        nw.add_users_by_num(100)
+        nw.add_users_by_num(num)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding users.")
 
-    def add_connections():
+    def add_connections(num):
         debug_msg(" --> Doing add connections stuff...")
 
         debug_msg(" --> Done with adding connections.")
 
-    def add_trolls():
+    def add_trolls(num):
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(100, -0.01)
+        nw.add_trolls_by_num(num, -0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
 
-    def add_entities():
+    def add_entities(num):
         debug_msg(" --> Doing add entities stuff...")
-        nw.add_entities_by_num(10, 0.1)
+        nw.add_entities_by_num(num, 0.1)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
