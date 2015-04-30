@@ -45,7 +45,7 @@ def create_network():
     bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    bg.draw_graph(0)
+    #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
