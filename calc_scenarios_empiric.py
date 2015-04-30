@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
