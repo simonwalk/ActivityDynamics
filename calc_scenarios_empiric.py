@@ -27,13 +27,13 @@ scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             #"Add Connections",
+             "Add Connections",
              #"Add Trolls",
-             "Add Entities"
+             #"Add Entities"
             ]
 
-step_values = [1, 5, 10]#, 10, 15, 20, 25]
-legend_suffix = "Trolls"
+step_values = [10, 50, 100]#, 10, 15, 20, 25]
+legend_suffix = "Connections"
 
 def create_network():
     bg = Generator(emp_data_set)
@@ -57,7 +57,7 @@ def calc_activity(scenario):
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph(fpath)
     nw.debug_msg("Loaded network: " + str(nw.graph.num_vertices()) + " vertices, "
-                 + str(nw.graph.num_edges()) + " edges")
+                 + str(nw.graph.num_edges()) + " edges", level=1)
 
     nw.prepare_eigenvalues()
     nw.create_folders()
@@ -119,7 +119,8 @@ def calc_activity(scenario):
 
     def add_connections(num):
         debug_msg(" --> Doing add connections stuff...")
-
+        nw.add_connections_by_num(num)
+        nw.update_adjacency()
         debug_msg(" --> Done with adding connections.")
 
     def add_trolls(num):

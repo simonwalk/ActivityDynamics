@@ -20,6 +20,7 @@ class ScenarioNetwork(Network):
         self.graph_copy = None
         self.troll_ids = []
         self.entities_ids = []
+        self.edge_list = None
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -151,8 +152,31 @@ class ScenarioNetwork(Network):
         self.debug_msg(" --> Added " + str(num_users) + " users to the network (was: " + str(old_num_users) + ", now: " +
                        str(self.graph.num_vertices()) + ").", level=1)
 
-    def add_edges_by_num(self, num_edges):
-        pass
+    def add_connections_by_num(self, num_edges):
+        if self.edge_list is None:
+            self.edge_list = []
+            self.debug_msg(" --> Starting calculation of edge list...", level=1)
+            adj_matrix = self.A.todense()
+            check_value = 0.0
+            num_of_edges = (((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2) - self.graph.num_edges()
+            for i in range(0, self.graph.num_vertices()):
+                if i % int((self.graph.num_vertices() / 10)) == 0 and i != 0:
+                    self.debug_msg("  --> Covered " + str(int((float(i)/self.graph.num_vertices()) * 100)) +
+                                   "% of vertices.", level=1)
+                for j in range(0, self.graph.num_vertices()):
+                    if adj_matrix[i, j] == check_value and i < j:
+                        self.edge_list.append((i, j))
+            self.debug_msg("  --> Covered 100% of vertices.", level=1)
+            if len(self.edge_list) != num_of_edges:
+                self.debug_msg("Error: The number of calculated edges did not meet the actual number of edges!", level=1)
+                sys.exit("Program exit")
+            else:
+                self.debug_msg("Done. Number of calculated edges: " + str(len(self.edge_list)), level=1)
+        random.shuffle(self.edge_list)
+        old_num_edges = self.graph.num_edges()
+        self.graph.add_edge_list(self.edge_list[0:num_edges])
+        self.debug_msg(" --> Added " + str(num_edges) + " connections to the network (was: " + str(old_num_edges) +
+                       ", now: " + str(self.graph.num_edges()) + ").", level=1)
 
     def add_trolls_by_num(self, num_trolls, negative_activity):
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
