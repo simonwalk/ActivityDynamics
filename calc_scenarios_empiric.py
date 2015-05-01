@@ -186,4 +186,4 @@ if __name__ == '__main__':
     for scenario in scenarios:
         if not plot_only:
             calc_activity(scenario)
-        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas, legend_suffix)
+        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas, legend_suffix, store_itas)

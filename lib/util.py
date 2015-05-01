@@ -44,6 +44,7 @@ def get_network_details_for_epochs(graph_name):
 def get_network_details(graph_name):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
     dtau = graph.graph_properties["deltatau"]
+    dpsi = graph.graph_properties["deltapsi"]
     store_itas = graph.graph_properties["store_iterations"]
     mu = round(graph.graph_properties["deltapsi"], 2)
     ac = round(graph.graph_properties["a_c"], 2)
@@ -51,7 +52,7 @@ def get_network_details(graph_name):
     ratios = [np.nan] + ratios
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
-    return dtau, store_itas, mu, ac, ratios, k1, apm
+    return dtau, dpsi, store_itas, mu, ac, ratios, k1, apm
 
 
 # retrieve parameters stored in binary graph file
@@ -390,7 +391,7 @@ def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_
     np.savetxt(output_path, np.mean(average, axis=0))
 
 
-def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas, legend_suffix):
+def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas, legend_suffix, store_itas):
     debug_msg("*** Starting plotting of scenario results ***")
     import subprocess
     import os
@@ -398,7 +399,7 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     output_path_weights = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
                                           scenario + "_combined.txt")
     debug_msg("--> Collection graph data...")
-    dtau, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    dtau, dpsi, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
     debug_msg("--> Done with collecting graph data.")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -437,12 +438,13 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     for step_value in step_values:
         legend_values += str(step_value) + " " + legend_suffix + ", "
     legend_values = legend_values[:-2]
+    pch_skip = ((dpsi / dtau) / store_itas) - 1
     debug_msg("--> Done: " + legend_values)
     debug_msg("--> Calling empirical_scenarios_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_scenarios_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_scenarios_plots.R", "") + config.plot_dir + "empirical_results/"
     subprocess.call([config.r_binary_path, r_script_path, wd, output_path_data, output_path_weights, graph_name,
-                     scenario, plot_fmt, str(rand_itas), legend_values])
+                     scenario, plot_fmt, str(rand_itas), legend_values, str(pch_skip)])
     debug_msg("*** Successfully plotted scenario results ***")
 
 

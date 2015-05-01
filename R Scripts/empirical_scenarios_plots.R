@@ -17,24 +17,27 @@ legend_text <- append(list("Simulated Activity", "Observed Activity"), step_valu
 file_name = paste(paste(graph_name, gsub(" ", "_", scenario), sep="_"), ".pdf", sep="")
 
 clean_ratios <- data$ratios[!is.na(data$ratios)]
+clean_weights <- weights[!is.na(weights)]
 marker = floor((length(clean_ratios) / 3) * 2)
+
+pch_skip = as.numeric(args[9])
 
 print(paste("Marker: ", marker, sep=""))
 
 print(" ++ Plotting activity")
 if (format == "pdf") pdf(file_name) else png(file_name)
-min_y = min(min(weights$sim_act), min(data$real_act_y))
-max_y = max(max(weights$sim_act), max(data$real_act_y))
+min_y = min(min(clean_weights), min(data$real_act_y))
+max_y = max(max(clean_weights), max(data$real_act_y))
 par(mar=c(8,5,4,5)+.1, xpd=T)
-plot(weights$taus, weights$sim_act, type="l", xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
-lines(data$real_act_x, data$real_act_y, type="l", lty=1, pch=1, col=colors[2])
+plot(weights$taus, weights$sim_act, type="o", pch=c(1, rep(NA, pch_skip)), xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
+lines(data$real_act_x, data$real_act_y, type="o", pch=2, lty=1, col=colors[2])
 
 i = 3
 while(i <= length(weights)) {
-  lines(weights$taus, weights[,i], type="l", lty=1, col=colors[i])
+  lines(weights$taus, weights[,i], type="o", pch=c(i, rep(NA, pch_skip)), lty=1, col=colors[i])
   i = i +1
 }
-legend("bottom", inset=c(0, -0.3), pch=c(NA,NA), col=colors, legend=legend_text, lty=c(1,1), cex=0.7, horiz=T)
+legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=c(1,1), cex=0.7, horiz=T)
 
 par(mar=c(8,5,4,5)+.1, xpd=F)
 title(substitute(atop(scenario * " for " * graph_name, 
