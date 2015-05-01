@@ -21,6 +21,8 @@ class ScenarioNetwork(Network):
         self.troll_ids = []
         self.entities_ids = []
         self.edge_list = None
+        self.step_debug = "-"
+        self.rand_iter_debug = "-"
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -98,8 +100,12 @@ class ScenarioNetwork(Network):
 
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
-            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m] \x1b[33m{}\x1b[00m".format(
-                datetime.datetime.now().strftime("%H:%M:%S"), self.run, msg)
+            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m][{}] \x1b[33m{}\x1b[00m".format(
+                datetime.datetime.now().strftime("%H:%M:%S"), self.step_debug, self.rand_iter_debug, msg)
+
+    def update_debug_info(self, step, rand_iter):
+        self.step_debug = str(step)
+        self.rand_iter_debug = str(rand_iter)
 
     def update_adjacency(self):
         self.A = adjacency(self.graph, weight=None)

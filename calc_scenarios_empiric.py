@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = True
+plot_only = False
 
 deltatau = 0.001
 store_itas = 10
@@ -27,12 +27,12 @@ scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             "Add Connections",
-             #"Add Trolls",
+             #"Add Connections",
+             "Add Trolls",
              #"Add Entities"
             ]
 
-step_values = [10, 50, 100]#, 10, 15, 20, 25]
+step_values = [5, 10, 20]#, 10, 15, 20, 25]
 legend_suffix = "Connections"
 
 def create_network():
@@ -52,7 +52,8 @@ def create_network():
 
 def calc_activity(scenario):
     debug_msg(" *** Starting activity dynamics *** ")
-    nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid, ratios=[])
+    nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid,
+                         ratios=[])
     fpath = nw.get_binary_filename(emp_data_set)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph(fpath)
@@ -149,6 +150,7 @@ def calc_activity(scenario):
         debug_msg(" --> Starting step " + str(step + 1) + " with value " + str(step_value))
         for rand_iter in range(0, rand_itas):
             debug_msg(" --> Starting iteration " + str(rand_iter + 1))
+            nw.update_debug_info(step + 1, rand_iter + 1)
             nw.run = rand_iter
             nw.set_ratio(0)
             nw.open_weights_files(scenario + "_" + str(step_value))
@@ -168,14 +170,15 @@ def calc_activity(scenario):
                 nw.debug_msg(" --> Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                                  "with \x1b[32m ratio={}\x1b[00m and "
                                  "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                                 "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau, nw.deltapsi,
-                                                                            int(nw.deltapsi/nw.deltatau)),
-                                     level=1)
+                                 "for \x1b[32m{} iterations\x1b[00m".format(emp_data_set, nw.ratio, nw.deltatau,
+                                                                            nw.deltapsi, int(nw.deltapsi/nw.deltatau)),
+                             level=1)
                 for j in xrange(int(nw.deltapsi/nw.deltatau)):
                     nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
             nw.close_weights_files()
             #nw.close_taus_files()
-        calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau, delFiles=True)
+        calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau,
+                                 delFiles=True)
 
     debug_msg(" *** Done with activity dynamics *** ")
 
