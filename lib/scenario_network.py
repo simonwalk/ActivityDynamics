@@ -129,12 +129,42 @@ class ScenarioNetwork(Network):
         self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
-    def remove_edges_by_percentage(self, percentage):
+    def remove_users_by_num(self, num_users):
+        bool_map = self.graph.new_vertex_property("bool")
+        self.debug_msg(" --> Going to remove " + str(num_users) + " users of currently " +
+                       str(self.graph.num_vertices()) + "...", level=1)
+        user_sample = random.sample(range(0, self.graph.num_vertices()), num_users)
+        for v in self.graph.vertices():
+            if v in user_sample:
+                bool_map[v] = 0
+            else:
+                bool_map[v] = 1
+        self.graph.set_vertex_filter(bool_map)
+        self.graph.purge_vertices()
+        self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
+                       str(self.graph.num_edges()) + " edges.", level=1)
+
+    def remove_connections_by_percentage(self, percentage):
         bool_map = self.graph.new_edge_property("bool")
         num_affected_edges = int((self.graph.num_edges() / 100) * percentage)
         self.debug_msg(" --> Going to remove " + str(percentage) + "% of edges (" + str(num_affected_edges)
                        + " of currently " + str(self.graph.num_edges()) + ")...", level=1)
         edge_sample = random.sample(range(0, self.graph.num_edges()), num_affected_edges)
+        for e in self.graph.edges():
+            if self.graph.edge_index[e] in edge_sample:
+                bool_map[e] = 0
+            else:
+                bool_map[e] = 1
+        self.graph.set_edge_filter(bool_map)
+        self.graph.purge_edges()
+        self.debug_msg(" --> Removed Edges. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
+                       str(self.graph.num_edges()) + " edges.", level=1)
+
+    def remove_connections_by_num(self, num_connections):
+        bool_map = self.graph.new_edge_property("bool")
+        self.debug_msg(" --> Going to remove " + str(num_connections) + " connections of currently " +
+                       str(self.graph.num_edges()) + "...", level=1)
+        edge_sample = random.sample(range(0, self.graph.num_edges()), num_connections)
         for e in self.graph.edges():
             if self.graph.edge_index[e] in edge_sample:
                 bool_map[e] = 0
@@ -218,6 +248,6 @@ class ScenarioNetwork(Network):
             if self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] > threshold:
                 self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = threshold
 
-    def set_entities(self, activity=0.1):
+    def set_entities(self, activity=0.01):
         for v_id in self.entities_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity

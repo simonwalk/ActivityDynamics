@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 5
+rand_itas = 10
 
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
@@ -28,16 +28,16 @@ emp_data_set = data_sets[0]
 scenarios = [
              "Remove Users",
              "Remove Connections",
-             "Add Users",
-             "Add Connections",
-             "Add Trolls",
-             "Add Entities"
+             #"Add Users",
+             #"Add Connections",
+             #"Add Trolls",
+             #"Add Entities"
             ]
 
 step_values = {"Remove Users": [5, 10, 20],
                "Remove Connections": [5, 10, 20],
-               "Add Users": [5, 10, 20],
-               "Add Connections": [5, 10, 20],
+               "Add Users": [20, 35, 50],
+               "Add Connections": [10, 50, 100],
                "Add Trolls": [1, 3, 5],
                "Add Entities": [1, 3, 5]}
 
@@ -112,16 +112,16 @@ def calc_activity(scenario):
     nw.store_graph(0)
 
     # Helper functions
-    def remove_users(percentage):
+    def remove_users(num):
         debug_msg(" --> Doing remove users stuff...")
-        nw.remove_users_by_percentage(percentage)
+        nw.remove_users_by_num(num)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with removing users.")
 
-    def remove_connections(percentage):
+    def remove_connections(num):
         debug_msg(" --> Doing remove edges stuff...")
-        nw.remove_edges_by_percentage(percentage)
+        nw.remove_connections_by_num(num)
         nw.update_adjacency()
         debug_msg(" --> Done with removing edges.")
 
