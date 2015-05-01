@@ -40,7 +40,7 @@ while(i <= length(weights)) {
 legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=c(1,1), cex=0.7, horiz=T)
 
 par(mar=c(8,5,4,5)+.1, xpd=F)
-title(substitute(atop(scenario * " for " * graph_name, 
+title(substitute(atop(scenario * " for " * bold(graph_name), 
                       "with " * rand_itas * " Random Iterations"),
                  list(scenario = scenario, graph_name = graph_name, rand_itas = rand_itas)), cex.main=cex_paper)
 abline(v=marker, lty=2, col=colors[1])

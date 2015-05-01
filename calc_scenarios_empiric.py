@@ -19,21 +19,35 @@ plot_fmt = "pdf"
 rand_itas = 5
 
 data_sets = ["BeerStackExchange",           # 0
-             "HistoryStackExchange"]        # 1
+             "HistoryStackExchange",        # 1
+             "EnglishStackExchange",        # 2
+             "MathStackExchange"]           # 3
 
 emp_data_set = data_sets[0]
 
 scenarios = [
-             #"Remove Users",
-             #"Remove Connections",
-             #"Add Users",
-             #"Add Connections",
+             "Remove Users",
+             "Remove Connections",
+             "Add Users",
+             "Add Connections",
              "Add Trolls",
-             #"Add Entities"
+             "Add Entities"
             ]
 
-step_values = [5, 10, 20]#, 10, 15, 20, 25]
-legend_suffix = "Connections"
+step_values = {"Remove Users": [5, 10, 20],
+               "Remove Connections": [5, 10, 20],
+               "Add Users": [5, 10, 20],
+               "Add Connections": [5, 10, 20],
+               "Add Trolls": [1, 3, 5],
+               "Add Entities": [1, 3, 5]}
+
+legend_suffix = {"Remove Users": "Users",
+                 "Remove Connections": "Connections",
+                 "Add Users": "Users",
+                 "Add Connections": "Connections",
+                 "Add Trolls": "Trolls",
+                 "Add Entities": "Entities"}
+
 
 def create_network():
     bg = Generator(emp_data_set)
@@ -146,7 +160,7 @@ def calc_activity(scenario):
                            "Add Entities": add_entities}
 
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
-    for step, step_value in enumerate(step_values):
+    for step, step_value in enumerate(step_values[scenario]):
         debug_msg(" --> Starting step " + str(step + 1) + " with value " + str(step_value))
         for rand_iter in range(0, rand_itas):
             debug_msg(" --> Starting iteration " + str(rand_iter + 1))
@@ -189,4 +203,5 @@ if __name__ == '__main__':
     for scenario in scenarios:
         if not plot_only:
             calc_activity(scenario)
-        plot_scenario_results(emp_data_set, scenario, step_values, plot_fmt, rand_itas, legend_suffix, store_itas)
+        plot_scenario_results(emp_data_set, scenario, step_values[scenario], plot_fmt, rand_itas,
+                              legend_suffix[scenario])
