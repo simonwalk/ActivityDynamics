@@ -20,7 +20,7 @@ class ScenarioNetwork(Network):
         self.graph_copy = None
         self.troll_ids = []
         self.entities_ids = []
-        self.edge_list = None
+        # self.edge_list = None
         self.step_debug = "-"
         self.rand_iter_debug = "-"
 
@@ -189,28 +189,40 @@ class ScenarioNetwork(Network):
                        str(self.graph.num_vertices()) + ").", level=1)
 
     def add_connections_by_num(self, num_edges):
-        if self.edge_list is None:
-            self.edge_list = []
-            self.debug_msg(" --> Starting calculation of edge list...", level=1)
-            adj_matrix = self.A.todense()
-            check_value = 0.0
-            num_of_edges = (((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2) - self.graph.num_edges()
-            for i in range(0, self.graph.num_vertices()):
-                if i % int((self.graph.num_vertices() / 10)) == 0 and i != 0:
-                    self.debug_msg("  --> Covered " + str(int((float(i)/self.graph.num_vertices()) * 100)) +
-                                   "% of vertices.", level=1)
-                for j in range(0, self.graph.num_vertices()):
-                    if adj_matrix[i, j] == check_value and i < j:
-                        self.edge_list.append((i, j))
-            self.debug_msg("  --> Covered 100% of vertices.", level=1)
-            if len(self.edge_list) != num_of_edges:
-                self.debug_msg("Error: The number of calculated edges did not meet the actual number of edges!", level=1)
-                sys.exit("Program exit")
-            else:
-                self.debug_msg("Done. Number of calculated edges: " + str(len(self.edge_list)), level=1)
-        random.shuffle(self.edge_list)
+        # if self.edge_list is None:
+        #     self.edge_list = []
+        #     self.debug_msg(" --> Starting calculation of edge list...", level=1)
+        #     adj_matrix = self.A.todense()
+        #     check_value = 0.0
+        #     num_of_edges = (((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2) - self.graph.num_edges()
+        #     for i in range(0, self.graph.num_vertices()):
+        #         if i % int((self.graph.num_vertices() / 10)) == 0 and i != 0:
+        #             self.debug_msg("  --> Covered " + str(int((float(i)/self.graph.num_vertices()) * 100)) +
+        #                            "% of vertices.", level=1)
+        #         for j in range(0, self.graph.num_vertices()):
+        #             if adj_matrix[i, j] == check_value and i < j:
+        #                 self.edge_list.append((i, j))
+        #     self.debug_msg("  --> Covered 100% of vertices.", level=1)
+        #     if len(self.edge_list) != num_of_edges:
+        #         self.debug_msg("Error: The number of calculated edges did not meet the actual number of edges!", level=1)
+        #         sys.exit("Program exit")
+        #     else:
+        #         self.debug_msg("Done. Number of calculated edges: " + str(len(self.edge_list)), level=1)
+        # random.shuffle(self.edge_list)
+        edge_list = []
+        self.debug_msg(" --> Calculate random edge tuples...", level=1)
+        while True:
+            edge_tuple = random.sample(range(0, self.graph.num_vertices()), 2)
+            if self.graph.edge(edge_tuple[0], edge_tuple[1]) is None and self.graph.edge(edge_tuple[1], edge_tuple[0])\
+                    is None:
+                if edge_tuple[0] < edge_tuple[1]:
+                    edge_list.append((edge_tuple[0], edge_tuple[1]))
+                else:
+                    edge_list.append((edge_tuple[1], edge_tuple[0]))
+            if len(set(edge_list)) is num_edges:
+                break
         old_num_edges = self.graph.num_edges()
-        self.graph.add_edge_list(self.edge_list[0:num_edges])
+        self.graph.add_edge_list(edge_list)
         self.debug_msg(" --> Added " + str(num_edges) + " connections to the network (was: " + str(old_num_edges) +
                        ", now: " + str(self.graph.num_edges()) + ").", level=1)
 

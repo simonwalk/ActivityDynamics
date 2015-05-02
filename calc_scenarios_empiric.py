@@ -23,13 +23,13 @@ data_sets = ["BeerStackExchange",           # 0
              "EnglishStackExchange",        # 2
              "MathStackExchange"]           # 3
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[3]
 
 scenarios = [
-             "Remove Users",
-             "Remove Connections",
+             #"Remove Users",
+             #"Remove Connections",
              #"Add Users",
-             #"Add Connections",
+             "Add Connections",
              #"Add Trolls",
              #"Add Entities"
             ]
@@ -56,7 +56,7 @@ def create_network():
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    bg.collect_colors()
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
     #bg.draw_graph(0)
@@ -84,7 +84,7 @@ def calc_activity(scenario):
     nw.open_taus_files()
     nw.write_summed_weights_to_file()
     nw.write_initial_tau_to_file()
-    scenario_marker = (len(nw.ratios) / 3) * 2
+    scenario_marker = int((len(nw.ratios) / float(3)) * 2)
     debug_msg(" --> Simulate scenario activity after: " + str(scenario_marker) + " ratios.")
     for i in xrange(len(nw.ratios)):
         debug_msg("Starting activity dynamics for ratio: " + str(i+1))
