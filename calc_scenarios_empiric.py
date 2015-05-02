@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
@@ -23,7 +23,7 @@ data_sets = ["BeerStackExchange",           # 0
              "EnglishStackExchange",        # 2
              "MathStackExchange"]           # 3
 
-emp_data_set = data_sets[3]
+emp_data_set = data_sets[0]
 
 scenarios = [
              #"Remove Users",

@@ -438,7 +438,7 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     for step_value in step_values:
         legend_values += str(step_value) + " " + legend_suffix + ", "
     legend_values = legend_values[:-2]
-    pch_skip = ((dpsi / dtau) / store_itas) - 1
+    pch_skip = ((dpsi / dtau) / store_itas)
     debug_msg("--> Done: " + legend_values)
     debug_msg("--> Calling empirical_scenarios_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_scenarios_plots.R')
