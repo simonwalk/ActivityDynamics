@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
@@ -34,11 +34,11 @@ experiments = ["Random",
 
 scenarios = [
              "Remove Users",
-             "Remove Connections",
-             "Add Users",
-             "Add Connections",
-             "Add Trolls",
-             "Add Entities"
+             #"Remove Connections",
+             #"Add Users",
+             #"Add Connections",
+             #"Add Trolls",
+             #"Add Entities"
             ]
 
 step_values = {"Remove Users": [5, 10, 20],

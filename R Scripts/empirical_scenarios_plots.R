@@ -38,7 +38,7 @@ while(i <= length(weights)) {
   points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
   i = i +1
 }
-legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.7, horiz=T)
+legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.7, ncol=2)
 
 par(mar=c(8,5,4,5)+.1, xpd=F)
 title(substitute(atop(scenario * " for " * bold(graph_name), 
@@ -53,3 +53,10 @@ grid(col="gray", lwd=1)
 #mtext("Real Activity",side=4,line=3, cex=cex_paper)
 
 dev.off()
+
+pdf("test.pdf", width="10", height="1")
+plot.new()
+par(xpd=T)
+legend("center", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.3, horiz=TRUE)
+par(xpd=F)
+dev.off

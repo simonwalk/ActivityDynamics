@@ -447,7 +447,9 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     debug_msg("--> Preparing legend values...")
     legend_values = ""
     for step_value in step_values:
-        legend_values += str(step_value) + " " + legend_suffix + ", "
+        legend_values += str(step_value) + " " + legend_suffix + " (Random)" + ", "
+    for step_value in step_values:
+        legend_values += str(step_value) + " " + legend_suffix + " (Informed)" + ", "
     legend_values = legend_values[:-2]
     pch_skip = ((dpsi / dtau) / store_itas)
     debug_msg("--> Done: " + legend_values)
