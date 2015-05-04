@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 5
+rand_itas = 10
 
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
@@ -29,23 +29,23 @@ data_sets = ["BeerStackExchange",           # 0
 
 emp_data_set = data_sets[0]
 
-experiments = [#"Random",
+experiments = ["Random",
                "Informed"]
 
 scenarios = [
-             #"Remove Users",
-             #"Remove Connections",
-             #"Add Users",
+             "Remove Users",
+             "Remove Connections",
+             "Add Users",
              "Add Connections",
-             #"Add Trolls",
-             #"Add Entities"
+             "Add Trolls",
+             "Add Entities"
             ]
 
 step_values = {"Remove Users": [5, 10, 20],
                "Remove Connections": [5, 10, 20],
-               "Add Users": [20, 35, 50],
+               "Add Users": [5, 10, 20],
                "Add Connections": [10, 50, 100],
-               "Add Trolls": [1],
+               "Add Trolls": [1, 3, 5],
                "Add Entities": [1, 3, 5]}
 
 legend_suffix = {"Remove Users": "Users",
