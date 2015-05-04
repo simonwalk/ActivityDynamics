@@ -21,19 +21,23 @@ rand_itas = 5
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
              "EnglishStackExchange",        # 2
-             "MathStackExchange"]           # 3
+             "MathStackExchange",           # 3
+             "BEACHAPEDIA",                 # 4
+             "CHARACTERDB",                 # 5
+             "NOBBZ",                       # 6
+             "W15M"]                        # 7
 
 emp_data_set = data_sets[0]
 
-experiments = ["Random",
+experiments = [#"Random",
                "Informed"]
 
 scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             #"Add Connections",
-             "Add Trolls",
+             "Add Connections",
+             #"Add Trolls",
              #"Add Entities"
             ]
 
@@ -118,42 +122,42 @@ def calc_activity(experiment, scenario):
     #nw.store_graph(0)
 
     # Helper functions
-    def remove_users(num):
+    def remove_users(strategy, num):
         debug_msg(" --> Doing remove users stuff...")
-        nw.remove_users_by_num(num)
+        nw.remove_users_by_num(strategy, num)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with removing users.")
 
-    def remove_connections(num):
+    def remove_connections(strategy, num):
         debug_msg(" --> Doing remove edges stuff...")
-        nw.remove_connections_by_num(num)
+        nw.remove_connections_by_num(strategy, num)
         nw.update_adjacency()
         debug_msg(" --> Done with removing edges.")
 
-    def add_users(num):
+    def add_users(strategy, num):
         debug_msg(" --> Doing add users stuff...")
-        nw.add_users_by_num(num)
+        nw.add_users_by_num(strategy, num)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding users.")
 
-    def add_connections(num):
+    def add_connections(strategy, num):
         debug_msg(" --> Doing add connections stuff...")
-        nw.add_connections_by_num(num)
+        nw.add_connections_by_num(strategy, num)
         nw.update_adjacency()
         debug_msg(" --> Done with adding connections.")
 
-    def add_trolls(num):
+    def add_trolls(strategy, num):
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(num, -0.01)
+        nw.add_trolls_by_num(strategy, num, -0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
 
-    def add_entities(num):
+    def add_entities(strategy, num):
         debug_msg(" --> Doing add entities stuff...")
-        nw.add_entities_by_num(num, 0.01)
+        nw.add_entities_by_num(strategy, num, 0.01)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
@@ -180,7 +184,7 @@ def calc_activity(experiment, scenario):
             debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
                       ", cur_iteration to " + str(scenario_init_iter))
             nw.write_summed_weights_to_file()
-            scenario_dispatcher[scenario](step_value)
+            scenario_dispatcher[scenario](experiment, step_value)
             for i in range(scenario_marker, len(nw.ratios)):
                 debug_msg("Starting activity dynamics for ratio: " + str(i+1))
                 nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)

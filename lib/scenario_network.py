@@ -120,27 +120,47 @@ class ScenarioNetwork(Network):
     def update_ones_ratio(self):
         self.ones_ratio = [1.0] * self.graph.num_vertices()
 
-    def remove_users_by_percentage(self, percentage):
-        bool_map = self.graph.new_vertex_property("bool")
-        num_affected_users = int((self.graph.num_vertices() / 100) * percentage)
-        self.debug_msg(" --> Going to remove " + str(percentage) + "% of users (" + str(num_affected_users)
-                       + " of currently " + str(self.graph.num_vertices()) + ")...", level=1)
-        user_sample = random.sample(range(0, self.graph.num_vertices()), num_affected_users)
-        for v in self.graph.vertices():
-            if v in user_sample:
-                bool_map[v] = 0
-            else:
-                bool_map[v] = 1
-        self.graph.set_vertex_filter(bool_map)
-        self.graph.purge_vertices()
-        self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
-                       str(self.graph.num_edges()) + " edges.", level=1)
+    def get_important_nodes_by_degree(self, num_users):
+        sorted_list = sorted(enumerate(self.graph.vertex_properties["degree"].a), key=lambda x: x[1], reverse=True)
+        matching_vertices = []
+        for i in range(0, num_users):
+            matching_vertices.append(sorted_list[i][0])
+        return matching_vertices
 
-    def remove_users_by_num(self, num_users):
+    def get_important_edges_by_degree(self, num_edges):
+        sorted_list = sorted(enumerate(self.graph.vertex_properties["degree"].a), key=lambda x: x[1], reverse=True)
+        edge_list = []
+        i = 0
+        while len(edge_list) < num_edges:
+            for n in self.graph.vertex(sorted_list[i][0]).all_neighbours():
+                edge_list.append(self.graph.edge_index[self.graph.edge(sorted_list[i][0], n)])
+            i += 1
+        return edge_list[0:num_edges]
+
+    # def remove_users_by_percentage(self, strategy, percentage):
+    #     bool_map = self.graph.new_vertex_property("bool")
+    #     num_affected_users = int((self.graph.num_vertices() / 100) * percentage)
+    #     self.debug_msg(" --> Going to remove " + str(percentage) + "% of users (" + str(num_affected_users)
+    #                    + " of currently " + str(self.graph.num_vertices()) + ")...", level=1)
+    #     user_sample = random.sample(range(0, self.graph.num_vertices()), num_affected_users)
+    #     for v in self.graph.vertices():
+    #         if v in user_sample:
+    #             bool_map[v] = 0
+    #         else:
+    #             bool_map[v] = 1
+    #     self.graph.set_vertex_filter(bool_map)
+    #     self.graph.purge_vertices()
+    #     self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
+    #                    str(self.graph.num_edges()) + " edges.", level=1)
+
+    def remove_users_by_num(self, strategy, num_users):
         bool_map = self.graph.new_vertex_property("bool")
         self.debug_msg(" --> Going to remove " + str(num_users) + " users of currently " +
                        str(self.graph.num_vertices()) + "...", level=1)
-        user_sample = random.sample(range(0, self.graph.num_vertices()), num_users)
+        if strategy is "Random":
+            user_sample = random.sample(range(0, self.graph.num_vertices()), num_users)
+        else:
+            user_sample = self.get_important_nodes_by_degree(num_users)
         for v in self.graph.vertices():
             if v in user_sample:
                 bool_map[v] = 0
@@ -151,27 +171,30 @@ class ScenarioNetwork(Network):
         self.debug_msg(" --> Removed Users. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
-    def remove_connections_by_percentage(self, percentage):
-        bool_map = self.graph.new_edge_property("bool")
-        num_affected_edges = int((self.graph.num_edges() / 100) * percentage)
-        self.debug_msg(" --> Going to remove " + str(percentage) + "% of edges (" + str(num_affected_edges)
-                       + " of currently " + str(self.graph.num_edges()) + ")...", level=1)
-        edge_sample = random.sample(range(0, self.graph.num_edges()), num_affected_edges)
-        for e in self.graph.edges():
-            if self.graph.edge_index[e] in edge_sample:
-                bool_map[e] = 0
-            else:
-                bool_map[e] = 1
-        self.graph.set_edge_filter(bool_map)
-        self.graph.purge_edges()
-        self.debug_msg(" --> Removed Edges. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
-                       str(self.graph.num_edges()) + " edges.", level=1)
+    # def remove_connections_by_percentage(self, strategy, percentage):
+    #     bool_map = self.graph.new_edge_property("bool")
+    #     num_affected_edges = int((self.graph.num_edges() / 100) * percentage)
+    #     self.debug_msg(" --> Going to remove " + str(percentage) + "% of edges (" + str(num_affected_edges)
+    #                    + " of currently " + str(self.graph.num_edges()) + ")...", level=1)
+    #     edge_sample = random.sample(range(0, self.graph.num_edges()), num_affected_edges)
+    #     for e in self.graph.edges():
+    #         if self.graph.edge_index[e] in edge_sample:
+    #             bool_map[e] = 0
+    #         else:
+    #             bool_map[e] = 1
+    #     self.graph.set_edge_filter(bool_map)
+    #     self.graph.purge_edges()
+    #     self.debug_msg(" --> Removed Edges. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
+    #                    str(self.graph.num_edges()) + " edges.", level=1)
 
-    def remove_connections_by_num(self, num_connections):
+    def remove_connections_by_num(self, strategy, num_connections):
         bool_map = self.graph.new_edge_property("bool")
         self.debug_msg(" --> Going to remove " + str(num_connections) + " connections of currently " +
                        str(self.graph.num_edges()) + "...", level=1)
-        edge_sample = random.sample(range(0, self.graph.num_edges()), num_connections)
+        if strategy is "Random":
+            edge_sample = random.sample(range(0, self.graph.num_edges()), num_connections)
+        else:
+            edge_sample = self.get_important_edges_by_degree(num_connections)
         for e in self.graph.edges():
             if self.graph.edge_index[e] in edge_sample:
                 bool_map[e] = 0
@@ -182,20 +205,22 @@ class ScenarioNetwork(Network):
         self.debug_msg(" --> Removed Edges. Current Graph: " + str(self.graph.num_vertices()) + " vertices and " +
                        str(self.graph.num_edges()) + " edges.", level=1)
 
-    def add_users_by_num(self, num_users):
+    def add_users_by_num(self, strategy, num_users):
         average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
         old_num_users = self.graph.num_vertices()
         self.debug_msg(" --> Going to add " + str(num_users) + " new users with degree " + str(average_degree) +
                        " to the network...", level=1)
+        targets = self.get_important_nodes_by_degree(average_degree)
         for i in range(0, num_users):
-            targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            if strategy is "Random":
+                targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
             v = self.graph.add_vertex()
             for t in targets:
                 self.graph.add_edge(v, t)
         self.debug_msg(" --> Added " + str(num_users) + " users to the network (was: " + str(old_num_users) + ", now: " +
                        str(self.graph.num_vertices()) + ").", level=1)
 
-    def add_connections_by_num(self, num_edges):
+    def add_connections_by_num(self, strategy, num_edges):
         # if self.edge_list is None:
         #     self.edge_list = []
         #     self.debug_msg(" --> Starting calculation of edge list...", level=1)
@@ -219,7 +244,11 @@ class ScenarioNetwork(Network):
         edge_list = []
         self.debug_msg(" --> Calculate random edge tuples...", level=1)
         while True:
-            edge_tuple = random.sample(range(0, self.graph.num_vertices()), 2)
+            if strategy is "Random":
+                edge_tuple = random.sample(range(0, self.graph.num_vertices()), 2)
+            else:
+                edge_tuple = self.get_important_nodes_by_degree(1)
+                edge_tuple.append(random.randint(0, self.graph.num_vertices() - 1))
             if self.graph.edge(edge_tuple[0], edge_tuple[1]) is None and self.graph.edge(edge_tuple[1], edge_tuple[0])\
                     is None:
                 if edge_tuple[0] < edge_tuple[1]:
@@ -228,14 +257,18 @@ class ScenarioNetwork(Network):
                     edge_list.append((edge_tuple[1], edge_tuple[0]))
             if len(set(edge_list)) is num_edges:
                 break
+        edge_list = list(set(edge_list))
         old_num_edges = self.graph.num_edges()
         self.graph.add_edge_list(edge_list)
         self.debug_msg(" --> Added " + str(num_edges) + " connections to the network (was: " + str(old_num_edges) +
                        ", now: " + str(self.graph.num_edges()) + ").", level=1)
 
-    def add_trolls_by_num(self, num_trolls, negative_activity):
+    def add_trolls_by_num(self, strategy, num_trolls, negative_activity):
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
+        if strategy is "Random":
+            self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
+        else:
+            self.scenario_ids = self.get_important_nodes_by_degree(num_trolls)
         for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = negative_activity
 
@@ -248,9 +281,12 @@ class ScenarioNetwork(Network):
         self.debug_msg(" --> Added " + str(num_trolls) + " trolls with activity " + str(negative_activity) +
                        " to the network.", level=1)
 
-    def add_entities_by_num(self, num_entities, activity):
+    def add_entities_by_num(self, strategy, num_entities, activity):
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
+        if strategy is "Random":
+            self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
+        else:
+            self.scenario_ids = self.get_important_nodes_by_degree(num_entities)
         for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
 
