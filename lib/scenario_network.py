@@ -20,6 +20,8 @@ class ScenarioNetwork(Network):
         self.graph_copy = None
         self.scenario_ids = []
         # self.edge_list = None
+        self.experiment_debug = "-"
+        self.scenario_debug = "-"
         self.step_debug = "-"
         self.rand_iter_debug = "-"
 
@@ -102,10 +104,13 @@ class ScenarioNetwork(Network):
 
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
-            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m][{}] \x1b[33m{}\x1b[00m".format(
-                datetime.datetime.now().strftime("%H:%M:%S"), self.step_debug, self.rand_iter_debug, msg)
+            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m][{}] \x1b[33m{}\x1b[00m".format(
+                datetime.datetime.now().strftime("%H:%M:%S"), self.experiment_debug, self.scenario_debug,
+                self.step_debug, self.rand_iter_debug, msg)
 
-    def update_debug_info(self, step, rand_iter):
+    def update_debug_info(self, scenario, experiment, step, rand_iter):
+        self.experiment_debug = experiment
+        self.scenario_debug = scenario
         self.step_debug = str(step)
         self.rand_iter_debug = str(rand_iter)
 

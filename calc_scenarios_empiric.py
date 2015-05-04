@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 10
+rand_itas = 5
 
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
@@ -25,12 +25,15 @@ data_sets = ["BeerStackExchange",           # 0
 
 emp_data_set = data_sets[0]
 
+experiments = ["Random",
+               "Informed"]
+
 scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             "Add Connections",
-             #"Add Trolls",
+             #"Add Connections",
+             "Add Trolls",
              #"Add Entities"
             ]
 
@@ -38,7 +41,7 @@ step_values = {"Remove Users": [5, 10, 20],
                "Remove Connections": [5, 10, 20],
                "Add Users": [20, 35, 50],
                "Add Connections": [10, 50, 100],
-               "Add Trolls": [1, 3, 5],
+               "Add Trolls": [1],
                "Add Entities": [1, 3, 5]}
 
 legend_suffix = {"Remove Users": "Users",
@@ -47,6 +50,9 @@ legend_suffix = {"Remove Users": "Users",
                  "Add Connections": "Connections",
                  "Add Trolls": "Trolls",
                  "Add Entities": "Entities"}
+
+iter_setup = {"Random": rand_itas,
+              "Informed": 1}
 
 
 def create_network():
@@ -64,8 +70,8 @@ def create_network():
     bg.store_graph(0)
 
 
-def calc_activity(scenario):
-    debug_msg(" *** Starting activity dynamics *** ")
+def calc_activity(experiment, scenario):
+    debug_msg(" *** Starting activity dynamics with : " + experiment + " *** ")
     nw = ScenarioNetwork(False, emp_data_set, run=0, deltatau=deltatau, store_iterations=store_itas, tau_in_days=tid,
                          ratios=[])
     fpath = nw.get_binary_filename(emp_data_set)
@@ -108,8 +114,8 @@ def calc_activity(scenario):
                       ", cur_iteration: " + str(scenario_init_iter))
     nw.close_weights_files()
     nw.close_taus_files()
-    nw.add_graph_properties()
-    nw.store_graph(0)
+    #nw.add_graph_properties()
+    #nw.store_graph(0)
 
     # Helper functions
     def remove_users(num):
@@ -162,12 +168,12 @@ def calc_activity(scenario):
     debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
     for step, step_value in enumerate(step_values[scenario]):
         debug_msg(" --> Starting step " + str(step + 1) + " with value " + str(step_value))
-        for rand_iter in range(0, rand_itas):
+        for rand_iter in range(0, iter_setup[experiment]):
             debug_msg(" --> Starting iteration " + str(rand_iter + 1))
-            nw.update_debug_info(step + 1, rand_iter + 1)
+            nw.update_debug_info(scenario, experiment[0], step + 1, rand_iter + 1)
             nw.run = rand_iter
             nw.set_ratio(0)
-            nw.open_weights_files(scenario + "_" + str(step_value))
+            nw.open_weights_files(experiment + "_" + scenario + "_" + str(step_value))
             #nw.open_taus_files(scenario + "_" + str(step_value))
             nw.cur_iteration = scenario_init_iter
             nw.graph = Graph(nw.graph_copy)
@@ -191,9 +197,10 @@ def calc_activity(scenario):
                     nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
             nw.close_weights_files()
             #nw.close_taus_files()
-        calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau,
-                                 delFiles=True)
-
+        if experiment is "Random":
+            debug_msg(" --> Calculating random average...")
+            calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau,
+                                     delFiles=True)
     debug_msg(" *** Done with activity dynamics *** ")
 
 
@@ -201,7 +208,8 @@ if __name__ == '__main__':
     if not plot_only:
         create_network()
     for scenario in scenarios:
-        if not plot_only:
-            calc_activity(scenario)
+        for experiment in experiments:
+            if not plot_only:
+                calc_activity(experiment, scenario)
         plot_scenario_results(emp_data_set, scenario, step_values[scenario], plot_fmt, rand_itas,
                               legend_suffix[scenario])

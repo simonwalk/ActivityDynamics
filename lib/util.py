@@ -383,8 +383,8 @@ def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_
                                   ".txt")
     average = []
     for i in range(0, rand_itas):
-        weight_path = get_abs_path(graph_name, "_" + scenario + "_" + str(step_value) + "_weights", store_itas, ratio,
-                                   deltatau=dtau, run=i)
+        weight_path = get_abs_path(graph_name, "_Random_" + scenario + "_" + str(step_value) + "_weights", store_itas,
+                                   ratio, deltatau=dtau, run=i)
         average.append(np.loadtxt(weight_path))
         if delFiles:
             os.remove(weight_path)
@@ -429,7 +429,18 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
         temp_array.fill(np.nan)
         temp = list(temp_array) + list(temp)
         combined_data.append(temp)
-        header += "\t" + scenario + "_" + str(step_value)
+        header += "\t" + scenario + "_" + str(step_value) + "_Random"
+    for step_value in step_values:
+        weights_path = get_abs_path(graph_name, "_Informed_" + scenario + "_" + str(step_value) + "_weights",
+                                    store_itas, ratios[1], deltatau=dtau)
+        debug_msg("----> " + weights_path)
+        temp = np.loadtxt(weights_path)
+        len_temp = len_tau - len(temp)
+        temp_array = np.empty(len_temp)
+        temp_array.fill(np.nan)
+        temp = list(temp_array) + list(temp)
+        combined_data.append(temp)
+        header += "\t" + scenario + "_" + str(step_value) + "_Informed"
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
                comments="")
     debug_msg("--> Weights and tau data successfully combined")
