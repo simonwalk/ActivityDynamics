@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = -1
+instance_selector = -2
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -58,6 +58,7 @@ print "Sum of Posts: {}".format(np.nansum(df_posts))
 print "Sum of Replies: {}".format(np.nansum(df_replies))
 print "Number of epochs: {}".format(len(df_posts))
 print "Number of Users: {}".format(graph.num_vertices())
+print "Number of Edges: {}".format(graph.num_edges())
 
 
 keys = set(id_to_vertex_dict.keys())

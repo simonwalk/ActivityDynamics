@@ -17,7 +17,7 @@ import numpy as np
 from multiprocessing import Pool
 
 # Change if necessary
-r_binary_path = '/usr/bin/RScript'
+r_binary_path = '/usr/bin/Rscript'
 
 # Default folders are set to create plots within results folder
 base_dir = "results/"
