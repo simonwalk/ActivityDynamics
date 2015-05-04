@@ -18,8 +18,7 @@ class ScenarioNetwork(Network):
                          store_iterations, ratios, ratio_index, tau_in_days, num_nodes)
 
         self.graph_copy = None
-        self.troll_ids = []
-        self.entities_ids = []
+        self.scenario_ids = []
         # self.edge_list = None
         self.step_debug = "-"
         self.rand_iter_debug = "-"
@@ -49,6 +48,9 @@ class ScenarioNetwork(Network):
         activity_weight = np.asarray(self.get_node_weights("activity"))
         # Calculate deltax
         ratio_ones = (self.ratio * np.asarray(self.ones_ratio))
+        if scenario is not None and ("Trolls" in scenario or "Entities" in scenario):
+            for v in self.scenario_ids:
+                ratio_ones[v] = float(0)
         intrinsic_decay = self.activity_decay(activity_weight, ratio_ones)
         extrinsic_influence = self.peer_influence(activity_weight)
         activity_delta = (intrinsic_decay + extrinsic_influence)*self.deltatau
@@ -228,8 +230,8 @@ class ScenarioNetwork(Network):
 
     def add_trolls_by_num(self, num_trolls, negative_activity):
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.troll_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
-        for v_id in self.troll_ids:
+        self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
+        for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = negative_activity
 
         #self.troll_ids = self.graph.add_vertex(num_trolls)
@@ -243,8 +245,8 @@ class ScenarioNetwork(Network):
 
     def add_entities_by_num(self, num_entities, activity):
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        self.entities_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
-        for v_id in self.entities_ids:
+        self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
+        for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
 
         #for entity in self.entities_ids:
@@ -256,10 +258,10 @@ class ScenarioNetwork(Network):
                        " to the network.", level=1)
 
     def check_and_set_trolls(self, threshold=0):
-        for v_id in self.troll_ids:
+        for v_id in self.scenario_ids:
             if self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] > threshold:
                 self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = threshold
 
     def set_entities(self, activity=0.01):
-        for v_id in self.entities_ids:
+        for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
