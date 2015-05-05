@@ -13,6 +13,7 @@ step_values = as.vector(unlist(strsplit(args[8], ", ")), mode="list")
 cex_paper = 1.5
 cex_size = 1
 colors = c("#000000", "#858585", "red", "green", "blue", "pink", "cyan", "darkorange", "brown")
+line_colors = c("red", "green")
 legend_text <- append(list("Simulated Activity", "Observed Activity"), step_values)
 file_name = paste(paste(graph_name, gsub(" ", "_", scenario), sep="_"), ".pdf", sep="")
 
@@ -34,6 +35,8 @@ points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1]
 lines(data$real_act_x, data$real_act_y, type="o", pch=2, lty=1, col=colors[2], cex=cex_size)
 i = 3
 while(i <= length(weights)) {
+  print(names(weights)[i])
+
   lines(weights$taus, weights[,i], type="o", pch=c(i, rep(NA, pch_skip)), lty=1, col=colors[i], cex=cex_size)
   points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
   i = i +1
@@ -41,9 +44,9 @@ while(i <= length(weights)) {
 legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.7, ncol=2)
 
 par(mar=c(8,5,4,5)+.1, xpd=F)
-title(substitute(atop(scenario * " for " * bold(graph_name), 
-                      "with " * rand_itas * " Random Iterations"),
-                 list(scenario = scenario, graph_name = graph_name, rand_itas = rand_itas)), cex.main=cex_paper)
+#title(substitute(atop(scenario * " for " * bold(graph_name), 
+#                      "with " * rand_itas * " Random Iterations"),
+#                 list(scenario = scenario, graph_name = graph_name, rand_itas = rand_itas)), cex.main=cex_paper)
 abline(v=marker, lty=2, col=colors[1])
 grid(col="gray", lwd=1)
 #par(new=TRUE)
@@ -54,9 +57,9 @@ grid(col="gray", lwd=1)
 
 dev.off()
 
-pdf("test.pdf", width="10", height="1")
+pdf(paste(scenario, "_legend.pdf"), width=10, height=2)
 plot.new()
 par(xpd=T)
-legend("center", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.3, horiz=TRUE)
+legend("center", inset=c(0, -0.3), pch=seq(1, length(weights), 1), col=colors, legend=legend_text, lty=1, cex=0.7, horiz=TRUE)
 par(xpd=F)
 dev.off

@@ -24,6 +24,7 @@ class ScenarioNetwork(Network):
         self.scenario_debug = "-"
         self.step_debug = "-"
         self.rand_iter_debug = "-"
+        self.entities_activity = 0
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -131,10 +132,14 @@ class ScenarioNetwork(Network):
         sorted_list = sorted(enumerate(self.graph.vertex_properties["degree"].a), key=lambda x: x[1], reverse=True)
         edge_list = []
         i = 0
-        while len(edge_list) < num_edges:
+        while len(set(edge_list)) < num_edges:
             for n in self.graph.vertex(sorted_list[i][0]).all_neighbours():
-                edge_list.append(self.graph.edge_index[self.graph.edge(sorted_list[i][0], n)])
+                if sorted_list[i][0] < n:
+                    edge_list.append(self.graph.edge_index[self.graph.edge(sorted_list[i][0], n)])
+                else:
+                    edge_list.append(self.graph.edge_index[self.graph.edge(n, sorted_list[i][0])])
             i += 1
+        edge_list = list(set(edge_list))
         return edge_list[0:num_edges]
 
     # def remove_users_by_percentage(self, strategy, percentage):
@@ -264,45 +269,52 @@ class ScenarioNetwork(Network):
                        ", now: " + str(self.graph.num_edges()) + ").", level=1)
 
     def add_trolls_by_num(self, strategy, num_trolls, negative_activity):
-        #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
-        if strategy is "Random":
-            self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
-        else:
-            self.scenario_ids = self.get_important_nodes_by_degree(num_trolls)
-        for v_id in self.scenario_ids:
-            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = negative_activity
+        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
+        # if strategy is "Random":
+        #     self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
+        # else:
+        #     self.scenario_ids = self.get_important_nodes_by_degree(num_trolls)
+        # for v_id in self.scenario_ids:
+        #     self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = negative_activity
 
-        #self.troll_ids = self.graph.add_vertex(num_trolls)
-        #for troll in self.troll_ids:
-        #    self.graph.vertex_properties["activity"][troll] = negative_activity
-        #    targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
-        #    for tgt in targets:
-        #        self.graph.add_edge(troll, tgt)
+        #self.scenario_ids = self.graph.add_vertex(num_trolls)
+        self.scenario_ids = []
+        for i in range(0, num_trolls):
+            v = self.graph.add_vertex()
+            self.scenario_ids.append(v)
+        for troll in self.scenario_ids:
+            self.graph.vertex_properties["activity"][troll] = negative_activity
+            if strategy is "Random":
+                targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            else:
+                targets = self.get_important_nodes_by_degree(average_degree)
+            # targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+            for tgt in targets:
+                self.graph.add_edge(troll, tgt)
         self.debug_msg(" --> Added " + str(num_trolls) + " trolls with activity " + str(negative_activity) +
                        " to the network.", level=1)
 
     def add_entities_by_num(self, strategy, num_entities, activity):
+        self.entities_activity = activity
         #average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
         if strategy is "Random":
             self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_entities)
         else:
             self.scenario_ids = self.get_important_nodes_by_degree(num_entities)
         for v_id in self.scenario_ids:
-            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
-
-        #for entity in self.entities_ids:
-        #    self.graph.vertex_properties["activity"][entity] = activity
-        #    targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
-        #    for tgt in targets:
-        #        self.graph.add_edge(entity, tgt)
-        self.debug_msg(" --> Added " + str(num_entities) + " entities with activity " + str(activity) +
-                       " to the network.", level=1)
+            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] += activity
+        self.debug_msg(" --> Added " + str(num_entities) + " entities with " + str(activity) +
+                       " added activity to the network.", level=1)
 
     def check_and_set_trolls(self, threshold=0):
+
         for v_id in self.scenario_ids:
-            if self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] > threshold:
+
+            if self.graph.vertex_properties["activity"][v_id] > threshold:
+                #self.graph.remove_vertex(v_id)
+                #self.scenario_ids.remove(v_id)
                 self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = threshold
 
-    def set_entities(self, activity=0.01):
+    def set_entities(self):
         for v_id in self.scenario_ids:
-            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = activity
+            self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] += self.entities_activity

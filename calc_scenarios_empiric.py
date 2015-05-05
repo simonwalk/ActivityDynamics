@@ -10,13 +10,13 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = True
+plot_only = False
 
 deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 10
+rand_itas = 1
 
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
@@ -27,33 +27,33 @@ data_sets = ["BeerStackExchange",           # 0
              "NOBBZ",                       # 6
              "W15M"]                        # 7
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[1]
 
-experiments = ["Random",
+experiments = [#"Random",
                "Informed"]
 
 scenarios = [
-             "Remove Users",
+             #"Remove Users",
              #"Remove Connections",
              #"Add Users",
              #"Add Connections",
-             #"Add Trolls",
+             "Add Trolls",
              #"Add Entities"
             ]
 
-step_values = {"Remove Users": [5, 10, 20],
-               "Remove Connections": [5, 10, 20],
-               "Add Users": [5, 10, 20],
-               "Add Connections": [10, 50, 100],
-               "Add Trolls": [1, 3, 5],
-               "Add Entities": [1, 3, 5]}
+step_values = {"Remove Users": [1, 5, 10],
+               "Remove Connections": [1, 10, 20],
+               "Add Users": [1, 5, 10],
+               "Add Connections": [1, 10, 20],
+               "Add Trolls": [1, 5, 10],
+               "Add Entities": [1, 5, 10]}
 
 legend_suffix = {"Remove Users": "Users",
-                 "Remove Connections": "Connections",
+                 "Remove Connections": "Collaborative Edges",
                  "Add Users": "Users",
-                 "Add Connections": "Connections",
+                 "Add Connections": "Collaborative Edges",
                  "Add Trolls": "Trolls",
-                 "Add Entities": "Entities"}
+                 "Add Entities": "Incentivized Users"}
 
 iter_setup = {"Random": rand_itas,
               "Informed": 1}
@@ -118,8 +118,8 @@ def calc_activity(experiment, scenario):
                       ", cur_iteration: " + str(scenario_init_iter))
     nw.close_weights_files()
     nw.close_taus_files()
-    #nw.add_graph_properties()
-    #nw.store_graph(0)
+    nw.add_graph_properties()
+    nw.store_graph(0)
 
     # Helper functions
     def remove_users(strategy, num):
@@ -150,14 +150,18 @@ def calc_activity(experiment, scenario):
 
     def add_trolls(strategy, num):
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(strategy, num, -0.01)
+        nw.add_trolls_by_num(strategy, num, -0.02)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
 
     def add_entities(strategy, num):
         debug_msg(" --> Doing add entities stuff...")
-        nw.add_entities_by_num(strategy, num, 0.01)
+
+        added_activity = (100 / nw.a_c / nw.graph.num_vertices()) / int(nw.deltapsi/nw.deltatau)
+        print added_activity
+
+        nw.add_entities_by_num(strategy, num, added_activity)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
