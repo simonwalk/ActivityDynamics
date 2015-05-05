@@ -414,11 +414,11 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
     debug_msg("----> " + weights_path)
     combined_data.append(np.loadtxt(weights_path))
-    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
-    debug_msg("----> " + taus_path)
-    combined_data.append(np.loadtxt(taus_path))
-    header = "sim_act\ttaus"
-    len_tau = len(combined_data[1])
+    # taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
+    # debug_msg("----> " + taus_path)
+    # combined_data.append(np.loadtxt(taus_path))
+    header = "sim_act"#\ttaus"
+    len_tau = len(combined_data[0])
     for step_value in step_values:
         weights_path = get_abs_path(graph_name, "_" + scenario + "_" + str(step_value),
                                     store_itas, ratios[1], deltatau=dtau, run="average")
@@ -430,7 +430,7 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
         temp = list(temp_array) + list(temp)
         for i, el in enumerate(temp):
             if el < 0:
-                temp[i] = np.nan
+                temp[i] = float(0)
         combined_data.append(temp)
         header += "\t" + scenario + "_" + str(step_value) + "_Random"
     for step_value in step_values:
@@ -444,7 +444,7 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
         temp = list(temp_array) + list(temp)
         for i, el in enumerate(temp):
             if el < 0:
-                temp[i] = np.nan
+                temp[i] = float(0)
         combined_data.append(temp)
         header += "\t" + scenario + "_" + str(step_value) + "_Informed"
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,

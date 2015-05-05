@@ -10,13 +10,13 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 1
+rand_itas = 10
 
 data_sets = ["BeerStackExchange",           # 0
              "HistoryStackExchange",        # 1
@@ -29,7 +29,7 @@ data_sets = ["BeerStackExchange",           # 0
 
 emp_data_set = data_sets[1]
 
-experiments = [#"Random",
+experiments = ["Random",
                "Informed"]
 
 scenarios = [
@@ -91,9 +91,9 @@ def calc_activity(experiment, scenario):
     nw.calculate_ratios()
     nw.set_ratio(0)
     nw.open_weights_files()
-    nw.open_taus_files()
+    #nw.open_taus_files()
     nw.write_summed_weights_to_file()
-    nw.write_initial_tau_to_file()
+    #nw.write_initial_tau_to_file()
     scenario_marker = int((len(nw.ratios) / float(3)) * 2)
     debug_msg(" --> Simulate scenario activity after: " + str(scenario_marker) + " ratios.")
     for i in xrange(len(nw.ratios)):
@@ -109,7 +109,8 @@ def calc_activity(experiment, scenario):
                                                                     int(nw.deltapsi/nw.deltatau)),
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
+            nw.activity_dynamics(store_weights=False, store_taus=False, empirical=True)
+        nw.write_summed_weights_to_file()
         if i is scenario_marker - 1:
             nw.graph_copy = Graph(nw.graph)
             scenario_init_iter = nw.cur_iteration
@@ -117,7 +118,7 @@ def calc_activity(experiment, scenario):
                       str(sum(nw.graph.vertex_properties["activity"].a)) +
                       ", cur_iteration: " + str(scenario_init_iter))
     nw.close_weights_files()
-    nw.close_taus_files()
+    #nw.close_taus_files()
     nw.add_graph_properties()
     nw.store_graph(0)
 
@@ -150,7 +151,11 @@ def calc_activity(experiment, scenario):
 
     def add_trolls(strategy, num):
         debug_msg(" --> Doing add troll stuff...")
-        nw.add_trolls_by_num(strategy, num, -0.02)
+        avg_activity = sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()
+        #print avg_activity
+        negative_activity = (15 / nw.a_c / nw.graph.num_vertices())
+        print negative_activity
+        nw.add_trolls_by_num(strategy, num, -negative_activity)
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding trolls.")
@@ -202,7 +207,8 @@ def calc_activity(experiment, scenario):
                                                                             nw.deltapsi, int(nw.deltapsi/nw.deltatau)),
                              level=1)
                 for j in xrange(int(nw.deltapsi/nw.deltatau)):
-                    nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
+                    nw.activity_dynamics(store_weights=False, store_taus=False, empirical=True, scenario=scenario)
+                nw.write_summed_weights_to_file()
             nw.close_weights_files()
             #nw.close_taus_files()
         if experiment is "Random":
