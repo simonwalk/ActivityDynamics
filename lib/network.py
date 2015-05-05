@@ -131,11 +131,11 @@ class Network:
         self.max_q = self.calc_max_q()
         self.mu = self.max_q / self.a_c
         self.deltapsi = self.mu
-        self.debug_msg("max_q: {}".format(self.max_q), level=1)
-        self.debug_msg("deltapsi: {}".format(self.deltapsi), level=1)
-        self.debug_msg("max_posts_per_day: {}".format(self.max_posts_per_day), level=1)
-        self.debug_msg("a_c: {}".format(self.a_c), level=1)
-        self.debug_msg("kappa_1: {}".format(self.k1), level=1)
+        self.debug_msg("max_q: {}".format(round(self.max_q, 3)), level=1)
+        self.debug_msg("deltapsi: {}".format(round(self.deltapsi, 3)), level=1)
+        self.debug_msg("max_posts_per_day: {}".format(round(self.max_posts_per_day, 3)), level=1)
+        self.debug_msg("a_c: {}".format(round(self.a_c, 3)), level=1)
+        self.debug_msg("kappa_1: {}".format(round(self.k1, 3)), level=1)
 
     # Creating all necessary folders for storing results, plots and figures
     def create_folders(self):

@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = True
+plot_only = False
 
 deltatau = 0.001
 store_itas = 10
@@ -19,15 +19,18 @@ plot_fmt = "pdf"
 rand_itas = 10
 
 data_sets = ["BeerStackExchange",           # 0
-             "HistoryStackExchange",        # 1
-             "EnglishStackExchange",        # 2
-             "MathStackExchange",           # 3
-             "BEACHAPEDIA",                 # 4
-             "CHARACTERDB",                 # 5
-             "NOBBZ",                       # 6
-             "W15M"]                        # 7
+             "BitcoinStackExchange",        # 1
+             "ElectronicsStackExchange",    # 2
+             "PhysicsStackExchange",        # 3
+             "GamingStackExchange",         # 4
+             "AskUbuntu",                   # 5
+             "ComplexOperations",           # 6
+             "BioInformatics",              # 7
+             "CSDMS",                       # 8
+             "Neurolex",                    # 9
+             "PracticalPlants" ]            # 10
 
-emp_data_set = data_sets[1]
+emp_data_set = data_sets[10]
 
 experiments = ["Random",
                "Informed"]
@@ -87,6 +90,7 @@ def calc_activity(experiment, scenario):
     nw.prepare_eigenvalues()
     nw.create_folders()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+    sys.exit()
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
