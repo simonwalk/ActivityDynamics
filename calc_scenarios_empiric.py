@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 10
+rand_itas = 1
 
 data_sets = ["HistoryStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -155,7 +155,7 @@ def calc_activity(experiment, scenario):
 
     def add_trolls(strategy, num):
         debug_msg(" --> Doing add troll stuff...")
-        negative_activity = (15 / nw.a_c / nw.graph.num_vertices())
+        negative_activity = (10 / nw.a_c / nw.graph.num_vertices())
         nw.add_trolls_by_num(strategy, num, -negative_activity)
         nw.update_ones_ratio()
         nw.update_adjacency()

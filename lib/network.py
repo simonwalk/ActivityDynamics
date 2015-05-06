@@ -113,7 +113,7 @@ class Network:
             try:
               self.dx.append(float(el[1]))
             except:
-                break
+                self.debug_msg(" !! Reached end of file = No dx !! ")
             self.apm.append(float(el[2]))
             self.posts.append(float(el[3]))
             self.replies.append(float(el[4]))
@@ -240,16 +240,16 @@ class Network:
 
     # fixed initial activity function
     def init_empirical_activity(self):
-        initial_empirical_activity = self.apm[0]/self.graph.num_vertices()/self.a_c
+        initial_empirical_activity = self.apm[0] / self.graph.num_vertices() / self.a_c
         self.debug_msg("Init Activity: {}".format(initial_empirical_activity), level=1)
-        initial_empirical_activity /= (self.graph.num_edges()*2)
+        initial_empirical_activity /= sum(self.graph.vp["evcentrality"].a)
         self.debug_msg("Init Activity per edge: {}".format(initial_empirical_activity), level=1)
-        ta = initial_empirical_activity*(self.graph.num_edges()*2)*self.a_c*self.graph.num_vertices()
+        ta = initial_empirical_activity * (sum(self.graph.vp["evcentrality"].a)) * self.a_c * self.graph.num_vertices()
         ca = self.apm[0]
         self.debug_msg("Total Activity: {}".format(ta), level=1)
         self.debug_msg("Control Activity: {}".format(ca), level=1)
         for v in self.graph.vertices():
-            self.graph.vertex_properties["activity"][v] = initial_empirical_activity * v.out_degree()
+            self.graph.vertex_properties["activity"][v] = initial_empirical_activity * self.graph.vp["evcentrality"][v]
             try:
                 self.graph.vertex_properties["weight_initialized"][v] = True
             except:
@@ -423,7 +423,7 @@ class Network:
             return ev_centrality
 
     def calculate_ratios(self):
-        for i in xrange(len(self.dx) - 1):
+        for i in xrange(len(self.dx)):
             activity_current = self.apm[i]
             activity_next = activity_current-self.dx[i]
             self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi

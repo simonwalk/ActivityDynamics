@@ -29,9 +29,6 @@ line_types <- c(1, 1)
 pch_styles <- c(0, 1, 3, 4, 8, 2, 5, 6)
 line_width = 2
 
-scenario_results = c()
-out_file = "scenario_results.txt"
-
 for (name in names(weights)) {
   if (length(grep("Random", name))>0) line_types <- c(line_types, 2)
   if (length(grep("Informed", name))>0) line_types <- c(line_types, 1)
@@ -45,8 +42,9 @@ print(" ++ Plotting activity")
 if (format == "pdf") pdf(file_name) else png(file_name)
 min_y = min(min(clean_weights), min(data$real_act_y))
 max_y = max(max(clean_weights), max(data$real_act_y))
-par(mar=c(5,5,1,1)+.1)
-plot(x_values, weights$sim_act, type="o", pch=pch_styles[1], xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=line_types[1], lwd=line_width, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
+par(mar=c(5,5,1.5,1)+.1)
+plot(x_values, weights$sim_act, type="o", pch=pch_styles[1], xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=line_types[1], lwd=line_width, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), xaxt="n")
+axis(1, at=c(0, 2, 4, 6, 8, 10, 12), labels=c("Init", 2, 4, 6, 8, 10, 12), cex.axis=cex_paper)
 #points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1], cex=cex_size)
 lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
 i = 2
