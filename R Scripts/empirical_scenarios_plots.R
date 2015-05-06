@@ -25,7 +25,19 @@ pch_skip = as.numeric(args[9])
 
 x_values <- seq(0,length(data$real_act_x)-1,1)
 
-print(x_values)
+line_types <- c(1, 1)
+pch_styles <- c(0, 1, 3, 4, 8, 2, 5, 6)
+line_width = 2
+
+scenario_results = c()
+out_file = "scenario_results.txt"
+
+for (name in names(weights)) {
+  if (length(grep("Random", name))>0) line_types <- c(line_types, 2)
+  if (length(grep("Informed", name))>0) line_types <- c(line_types, 1)
+} 
+
+print(line_types)
 
 print(paste("Marker: ", marker, sep=""))
 
@@ -34,13 +46,13 @@ if (format == "pdf") pdf(file_name) else png(file_name)
 min_y = min(min(clean_weights), min(data$real_act_y))
 max_y = max(max(clean_weights), max(data$real_act_y))
 par(mar=c(5,5,1,1)+.1)
-plot(x_values, weights$sim_act, type="o", pch=c(1), xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=1, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
+plot(x_values, weights$sim_act, type="o", pch=pch_styles[1], xlab=expression(tau ~ " (in months)"), ylab="Activity", lty=line_types[1], lwd=line_width, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
 #points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1], cex=cex_size)
-lines(data$real_act_x, data$real_act_y, type="o", pch=2, lty=1, col=colors[2], cex=cex_size)
+lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
 i = 2
 while(i <= length(weights)) {
   print(names(weights)[i])
-  lines(x_values, weights[,i], type="o", pch=c(i+1), lty=1, col=colors[i+1], cex=cex_size)
+  lines(x_values, weights[,i], type="o", pch=pch_styles[i+1], lty=line_types[i+1], lwd=line_width, col=colors[i+1], cex=cex_size)
   #points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
   i = i +1
 }
@@ -50,8 +62,8 @@ while(i <= length(weights)) {
 #title(substitute(atop(scenario * " for " * bold(graph_name), 
 #                      "with " * rand_itas * " Random Iterations"),
 #                 list(scenario = scenario, graph_name = graph_name, rand_itas = rand_itas)), cex.main=cex_paper)
-abline(v=marker, lty=2, col=colors[1])
-grid(col="gray", lwd=1)
+abline(v=marker, lty=2, lwd=line_width, col=colors[1])
+grid(col="gray", lwd=line_width)
 #par(new=TRUE)
 #plot(data$real_act_x, data$real_act_y, type="o", lty=1, pch=2,xaxt="n",yaxt="n",xlab="",ylab="", 
 #     col="#858585", cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
@@ -63,5 +75,5 @@ dev.off()
 pdf(paste(scenario, "_legend.pdf"), width=10, height=1)
 par(mar=c(0,0,0,0))
 plot.new()
-legend("center", pch=seq(1, length(weights)+1, 1), col=colors, legend=legend_text, lty=1, cex=1.2, ncol=4)
+legend("center", pch=pch_styles, col=colors, legend=legend_text, lty=line_types, lwd=line_width, cex=1, ncol=4, seg.len=4)
 dev.off

@@ -25,6 +25,7 @@ class ScenarioNetwork(Network):
         self.step_debug = "-"
         self.rand_iter_debug = "-"
         self.entities_activity = 0
+        self.average_degree = 0
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -211,14 +212,13 @@ class ScenarioNetwork(Network):
                        str(self.graph.num_edges()) + " edges.", level=1)
 
     def add_users_by_num(self, strategy, num_users):
-        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
         old_num_users = self.graph.num_vertices()
-        self.debug_msg(" --> Going to add " + str(num_users) + " new users with degree " + str(average_degree) +
+        self.debug_msg(" --> Going to add " + str(num_users) + " new users with degree " + str(self.average_degree) +
                        " to the network...", level=1)
-        targets = self.get_important_nodes_by_degree(average_degree)
+        targets = self.get_important_nodes_by_degree(self.average_degree)
         for i in range(0, num_users):
             if strategy is "Random":
-                targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+                targets = random.sample(range(0, self.graph.num_vertices()), self.average_degree)
             v = self.graph.add_vertex()
             for t in targets:
                 self.graph.add_edge(v, t)
@@ -269,7 +269,6 @@ class ScenarioNetwork(Network):
                        ", now: " + str(self.graph.num_edges()) + ").", level=1)
 
     def add_trolls_by_num(self, strategy, num_trolls, negative_activity):
-        average_degree = int(np.mean(self.graph.vertex_properties["degree"].a))
         # if strategy is "Random":
         #     self.scenario_ids = random.sample(range(0, self.graph.num_vertices()), num_trolls)
         # else:
@@ -285,9 +284,9 @@ class ScenarioNetwork(Network):
         for troll in self.scenario_ids:
             self.graph.vertex_properties["activity"][troll] = negative_activity
             if strategy is "Random":
-                targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
+                targets = random.sample(range(0, self.graph.num_vertices()), self.average_degree)
             else:
-                targets = self.get_important_nodes_by_degree(average_degree)
+                targets = self.get_important_nodes_by_degree(self.average_degree)
             # targets = random.sample(range(0, self.graph.num_vertices()), average_degree)
             for tgt in targets:
                 self.graph.add_edge(troll, tgt)
@@ -318,3 +317,22 @@ class ScenarioNetwork(Network):
     def set_entities(self):
         for v_id in self.scenario_ids:
             self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] += self.entities_activity
+
+    def update_k1(self):
+        evals_large_sparse, evecs_large_sparse = largest_eigsh(self.A, 2, which='LM')
+        evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[0]
+        self.debug_msg("Old k1: " + str(self.k1))
+        self.k1 = evs
+        self.debug_msg("New k1: " + str(self.k1))
+
+    def update_ratios(self, scenario_marker):
+        self.debug_msg(" --> Updating ratios...")
+        for i in range(scenario_marker, len(self.ratios)):
+            activity_current = self.apm[i]
+            activity_next = activity_current-self.dx[i]
+            self.ratios[i] = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
+        self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
+
+    def calc_average_degree(self):
+        self.average_degree = int(round(np.mean(self.graph.vertex_properties["degree"].a)))
+        self.debug_msg(" --> Calculated average degree: " + str(self.average_degree), level=1)

@@ -398,6 +398,8 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     output_path_data = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_scenarios.txt")
     output_path_weights = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
                                           scenario + "_combined.txt")
+    output_path_results = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
+                                          scenario + "_results.txt")
     debug_msg("--> Collection graph data...")
     dtau, dpsi, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
     debug_msg("--> Done with collecting graph data.")
@@ -449,6 +451,13 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
         header += "\t" + scenario + "_" + str(step_value) + "_Informed"
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
                comments="")
+    temp_results = [[0 for x in range(0, len(combined_data))] for x in range(0, len(combined_data))]
+    print temp_results
+    for i in range(0, len(combined_data)):
+        for j in range(0, len(combined_data)):
+            temp_results[i][j] = round(combined_data[i][-1] - combined_data[j][-1])
+    print temp_results
+    np.savetxt(output_path_results, np.array(temp_results).T, delimiter="\t", header=header, comments="", fmt="%i")
     debug_msg("--> Weights and tau data successfully combined")
     debug_msg("--> Preparing legend values...")
     legend_values = ""

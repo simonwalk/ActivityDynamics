@@ -18,7 +18,7 @@ tid = 30
 plot_fmt = "pdf"
 rand_itas = 10
 
-data_sets = ["BeerStackExchange",           # 0
+data_sets = ["HistoryStackExchange",           # 0
              "BitcoinStackExchange",        # 1
              "ElectronicsStackExchange",    # 2
              "PhysicsStackExchange",        # 3
@@ -30,7 +30,7 @@ data_sets = ["BeerStackExchange",           # 0
              "Neurolex",                    # 9
              "PracticalPlants" ]            # 10
 
-emp_data_set = data_sets[10]
+emp_data_set = data_sets[0]
 
 experiments = ["Random",
                "Informed"]
@@ -89,8 +89,8 @@ def calc_activity(experiment, scenario):
 
     nw.prepare_eigenvalues()
     nw.create_folders()
+    nw.calc_average_degree()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
-    sys.exit()
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
@@ -155,10 +155,7 @@ def calc_activity(experiment, scenario):
 
     def add_trolls(strategy, num):
         debug_msg(" --> Doing add troll stuff...")
-        avg_activity = sum(nw.graph.vertex_properties["activity"].a) * nw.a_c * nw.graph.num_vertices()
-        #print avg_activity
         negative_activity = (15 / nw.a_c / nw.graph.num_vertices())
-        print negative_activity
         nw.add_trolls_by_num(strategy, num, -negative_activity)
         nw.update_ones_ratio()
         nw.update_adjacency()
@@ -198,6 +195,8 @@ def calc_activity(experiment, scenario):
                       ", cur_iteration to " + str(scenario_init_iter))
             nw.write_summed_weights_to_file()
             scenario_dispatcher[scenario](experiment, step_value)
+            nw.update_k1()
+            nw.update_ratios(scenario_marker)
             for i in range(scenario_marker, len(nw.ratios)):
                 debug_msg("Starting activity dynamics for ratio: " + str(i+1))
                 nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
