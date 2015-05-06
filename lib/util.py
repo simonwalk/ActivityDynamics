@@ -452,12 +452,13 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
                comments="")
     temp_results = [[0 for x in range(0, len(combined_data))] for x in range(0, len(combined_data))]
-    print temp_results
     for i in range(0, len(combined_data)):
         for j in range(0, len(combined_data)):
             temp_results[i][j] = round(combined_data[i][-1] - combined_data[j][-1])
-    print temp_results
     np.savetxt(output_path_results, np.array(temp_results).T, delimiter="\t", header=header, comments="", fmt="%i")
+    result_file = open(output_path_results, "a")
+    result_file.write("Sim to obs: %i" % round(combined_data[0][-1] - real_act_y[-1]))
+    result_file.close()
     debug_msg("--> Weights and tau data successfully combined")
     debug_msg("--> Preparing legend values...")
     legend_values = ""

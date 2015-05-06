@@ -52,7 +52,7 @@ class ScenarioNetwork(Network):
         activity_weight = np.asarray(self.get_node_weights("activity"))
         # Calculate deltax
         ratio_ones = (self.ratio * np.asarray(self.ones_ratio))
-        if scenario is not None and ("Trolls" in scenario or "Entities" in scenario):
+        if scenario is not None and ("Trolls" in scenario):
             for v in self.scenario_ids:
                 ratio_ones[v] = float(0)
         intrinsic_decay = self.activity_decay(activity_weight, ratio_ones)
@@ -82,8 +82,6 @@ class ScenarioNetwork(Network):
         # Check scenario stuff
         if scenario is not None and "Trolls" in scenario:
             self.check_and_set_trolls()
-        elif scenario is not None and "Entities" in scenario:
-            self.set_entities()
 
         # Store weights to file
         if ((store_weights and self.cur_iteration % self.store_iterations == 0) and not empirical) or ((self.converged or self.diverged)
@@ -93,6 +91,9 @@ class ScenarioNetwork(Network):
                                                                                    and empirical):
             #self.debug_msg(" --> Sum of weights at \x1b[32m{}\x1b[30m is \x1b[32m{}\x1b[30m".format(self.cur_iteration, str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices())), level=1)
             self.weights_file.write(str(sum(activity_weight + activity_delta) * self.a_c * self.graph.num_vertices()) + "\n")
+
+        if scenario is not None and "Entities" in scenario:
+            self.set_entities()
 
         # Store taus to file
         if store_taus and empirical and self.cur_iteration % self.store_iterations == 0:
@@ -142,6 +143,19 @@ class ScenarioNetwork(Network):
             i += 1
         edge_list = list(set(edge_list))
         return edge_list[0:num_edges]
+
+    def get_num_users_by_percentage(self, percentage):
+        num_affected_users = int(round((self.graph.num_vertices() / 100) * percentage))
+        return num_affected_users
+
+    def get_num_edges_by_percentage(self, percentage):
+        num_affected_edges = int(round((self.graph.num_edges() / 100) * percentage))
+        return num_affected_edges
+
+    def get_num_missing_edges_by_percentage(self, percentage):
+        num_of_edges = (((self.graph.num_vertices() - 1) * self.graph.num_vertices()) / 2) - self.graph.num_edges()
+        num_affected_edges = int(round((num_of_edges / 100) * percentage))
+        return num_affected_edges
 
     # def remove_users_by_percentage(self, strategy, percentage):
     #     bool_map = self.graph.new_vertex_property("bool")
@@ -306,12 +320,8 @@ class ScenarioNetwork(Network):
                        " added activity to the network.", level=1)
 
     def check_and_set_trolls(self, threshold=0):
-
         for v_id in self.scenario_ids:
-
             if self.graph.vertex_properties["activity"][v_id] > threshold:
-                #self.graph.remove_vertex(v_id)
-                #self.scenario_ids.remove(v_id)
                 self.graph.vertex_properties["activity"][self.graph.vertex(v_id)] = threshold
 
     def set_entities(self):
@@ -321,9 +331,9 @@ class ScenarioNetwork(Network):
     def update_k1(self):
         evals_large_sparse, evecs_large_sparse = largest_eigsh(self.A, 2, which='LM')
         evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[0]
-        self.debug_msg("Old k1: " + str(self.k1))
+        self.debug_msg("Old k1: " + str(self.k1), level=1)
         self.k1 = evs
-        self.debug_msg("New k1: " + str(self.k1))
+        self.debug_msg("New k1: " + str(self.k1), level=1)
 
     def update_ratios(self, scenario_marker):
         self.debug_msg(" --> Updating ratios...")

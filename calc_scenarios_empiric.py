@@ -45,9 +45,9 @@ scenarios = [
             ]
 
 step_values = {"Remove Users": [1, 5, 10],
-               "Remove Connections": [1, 10, 20],
+               "Remove Connections": [10, 30, 50],
                "Add Users": [1, 5, 10],
-               "Add Connections": [1, 10, 20],
+               "Add Connections": [10, 20, 30],
                "Add Trolls": [1, 5, 10],
                "Add Entities": [1, 5, 10]}
 
@@ -129,20 +129,20 @@ def calc_activity(experiment, scenario):
     # Helper functions
     def remove_users(strategy, num):
         debug_msg(" --> Doing remove users stuff...")
-        nw.remove_users_by_num(strategy, num)
+        nw.remove_users_by_num(strategy, nw.get_num_users_by_percentage(num))
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with removing users.")
 
     def remove_connections(strategy, num):
         debug_msg(" --> Doing remove edges stuff...")
-        nw.remove_connections_by_num(strategy, num)
+        nw.remove_connections_by_num(strategy, nw.get_num_edges_by_percentage(num))
         nw.update_adjacency()
         debug_msg(" --> Done with removing edges.")
 
     def add_users(strategy, num):
         debug_msg(" --> Doing add users stuff...")
-        nw.add_users_by_num(strategy, num)
+        nw.add_users_by_num(strategy, nw.get_num_users_by_percentage(num))
         nw.update_ones_ratio()
         nw.update_adjacency()
         debug_msg(" --> Done with adding users.")
@@ -163,13 +163,10 @@ def calc_activity(experiment, scenario):
 
     def add_entities(strategy, num):
         debug_msg(" --> Doing add entities stuff...")
-
-        added_activity = (100 / nw.a_c / nw.graph.num_vertices()) / int(nw.deltapsi/nw.deltatau)
-        print added_activity
-
+        added_activity = (10 / nw.a_c / nw.graph.num_vertices()) / int(nw.deltapsi/nw.deltatau)
         nw.add_entities_by_num(strategy, num, added_activity)
-        nw.update_ones_ratio()
-        nw.update_adjacency()
+        #nw.update_ones_ratio()
+        #nw.update_adjacency()
         debug_msg(" --> Done with adding entities.")
 
     scenario_dispatcher = {"Remove Users": remove_users,

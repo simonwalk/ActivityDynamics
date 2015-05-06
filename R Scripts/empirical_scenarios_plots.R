@@ -34,8 +34,6 @@ for (name in names(weights)) {
   if (length(grep("Informed", name))>0) line_types <- c(line_types, 1)
 } 
 
-print(line_types)
-
 print(paste("Marker: ", marker, sep=""))
 
 print(" ++ Plotting activity")
@@ -49,7 +47,6 @@ axis(1, at=c(0, 2, 4, 6, 8, 10, 12), labels=c("Init", 2, 4, 6, 8, 10, 12), cex.a
 lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
 i = 2
 while(i <= length(weights)) {
-  print(names(weights)[i])
   lines(x_values, weights[,i], type="o", pch=pch_styles[i+1], lty=line_types[i+1], lwd=line_width, col=colors[i+1], cex=cex_size)
   #points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
   i = i +1
@@ -70,7 +67,7 @@ grid(col="gray", lwd=line_width)
 
 dev.off()
 
-pdf(paste(scenario, "_legend.pdf"), width=10, height=1)
+pdf(paste(scenario, "_legend.pdf"), width=14, height=1)
 par(mar=c(0,0,0,0))
 plot.new()
 legend("center", pch=pch_styles, col=colors, legend=legend_text, lty=line_types, lwd=line_width, cex=1, ncol=4, seg.len=4)
