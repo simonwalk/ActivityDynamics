@@ -16,9 +16,9 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 1
+rand_itas = 10
 
-data_sets = ["HistoryStackExchange",           # 0
+data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
              "ElectronicsStackExchange",    # 2
              "PhysicsStackExchange",        # 3
@@ -30,17 +30,17 @@ data_sets = ["HistoryStackExchange",           # 0
              "Neurolex",                    # 9
              "PracticalPlants" ]            # 10
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[5]
 
 experiments = ["Random",
                "Informed"]
 
 scenarios = [
-             #"Remove Users",
-             #"Remove Connections",
-             #"Add Users",
-             #"Add Connections",
-             #"Add Trolls",
+             "Remove Users",
+             "Remove Connections",
+             "Add Users",
+             "Add Connections",
+             "Add Trolls",
              "Add Entities"
             ]
 
