@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 4
+instance_selector = 0
 
 #instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
 #             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]

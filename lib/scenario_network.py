@@ -26,6 +26,8 @@ class ScenarioNetwork(Network):
         self.rand_iter_debug = "-"
         self.entities_activity = 0
         self.average_degree = 0
+        self.results_list = []
+        self.A_copy = None
 
     def open_weights_files(self, suffix=""):
         if suffix is not "":
@@ -240,6 +242,7 @@ class ScenarioNetwork(Network):
                        str(self.graph.num_vertices()) + ").", level=1)
 
     def add_connections_by_num(self, strategy, num_edges):
+        self.debug_msg(" --> Going to add " + str(num_edges) + " new edges to the network...", level=1)
         # if self.edge_list is None:
         #     self.edge_list = []
         #     self.debug_msg(" --> Starting calculation of edge list...", level=1)
@@ -260,23 +263,35 @@ class ScenarioNetwork(Network):
         #     else:
         #         self.debug_msg("Done. Number of calculated edges: " + str(len(self.edge_list)), level=1)
         # random.shuffle(self.edge_list)
-        edge_list = []
-        self.debug_msg(" --> Calculate random edge tuples...", level=1)
-        while True:
-            if strategy is "Random":
+        if self.A_copy is None:
+            self.A_copy = self.A.todense().copy()
+        edge_list = set()
+        if strategy is "Random":
+            self.debug_msg(" --> Calculate random edge tuples...", level=1)
+            a_copy = self.A_copy.copy()
+            while True:
                 edge_tuple = random.sample(range(0, self.graph.num_vertices()), 2)
-            else:
-                edge_tuple = self.get_important_nodes_by_degree(1)
-                edge_tuple.append(random.randint(0, self.graph.num_vertices() - 1))
-            if self.graph.edge(edge_tuple[0], edge_tuple[1]) is None and self.graph.edge(edge_tuple[1], edge_tuple[0])\
-                    is None:
-                if edge_tuple[0] < edge_tuple[1]:
-                    edge_list.append((edge_tuple[0], edge_tuple[1]))
-                else:
-                    edge_list.append((edge_tuple[1], edge_tuple[0]))
-            if len(set(edge_list)) is num_edges:
-                break
-        edge_list = list(set(edge_list))
+                if a_copy[edge_tuple[0], edge_tuple[1]] == 0.0:
+                    edge_list.add((edge_tuple[0], edge_tuple[1]))
+                    a_copy[edge_tuple[0], edge_tuple[1]] = 1.0
+                    a_copy[edge_tuple[1], edge_tuple[0]] = 1.0
+                if len(edge_list) == num_edges:
+                    break
+        elif strategy is "Informed":
+            self.debug_msg(" --> Calculate informed edge tuples...", level=1)
+            high_list = self.get_important_nodes_by_degree(self.graph.num_vertices())
+            a_copy = self.A_copy.copy()
+            for i in high_list:
+                for j in range(0, self.graph.num_vertices()):
+                    if a_copy[i, j] == 0.0 and i != j:
+                        edge_list.add((i, j))
+                        a_copy[i, j] = 1.0
+                        a_copy[j, i] = 1.0
+                    if len(edge_list) == num_edges:
+                        break
+                if len(edge_list) == num_edges:
+                    break
+        edge_list = list(edge_list)
         old_num_edges = self.graph.num_edges()
         self.graph.add_edge_list(edge_list)
         self.debug_msg(" --> Added " + str(num_edges) + " connections to the network (was: " + str(old_num_edges) +
@@ -346,3 +361,14 @@ class ScenarioNetwork(Network):
     def calc_average_degree(self):
         self.average_degree = int(round(np.mean(self.graph.vertex_properties["degree"].a)))
         self.debug_msg(" --> Calculated average degree: " + str(self.average_degree), level=1)
+
+    def add_to_result_list(self, value):
+        self.results_list.append(value)
+
+    def write_results_list(self, graph_name, scenario, experiment):
+        out_path = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
+                                          scenario + "_" + experiment + "_structure_results.txt")
+        myfile = open(out_path, "wb")
+        for entry in self.results_list:
+            myfile.write(entry + "\n")
+        myfile.close()

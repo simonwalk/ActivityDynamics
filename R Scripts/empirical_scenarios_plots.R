@@ -70,5 +70,5 @@ dev.off()
 pdf(paste(scenario, "_legend.pdf"), width=14, height=1)
 par(mar=c(0,0,0,0))
 plot.new()
-legend("center", pch=pch_styles, col=colors, legend=legend_text, lty=line_types, lwd=line_width, cex=1, ncol=4, seg.len=4)
+legend("center", pch=pch_styles, col=colors, legend=legend_text, lty=line_types, lwd=1, cex=1, ncol=4)
 dev.off

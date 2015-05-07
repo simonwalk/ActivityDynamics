@@ -32,29 +32,29 @@ data_sets = ["HistoryStackExchange",           # 0
 
 emp_data_set = data_sets[0]
 
-experiments = ["Random",
+experiments = [#"Random",
                "Informed"]
 
 scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             #"Add Connections",
-             "Add Trolls",
+             "Add Connections",
+             #"Add Trolls",
              #"Add Entities"
             ]
 
 step_values = {"Remove Users": [1, 5, 10],
                "Remove Connections": [10, 30, 50],
                "Add Users": [1, 5, 10],
-               "Add Connections": [10, 20, 30],
+               "Add Connections": [10, 30, 50],
                "Add Trolls": [1, 5, 10],
                "Add Entities": [1, 5, 10]}
 
-legend_suffix = {"Remove Users": "Users",
-                 "Remove Connections": "Collaborative Edges",
-                 "Add Users": "Users",
-                 "Add Connections": "Collaborative Edges",
+legend_suffix = {"Remove Users": "% of Users",
+                 "Remove Connections": "% of Collaborative Edges",
+                 "Add Users": "% of Users",
+                 "Add Connections": "% of Collaborative Edges",
                  "Add Trolls": "Trolls",
                  "Add Entities": "Incentivized Users"}
 
@@ -149,7 +149,7 @@ def calc_activity(experiment, scenario):
 
     def add_connections(strategy, num):
         debug_msg(" --> Doing add connections stuff...")
-        nw.add_connections_by_num(strategy, num)
+        nw.add_connections_by_num(strategy, nw.get_num_edges_by_percentage(num))
         nw.update_adjacency()
         debug_msg(" --> Done with adding connections.")
 
@@ -191,9 +191,14 @@ def calc_activity(experiment, scenario):
             debug_msg(" --> Reset graph. Activity to " + str(sum(nw.graph.vertex_properties["activity"].a)) +
                       ", cur_iteration to " + str(scenario_init_iter))
             nw.write_summed_weights_to_file()
+            old_num_vertices = nw.graph.num_vertices()
+            old_num_edges = nw.graph.num_edges()
             scenario_dispatcher[scenario](experiment, step_value)
             nw.update_k1()
             nw.update_ratios(scenario_marker)
+            nw.add_to_result_list(experiment + scenario + " " + str(step_value) + " " + str(rand_iter + 1) + ": " +
+                                  str(round(nw.k1, 3)) + " " + str(nw.graph.num_vertices() - old_num_vertices) + " " +
+                                  str(nw.graph.num_edges() - old_num_edges))
             for i in range(scenario_marker, len(nw.ratios)):
                 debug_msg("Starting activity dynamics for ratio: " + str(i+1))
                 nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
@@ -215,6 +220,7 @@ def calc_activity(experiment, scenario):
             debug_msg(" --> Calculating random average...")
             calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, nw.ratios[0], deltatau,
                                      delFiles=True)
+    nw.write_results_list(emp_data_set, scenario, experiment)
     debug_msg(" *** Done with activity dynamics *** ")
 
 
