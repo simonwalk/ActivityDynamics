@@ -32,16 +32,16 @@ data_sets = ["HistoryStackExchange",           # 0
 
 emp_data_set = data_sets[0]
 
-experiments = [#"Random",
+experiments = ["Random",
                "Informed"]
 
 scenarios = [
              #"Remove Users",
              #"Remove Connections",
              #"Add Users",
-             "Add Connections",
+             #"Add Connections",
              #"Add Trolls",
-             #"Add Entities"
+             "Add Entities"
             ]
 
 step_values = {"Remove Users": [1, 5, 10],
