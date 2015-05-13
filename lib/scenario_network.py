@@ -358,8 +358,9 @@ class ScenarioNetwork(Network):
             self.ratios[i] = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
+
     def calc_average_degree(self):
-        self.average_degree = int(round(np.mean(self.graph.vertex_properties["degree"].a)))
+        self.average_degree = max(1, int(round(np.mean(self.graph.vertex_properties["degree"].a))))
         self.debug_msg(" --> Calculated average degree: " + str(self.average_degree), level=1)
 
     def add_to_result_list(self, value):

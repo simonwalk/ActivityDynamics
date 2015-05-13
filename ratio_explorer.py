@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 0
+instance_selector = -1
 
 #instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
 #             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -20,16 +20,18 @@ instance_selector = 0
 # instances = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
 #              "PhysicsStackExchange", "AskUbuntu"]
 
-instances = ["BioInformatics", "ComplexOperations", "CSDMS", "Neurolex", "PracticalPlants"]
+instances = ["BioInformatics", "ComplexOperations", "CSDMS", "Neurolex", "PracticalPlants", "BlockLand", "DotaWiki"]
 
 # folders = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
 #              "PhysicsStackExchange", "AskUbuntu"]
 
-folders = ["bioinformatics/bioinformatics_org_collab_network.txt.sorted_results",
-           "complexoperations/complexoperations_org_collab_network.txt.sorted_results",
-           "csdms/csdms_colorado_edu_collab_network.txt.sorted_results",
-           "neurolex/neurolex_org_collab_network.txt.sorted_results",
-           "practicalplants/practicalplants_org_collab_network.txt.sorted_results"]
+folders = ["bioinformatics_org_collab_network/bioinformatics_org_collab_network.txt.sorted_results",
+           "complexoperations_org_collab_network/complexoperations_org_collab_network.txt.sorted_results",
+           "csdms_colorado_edu_collab_network/csdms_colorado_edu_collab_network.txt.sorted_results",
+           "neurolex_org_collab_network/neurolex_org_collab_network.txt.sorted_results",
+           "practicalplants_org_collab_network/practicalplants_org_collab_network.txt.sorted_results",
+           "blockland_nullable_se_collab_network/blockland_nullable_se_collab_network.txt.sorted_results",
+           "Wikis/dotawiki_de_collab_network.txt.sorted_results"]
 
 # folders = ["beachapedia_org_collab_network.txt.sorted_results",
 #            "characterdb_cjklib_org_collab_network.txt.sorted_results",
