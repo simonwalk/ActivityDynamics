@@ -12,34 +12,34 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 0
+instance_selector = -1
 
-#instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
-#             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
+             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
 
 # instances = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
 #              "PhysicsStackExchange", "AskUbuntu"]
 
-instances = ["BioInformatics", "ComplexOperations", "CSDMS", "Neurolex", "PracticalPlants"]
+#instances = ["BioInformatics", "ComplexOperations", "CSDMS", "Neurolex", "PracticalPlants"]
 
 # folders = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
 #              "PhysicsStackExchange", "AskUbuntu"]
 
-folders = ["bioinformatics/bioinformatics_org_collab_network.txt.sorted_results",
-           "complexoperations/complexoperations_org_collab_network.txt.sorted_results",
-           "csdms/csdms_colorado_edu_collab_network.txt.sorted_results",
-           "neurolex/neurolex_org_collab_network.txt.sorted_results",
-           "practicalplants/practicalplants_org_collab_network.txt.sorted_results"]
+#folders = ["bioinformatics/bioinformatics_org_collab_network.txt.sorted_results",
+#           "complexoperations/complexoperations_org_collab_network.txt.sorted_results",
+#           "csdms/csdms_colorado_edu_collab_network.txt.sorted_results",
+#           "neurolex/neurolex_org_collab_network.txt.sorted_results",
+#           "practicalplants/practicalplants_org_collab_network.txt.sorted_results"]
 
-# folders = ["beachapedia_org_collab_network.txt.sorted_results",
-#            "characterdb_cjklib_org_collab_network.txt.sorted_results",
-#            "wiki_15m_cc_collab_network.txt.sorted_results",
-#            "nobbz_de_collab_network.txt.sorted_results",
-#            "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+folders = ["beachapedia_org_collab_network.txt.sorted_results",
+           "characterdb_cjklib_org_collab_network.txt.sorted_results",
+           "wiki_15m_cc_collab_network.txt.sorted_results",
+           "nobbz_de_collab_network.txt.sorted_results",
+           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
 instance = instances[instance_selector]
 
 root_path = ""
-root_path_results = root_path + "results/graph_binaries/empirical_data/"
+root_path_results = root_path + "results/graph_binaries/empirical_data/" + instance + "/"
 storage_path = root_path_results + instance + "_empirical.txt"
 source_path = root_path + "datasets/"+folders[instance_selector]+"/"
 
@@ -55,6 +55,9 @@ fname = fnames[0]
 if not os.path.exists(fname):
     os.makedirs(fname)
 shutil.copy(copy_file, fname + gname)
+
+if not os.path.exists(root_path_results):
+    os.makedirs(root_path_results)
 
 # loading pickled files
 df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
@@ -81,6 +84,13 @@ df_posts = pd.read_pickle(source_path + "user_df_posts.ser")
 df_replies = pd.read_pickle(source_path + "user_df_replies.ser")
 df_posts.fillna(0, inplace=True)
 df_replies.fillna(0, inplace=True)
+
+df_dx = pd.rolling_apply(df_posts + df_replies, func=lambda x: x[0] - x[1], window=2, min_periods=2).shift(-1)
+df_dx.to_pickle(source_path + "user_df_dx.ser")
+
+shutil.copy(source_path + "user_df_posts.ser", root_path_results)
+shutil.copy(source_path + "user_df_replies.ser", root_path_results)
+shutil.copy(source_path + "user_df_dx.ser", root_path_results)
 
 appeared_users = []
 agg_act_new_users = []
