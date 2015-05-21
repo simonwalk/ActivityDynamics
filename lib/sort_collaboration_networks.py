@@ -11,7 +11,7 @@ import glob
 # Requires unix environment!
 
 print 'Starting to sort change-logs'
-fnames = glob.glob("../datasets/<dataset>/*.txt")
+fnames = glob.glob("../datasets/Wikis/dotawiki*.txt")
 for fname in fnames:
     cmd = "sort -t ',' -k 1,1 -k 4,4 " + fname + " > " + fname + ".sorted"
     print cmd

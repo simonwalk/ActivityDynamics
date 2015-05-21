@@ -28,21 +28,28 @@ data_sets = ["BeerStackExchange",           # 0
              "BioInformatics",              # 7
              "CSDMS",                       # 8
              "Neurolex",                    # 9
-             "PracticalPlants" ]            # 10
+             "PracticalPlants",             #10
+             "BlockLand",                   #11
+             "DotaWiki"]                    #12
 
-emp_data_set = data_sets[5]
+emp_data_set = data_sets[10]
+
 
 experiments = ["Random",
-               "Informed"]
+               "Informed"
+              ]
+
 
 scenarios = [
-             "Remove Users",
-             "Remove Connections",
+             #"Remove Users",
+             #"Remove Connections",
              "Add Users",
-             "Add Connections",
-             "Add Trolls",
-             "Add Entities"
+
+             #"Add Connections",
+             #"Add Trolls",
+             #"Add Entities"
             ]
+
 
 step_values = {"Remove Users": [1, 5, 10],
                "Remove Connections": [10, 30, 50],

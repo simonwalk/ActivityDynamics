@@ -18,8 +18,7 @@ import datetime
 
 from graph_tool.all import *
 
-import matplotlib
-matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from random import shuffle, sample
 from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
