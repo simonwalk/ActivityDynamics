@@ -73,6 +73,15 @@ class Network:
         # synthetic network helper variables
         self.converged = False
         self.diverged = False
+        # user analysis variables
+        self.agg_user_activity = None
+
+    def aggregate_user_activity(self):
+        if self.agg_user_activity is None:
+            self.agg_user_activity = self.graph.new_vertex_property("double")#[0 for x in range(0, self.num_vertices)]
+            self.graph.vertex_properties["agg_user_activity"] = self.agg_user_activity
+        #print self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices()
+        self.graph.vertex_properties["agg_user_activity"].a += (self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices())
 
     def calc_acs(self):
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))

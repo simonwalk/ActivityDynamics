@@ -14,6 +14,7 @@ dtau = args[8]
 mu = args[9]
 ac = args[10]
 k1 = args[11]
+ua_data = read.table(args[12], sep="\t", header=T, colClasses = "numeric")
 cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585")
@@ -88,3 +89,21 @@ title(substitute(atop("Error of Simulation over " ~ tau ~ " (in " * mode * ")",
                       "(RMSE = " ~ rmse ~ ")"), list(rmse=rmse, mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
 dev.off()
+
+centrality_names <- c("Degree", "Eigenvector Centrality", "PageRank")
+
+i = 2
+while(i <= length(ua_data)) {
+print(paste(" ++ Plotting User Analysis: ", centrality_names[i-1], sep=""))
+graph_name_for_file = paste(graph_name, names(ua_data)[i], sep="_")
+title = paste("Correlation Between User Activity and", centrality_names[i-1], sep=" ")
+pearson_cor = cor(ua_data[,1], ua_data[,i], method="pearson")
+print(pearson_cor)
+if (format == "pdf") pdf(paste(graph_name_for_file, "_ua.pdf", sep="")) else png(paste(graph_name_for_file, "_ua.png", sep=""))
+plot(ua_data$agg_user_activity, ua_data[,i], pch=19, xlab="Activity", ylab=centrality_names[i-1])
+title(substitute(atop(title, 
+                      "(" * rho == ~ cor * ")"),
+                 list(title = title, cor = pearson_cor)))
+dev.off()
+i = i + 1
+}

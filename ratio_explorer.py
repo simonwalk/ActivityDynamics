@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 0
+instance_selector = -3
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -40,7 +40,7 @@ instance = instances[instance_selector]
 
 root_path = ""
 root_path_results = root_path + "results/graph_binaries/empirical_data/" + instance + "/"
-storage_path = root_path_results + instance + "_empirical.txt"
+storage_path = root_path_results + "empirical.txt"
 source_path = root_path + "datasets/"+folders[instance_selector]+"/"
 
 

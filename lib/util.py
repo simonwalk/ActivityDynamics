@@ -41,7 +41,7 @@ def get_network_details_for_epochs(graph_name):
     return dtau, store_itas, num_epochs, a_cs, ratios, k1s, gs, max_qs, mus, apm, sapm, fapm
 
 
-def get_network_details(graph_name):
+def get_network_details(graph_name, cm_for_ua):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
     dtau = graph.graph_properties["deltatau"]
     dpsi = graph.graph_properties["deltapsi"]
@@ -52,7 +52,10 @@ def get_network_details(graph_name):
     ratios = [np.nan] + ratios
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
-    return dtau, dpsi, store_itas, mu, ac, ratios, k1, apm
+    centrality_values = [list(graph.vp["agg_user_activity"].a)]
+    for cm in cm_for_ua:
+        centrality_values.append(list(graph.vp[cm].a))
+    return dtau, dpsi, store_itas, mu, ac, ratios, k1, apm, centrality_values
 
 
 # retrieve parameters stored in binary graph file
@@ -163,13 +166,15 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     debug_msg("*** Successfully plotted empirical results ***")
 
 
-def empirical_result_plot(graph_name, mode, plot_fmt):
+def empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua):
     debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
+    ua_output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_user_analysis.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    dtau, dpsi, store_itas, mu, ac, ratios, k1, apm, centrality_values = get_network_details(graph_name, cm_for_ua)
+    print centrality_values
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -178,6 +183,10 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     combined_data = [ratios, real_act_x, real_act_y]
     header = "ratios\treal_act_x\treal_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
+    header = "agg_user_activity"
+    for cm in cm_for_ua:
+        header += "\t" + cm
+    np.savetxt(ua_output_path, np.array(centrality_values).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
     weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
@@ -188,7 +197,7 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
     subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, mode,
-                     plot_fmt, str(dtau), str(mu), str(ac), str(k1)])
+                     plot_fmt, str(dtau), str(mu), str(ac), str(k1), ua_output_path])
                     #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
     debug_msg("*** Successfully plotted empirical results ***")
 

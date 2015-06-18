@@ -14,8 +14,14 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 mode = "months"
-plot_fmt = "png"
+plot_fmt = "pdf"
+plot_only = False
 
+cm_for_ua = [
+    "degree",
+    "evcentrality",
+    "pagerank"
+]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -24,10 +30,10 @@ def create_network(graph_name):
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    bg.collect_colors()
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    bg.draw_graph(0)
+    #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
@@ -43,7 +49,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
     nw.prepare_eigenvalues()
     nw.create_folders()
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
@@ -57,6 +63,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
         nw.set_ac(i)
         nw.set_ratio(i)
         nw.reset_tau_iter()
+        nw.aggregate_user_activity()
         nw.debug_msg("Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m and "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
@@ -65,6 +72,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
+    print nw.agg_user_activity
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
@@ -81,7 +89,8 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "SMW_NOBBZ",            #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[7]
-    #create_network(graph_name)
-    #calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name, mode, plot_fmt)
+    graph_name = empirical_ds[4]
+    if not plot_only:
+        create_network(graph_name)
+        calc_activity(graph_name, store_itas, deltatau)
+    empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua)
