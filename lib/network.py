@@ -95,6 +95,32 @@ class Network:
             self.graph.vertex_properties["agg_user_activity"] = self.agg_user_activity
         self.graph.vertex_properties["agg_user_activity"].a += (self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices())
 
+    def get_ratio_colors(self, threshold=0):
+        self.graph.vertex_properties["act_diff_cols"] = self.graph.new_vertex_property("vector<double>")
+        for v in self.graph.vertices():
+            if threshold is not 0:
+                plus_minus = (self.agg_emp_user_activity[v] / 100) * threshold
+            else:
+                plus_minus = 0
+            if self.agg_user_activity[v] < self.agg_emp_user_activity[v] - plus_minus:
+                self.graph.vertex_properties["act_diff_cols"][v] = [1, 0, 0, 1]
+            elif self.agg_user_activity[v] > self.agg_emp_user_activity[v] + plus_minus:
+                self.graph.vertex_properties["act_diff_cols"][v] = [0, 1, 0, 1]
+            else:
+                self.graph.vertex_properties["act_diff_cols"][v] = [0, 0, 1, 1]
+        for v in self.graph.vertices():
+            print self.graph.vertex_properties["act_diff_cols"][v]
+
+    def plot_act_diff_graph(self, threshold=10, output_size=4000):
+        out_path = config.graph_dir + self.graph_name + "_act_diff.png"
+        v_size_prop_map = self.graph.vertex_properties["evcentrality"]
+        val = math.sqrt(self.graph.num_vertices()) / self.graph.num_vertices() * (output_size / 4)
+        mi = val
+        ma = val * 2
+        graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties["act_diff_cols"],
+                   vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)), output=out_path,
+                   output_size=(output_size, output_size))
+
     def calc_acs(self):
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))
         self.set_ac(0)

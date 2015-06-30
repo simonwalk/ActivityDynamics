@@ -15,7 +15,7 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = True
+plot_only = False
 
 cm_for_ua = [
     "degree",
@@ -73,6 +73,8 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
     nw.get_empirical_activity_per_user()
+    nw.get_ratio_colors(threshold=5)
+    nw.plot_act_diff_graph()
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)

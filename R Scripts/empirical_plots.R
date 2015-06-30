@@ -113,16 +113,16 @@ i = 1
 cols = c()
 while(i <= length(ua_data$agg_emp_user_activity)) {
   if (ua_data$agg_emp_user_activity[i] > ua_data$agg_user_activity[i])
-    cols <- c(cols, rgb(1,0,0,0.5))
+    cols <- c(cols, rgb(1,0,0,0.1))
   else
-    cols <- c(cols, rgb(0,1,0,0.5))
+    cols <- c(cols, rgb(0,1,0,0.1))
   i = i + 1
 }
 max_value = max(ua_data$agg_emp_user_activity, ua_data$agg_user_activity)
 if (format == "pdf") pdf(paste(graph_name, "_emp_vs_sim.pdf", sep="")) else png(paste(graph_name, "_emp_vs_sim.png", sep=""))
 #plot(ua_data$agg_emp_user_activity, ua_data$agg_user_activity, pch=1, xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value))
-normalized_data= (ua_data$evcentrality - min(ua_data$evcentrality))/(max(ua_data$evcentrality) - min(ua_data$evcentrality))
-symbols(x=ua_data$agg_emp_user_activity, y=ua_data$agg_user_activity, circles=normalized_data*2, inches=FALSE, ann=T, bg=cols, fg="black", xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value), cex.axis=cex_paper, cex.lab=cex_paper)
+#normalized_data= (ua_data$evcentrality - min(ua_data$evcentrality))/(max(ua_data$evcentrality) - min(ua_data$evcentrality))
+symbols(x=ua_data$agg_emp_user_activity, y=ua_data$agg_user_activity, circles=ua_data$evcentrality, inches=1/5, ann=T, bg=cols, fg=rgb(0,0,0,0.1), xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value), cex.axis=cex_paper, cex.lab=cex_paper)
 lines(c(0, max_value), c(0, max_value), lty=2)
 title(substitute(atop("Empirical Activity versus Simulated Activity per User")), cex.main=cex_paper)
 dev.off()
