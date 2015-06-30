@@ -13,6 +13,7 @@ from config import config
 import math
 import random
 import numpy as np
+import pandas as pd
 from numpy.lib.type_check import real, imag
 import datetime
 
@@ -75,12 +76,23 @@ class Network:
         self.diverged = False
         # user analysis variables
         self.agg_user_activity = None
+        self.agg_emp_user_activity = None
+
+    def get_empirical_activity_per_user(self):
+        if self.agg_emp_user_activity is None:
+            self.agg_emp_user_activity = self.graph.new_vertex_property("double")
+            self.graph.vertex_properties["agg_emp_user_activity"] = self.agg_emp_user_activity
+        source_path = config.graph_binary_dir + "empirical_data/" + self.graph_name + "/"
+        apm_per_user = pd.read_pickle(source_path + "user_df_apm.ser")
+        apm_per_user = apm_per_user.sum(axis=0)
+        for i in apm_per_user.index:
+            v = find_vertex(self.graph, self.graph.vertex_properties["nodeID"], i)
+            self.graph.vertex_properties["agg_emp_user_activity"][v[0]] = apm_per_user[i]
 
     def aggregate_user_activity(self):
         if self.agg_user_activity is None:
             self.agg_user_activity = self.graph.new_vertex_property("double")#[0 for x in range(0, self.num_vertices)]
             self.graph.vertex_properties["agg_user_activity"] = self.agg_user_activity
-        #print self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices()
         self.graph.vertex_properties["agg_user_activity"].a += (self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices())
 
     def calc_acs(self):

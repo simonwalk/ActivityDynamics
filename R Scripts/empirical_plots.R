@@ -92,11 +92,11 @@ dev.off()
 
 centrality_names <- c("Degree", "Eigenvector Centrality", "PageRank")
 
-i = 2
+i = 3
 while(i <= length(ua_data)) {
-print(paste(" ++ Plotting User Analysis: ", centrality_names[i-1], sep=""))
+print(paste(" ++ Plotting User Analysis: ", centrality_names[i-2], sep=""))
 graph_name_for_file = paste(graph_name, names(ua_data)[i], sep="_")
-title = paste("Correlation Between User Activity and", centrality_names[i-1], sep=" ")
+title = paste("Correlation Between User Activity and", centrality_names[i-2], sep=" ")
 pearson_cor = cor(ua_data[,1], ua_data[,i], method="pearson")
 print(pearson_cor)
 if (format == "pdf") pdf(paste(graph_name_for_file, "_ua.pdf", sep="")) else png(paste(graph_name_for_file, "_ua.png", sep=""))
@@ -107,3 +107,12 @@ title(substitute(atop(title,
 dev.off()
 i = i + 1
 }
+
+print(" ++ Plotting empirical vs simulated activity")
+max_value = max(ua_data$agg_emp_user_activity, ua_data$agg_user_activity)
+if (format == "pdf") pdf(paste(graph_name, "_emp_vs_sim.pdf", sep="")) else png(paste(graph_name, "_emp_vs_sim.png", sep=""))
+#plot(ua_data$agg_emp_user_activity, ua_data$agg_user_activity, pch=1, xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value))
+symbols(x=ua_data$agg_emp_user_activity, y=ua_data$agg_user_activity, circles=ua_data$evcentrality, inches=1/5, ann=T, bg=NULL, fg="red", xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value), cex.axis=cex_paper, cex.lab=cex_paper)
+lines(c(0, max_value), c(0, max_value), lty=2)
+title("Empirical Activity versus Simulated Activity per User", cex.main=cex_paper)
+dev.off()

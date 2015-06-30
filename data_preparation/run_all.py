@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #path = root_path + "Nobbz/nobbz_org_collab_network.txt.sorted"
     #path = root_path + "W15M/wiki_15m_cc_collab_network.txt.sorted"
     #path = root_path + "CharacterDB/characterdb_cjklib_org_collab_network.txt.sorted"
-    path = root_path + "HistoryStackExchange/"
+    path = root_path + "BeerStackExchange/"
     auto_decide(path, rolling_window_size=1, draw_network=draw_network, mode="months")
     print 'Overall Time:', str(now() - start)
     print 'ALL DONE -> EXIT'

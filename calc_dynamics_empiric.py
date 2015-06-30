@@ -15,7 +15,7 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = False
+plot_only = True
 
 cm_for_ua = [
     "degree",
@@ -72,7 +72,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
-    print nw.agg_user_activity
+    nw.get_empirical_activity_per_user()
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "SMW_NOBBZ",            #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[4]
+    graph_name = empirical_ds[0]
     if not plot_only:
         create_network(graph_name)
         calc_activity(graph_name, store_itas, deltatau)

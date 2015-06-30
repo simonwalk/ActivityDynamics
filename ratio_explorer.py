@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = -3
+instance_selector = -1
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -87,10 +87,13 @@ df_replies.fillna(0, inplace=True)
 
 df_dx = pd.rolling_apply(df_posts + df_replies, func=lambda x: x[0] - x[1], window=2, min_periods=2).shift(-1)
 df_dx.to_pickle(source_path + "user_df_dx.ser")
+df_apm = df_posts + df_replies
+df_apm.to_pickle(source_path + "user_df_apm.ser")
 
 shutil.copy(source_path + "user_df_posts.ser", root_path_results)
 shutil.copy(source_path + "user_df_replies.ser", root_path_results)
 shutil.copy(source_path + "user_df_dx.ser", root_path_results)
+shutil.copy(source_path + "user_df_apm.ser", root_path_results)
 
 appeared_users = []
 agg_act_new_users = []

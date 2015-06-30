@@ -52,7 +52,7 @@ def get_network_details(graph_name, cm_for_ua):
     ratios = [np.nan] + ratios
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
-    centrality_values = [list(graph.vp["agg_user_activity"].a)]
+    centrality_values = [list(graph.vp["agg_user_activity"].a), list(graph.vp["agg_emp_user_activity"].a)]
     for cm in cm_for_ua:
         centrality_values.append(list(graph.vp[cm].a))
     return dtau, dpsi, store_itas, mu, ac, ratios, k1, apm, centrality_values
@@ -183,7 +183,7 @@ def empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua):
     combined_data = [ratios, real_act_x, real_act_y]
     header = "ratios\treal_act_x\treal_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
-    header = "agg_user_activity"
+    header = "agg_user_activity\tagg_emp_user_activity"
     for cm in cm_for_ua:
         header += "\t" + cm
     np.savetxt(ua_output_path, np.array(centrality_values).T, delimiter="\t", header=header, comments="")
