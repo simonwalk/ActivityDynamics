@@ -46,8 +46,8 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     fpath = nw.get_binary_filename(graph_name)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph_save(fpath)
-
-    nw.prepare_eigenvalues()
+    nw.reduce_collaboration_edges(2)
+    nw.calc_eigenvalues()
     nw.create_folders()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
     nw.init_empirical_activity()

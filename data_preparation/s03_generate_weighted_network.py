@@ -12,6 +12,7 @@ class MyNet:
             self.graph = Graph(directed=False)
             self.edge_prop = self.graph.new_edge_property("float")
             self.node_ids = self.graph.new_vertex_property("int")
+            self.coll_count = self.graph.new_edge_property("int")
             self.vertex_mapping = defaultdict(lambda: self.graph.add_vertex())
             self.filename = 'weighted_net.gt' if self.filename is None else self.filename
             if save_first_activity:
@@ -57,16 +58,22 @@ class MyNet:
             if not math.isnan(trgt):
                 #print trgt
                 trgt_v = self.vertex_mapping[trgt]
-                edge = self.graph.add_edge(src_v, trgt_v)
+                if self.graph.edge(src_v, trgt_v) is None and self.graph.edge(trgt_v, src_v) is None:
+                    edge = self.graph.add_edge(src_v, trgt_v)
+                    self.coll_count[edge] = 1
+                else:
+                    self.coll_count[self.graph.edge(src_v, trgt_v)] += 1
                 if self.first_activity[trgt_v] is None:
                     self.first_activity[trgt_v] = datetime.date(ts.year, ts.month, ts.day)
 
         for orig_id, v in self.vertex_mapping.iteritems():
             self.node_ids[v] = orig_id
+        print_f('\t=>vertices:', self.graph.num_vertices(), 'edges:', self.graph.num_edges())
         remove_parallel_edges(self.graph)
         remove_self_loops(self.graph)
         print_f('build done')
         print_f('\t=>vertices:', self.graph.num_vertices(), 'edges:', self.graph.num_edges())
+        print_f(self.coll_count)
 
 
     def build_network(self):
@@ -153,6 +160,7 @@ class MyNet:
         self.graph.edge_properties["activity"] = self.edge_prop
         self.graph.vertex_properties["nodeID"] = self.node_ids
         self.graph.vertex_properties["firstActivity"] = self.first_activity
+        self.graph.edge_properties["collCount"] = self.coll_count
         self.graph.save(filename)
 
 

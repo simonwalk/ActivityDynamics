@@ -78,6 +78,19 @@ class Network:
         self.agg_user_activity = None
         self.agg_emp_user_activity = None
 
+    def reduce_collaboration_edges(self, k):
+        self.debug_msg("Reducing to k = " + str(k) + " collaboration edges...", level=1)
+        bool_map = self.graph.new_edge_property("bool")
+        for e in self.graph.edges():
+            if self.graph.edge_properties["collCount"][e] >= k:
+                bool_map[e] = 1
+            else:
+                bool_map[e] = 0
+        self.graph.set_edge_filter(bool_map)
+        self.num_edges = self.graph.num_edges()
+        self.debug_msg("Reduced network to " + str(self.graph.num_vertices()) + " vertices with " +
+                       str(self.graph.num_edges()) + " collaboration edges.", level=1)
+
     def get_empirical_activity_per_user(self):
         if self.agg_emp_user_activity is None:
             self.agg_emp_user_activity = self.graph.new_vertex_property("double")
@@ -108,8 +121,8 @@ class Network:
                 self.graph.vertex_properties["act_diff_cols"][v] = [0, 1, 0, 1]
             else:
                 self.graph.vertex_properties["act_diff_cols"][v] = [0, 0, 1, 1]
-        for v in self.graph.vertices():
-            print self.graph.vertex_properties["act_diff_cols"][v]
+        #for v in self.graph.vertices():
+        #    print self.graph.vertex_properties["act_diff_cols"][v]
 
     def plot_act_diff_graph(self, threshold=10, output_size=4000):
         out_path = config.graph_dir + self.graph_name + "_act_diff.png"
@@ -339,6 +352,14 @@ class Network:
     # eigenvalues getter
     def get_eigenvalues(self):
         return np.asarray(self.graph.graph_properties['top_eigenvalues'])
+
+    def calc_eigenvalues(self):
+        self.A = adjacency(self.graph, weight=None)
+        evals_large_sparse, evecs_large_sparse = largest_eigsh(self.A, 2, which='LM')
+        evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[0]
+        self.k1 = evs
+        self.top_eigenvalues = [evs]
+        self.debug_msg("Calculated k1: " + str(self.k1), level=1)
 
 
     # store graph to gt

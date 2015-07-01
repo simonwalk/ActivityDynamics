@@ -100,7 +100,7 @@ title = paste("Correlation Between User Activity and", centrality_names[i-2], se
 pearson_cor = cor(ua_data[,1], ua_data[,i], method="pearson")
 print(pearson_cor)
 if (format == "pdf") pdf(paste(graph_name_for_file, "_ua.pdf", sep="")) else png(paste(graph_name_for_file, "_ua.png", sep=""))
-plot(ua_data$agg_user_activity, ua_data[,i], pch=19, xlab="Activity", ylab=centrality_names[i-1])
+plot(ua_data$agg_user_activity, ua_data[,i], pch=19, xlab="Activity", ylab=centrality_names[i-2])
 title(substitute(atop(title, 
                       "(" * rho == ~ cor * ")"),
                  list(title = title, cor = pearson_cor)))
