@@ -166,15 +166,16 @@ def empirical_result_plot_for_epochs(graph_name, mode, plot_fmt):
     debug_msg("*** Successfully plotted empirical results ***")
 
 
-def empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua):
+def empirical_result_plot(graph_name, k, plot_fmt, cm_for_ua):
     debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
-    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
-    ua_output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_user_analysis.txt")
+    k = "k" + str(k)
+    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + k + ".txt")
+    ua_output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name +
+                                     "_" + k + "_user_analysis.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
     dtau, dpsi, store_itas, mu, ac, ratios, k1, apm, centrality_values = get_network_details(graph_name, cm_for_ua)
-    print centrality_values
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -196,7 +197,7 @@ def empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua):
     debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, mode,
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, k,
                      plot_fmt, str(dtau), str(mu), str(ac), str(k1), ua_output_path])
                     #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
     debug_msg("*** Successfully plotted empirical results ***")

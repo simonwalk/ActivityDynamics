@@ -13,9 +13,11 @@ from multiprocessing import Pool
 deltatau = 0.001
 store_itas = 10
 tid = 30
-mode = "months"
 plot_fmt = "pdf"
 plot_only = False
+
+activity_accept_threshold = 5
+k = 1
 
 cm_for_ua = [
     "degree",
@@ -46,8 +48,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     fpath = nw.get_binary_filename(graph_name)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph_save(fpath)
-    nw.reduce_collaboration_edges(2)
+    nw.reduce_collaboration_edges(k)
     nw.calc_eigenvalues()
+    nw.calc_vertex_properties()
     nw.create_folders()
     nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
     nw.init_empirical_activity()
@@ -73,8 +76,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
     nw.get_empirical_activity_per_user()
-    nw.get_ratio_colors(threshold=5)
-    nw.plot_act_diff_graph()
+    nw.debug_user_activity()
+    nw.get_ratio_colors(threshold=activity_accept_threshold)
+    nw.plot_act_diff_graph(k)
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
@@ -95,4 +99,4 @@ if __name__ == '__main__':
     if not plot_only:
         create_network(graph_name)
         calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name, mode, plot_fmt, cm_for_ua)
+    empirical_result_plot(graph_name, k, plot_fmt, cm_for_ua)

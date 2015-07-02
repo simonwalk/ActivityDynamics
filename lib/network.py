@@ -106,7 +106,36 @@ class Network:
         if self.agg_user_activity is None:
             self.agg_user_activity = self.graph.new_vertex_property("double")#[0 for x in range(0, self.num_vertices)]
             self.graph.vertex_properties["agg_user_activity"] = self.agg_user_activity
-        self.graph.vertex_properties["agg_user_activity"].a += (self.graph.vertex_properties["activity"].a * self.a_c * self.graph.num_vertices())
+        self.graph.vertex_properties["agg_user_activity"].a += (self.graph.vertex_properties["activity"].a * self.a_c *
+                                                                self.graph.num_vertices())
+
+    def debug_user_activity(self):
+        print "------ Debugging user activity ------"
+        for v in self.graph.vertices():
+            print ("({}) User \x1b[33m{}\x1b[00m with empirical activity \x1b[33m{}\x1b[00m and simulated activity "
+                   "\x1b[33m{}\x1b[00m.").format(v, self.graph.vp["nodeID"][v],
+                                                 self.graph.vp["agg_emp_user_activity"][v],
+                                                 self.graph.vp["agg_user_activity"][v])
+        print "------ Done ------"
+
+    def calc_vertex_properties(self, max_iter_ev=1000, max_iter_hits=1000):
+        self.debug_msg("\x1b[33m  ++ Calculating PageRank\x1b[00m")
+        pr = pagerank(self.graph)
+        self.graph.vertex_properties["pagerank"] = pr
+        self.debug_msg("\x1b[33m  ++ Calculating Clustering Coefficient\x1b[00m")
+        clustering = local_clustering(self.graph)
+        self.graph.vertex_properties["clustercoeff"] = clustering
+        self.debug_msg("\x1b[33m  ++ Calculating Eigenvector Centrality\x1b[00m")
+        ev, ev_centrality = eigenvector(self.graph, weight=None, max_iter=max_iter_ev)
+        self.graph.vertex_properties["evcentrality"] = ev_centrality
+        self.debug_msg("\x1b[33m  ++ Calculating HITS\x1b[00m")
+        eig, authorities, hubs = hits(self.graph, weight=None, max_iter=max_iter_hits)
+        self.graph.vertex_properties["authorities"] = authorities
+        self.graph.vertex_properties["hubs"] = hubs
+
+        self.debug_msg("\x1b[33m  ++ Calculating Degree Property Map\x1b[00m")
+        degree = self.graph.degree_property_map("total")
+        self.graph.vertex_properties["degree"] = degree
 
     def get_ratio_colors(self, threshold=0):
         self.graph.vertex_properties["act_diff_cols"] = self.graph.new_vertex_property("vector<double>")
@@ -124,15 +153,16 @@ class Network:
         #for v in self.graph.vertices():
         #    print self.graph.vertex_properties["act_diff_cols"][v]
 
-    def plot_act_diff_graph(self, threshold=10, output_size=4000):
-        out_path = config.graph_dir + self.graph_name + "_act_diff.png"
+    def plot_act_diff_graph(self, k, output_size=4000):
+        out_path = config.graph_dir + self.graph_name + "/" + self.graph_name + "_k" + str(k) + "_act_diff.png"
         v_size_prop_map = self.graph.vertex_properties["evcentrality"]
         val = math.sqrt(self.graph.num_vertices()) / self.graph.num_vertices() * (output_size / 4)
         mi = val
         ma = val * 2
+        labels = self.graph.vertex_properties["nodeID"]
         graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties["act_diff_cols"],
                    vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)), output=out_path,
-                   output_size=(output_size, output_size))
+                   output_size=(output_size, output_size), vertex_text=labels)
 
     def calc_acs(self):
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))
@@ -201,7 +231,8 @@ class Network:
         folders = [config.graph_source_dir+"weights/"+self.graph_name+"/",
                    config.plot_dir + "weights_over_time/" + self.graph_name + "/",
                    config.plot_dir + "average_weights_over_tau/" + self.graph_name + "/",
-                   config.plot_dir + "ratios_over_time/" + self.graph_name + "/"]
+                   config.plot_dir + "ratios_over_time/" + self.graph_name + "/",
+                   config.graph_dir + self.graph_name + "/"]
         try:
             for folder in folders:
                 if not os.path.exists(folder):
