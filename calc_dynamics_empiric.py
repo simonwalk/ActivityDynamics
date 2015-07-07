@@ -66,7 +66,8 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
         nw.set_ac(i)
         nw.set_ratio(i)
         nw.reset_tau_iter()
-        nw.aggregate_user_activity()
+        if i == 0:
+            nw.aggregate_user_activity()
         nw.debug_msg("Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m and "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
@@ -75,6 +76,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
+        nw.aggregate_user_activity()
     nw.get_empirical_activity_per_user()
     nw.debug_user_activity()
     nw.get_ratio_colors(threshold=activity_accept_threshold)
