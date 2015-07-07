@@ -77,6 +77,7 @@ class Network:
         # user analysis variables
         self.agg_user_activity = None
         self.agg_emp_user_activity = None
+        self.plot_pos = None
 
     def reduce_collaboration_edges(self, k):
         self.debug_msg("Reducing to k = " + str(k) + " collaboration edges...", level=1)
@@ -153,6 +154,11 @@ class Network:
         #for v in self.graph.vertices():
         #    print self.graph.vertex_properties["act_diff_cols"][v]
 
+    def get_comm_structure_colors(self, spins=3):
+        self.debug_msg(" --> Calculating communities...", level=1)
+        self.graph.vertex_properties["colorsComm"] = community_structure(self.graph, 1000, spins)
+        self.debug_msg(" --> Done", level=1)
+
     def plot_act_diff_graph(self, k, output_size=4000):
         out_path = config.graph_dir + self.graph_name + "/" + self.graph_name + "_k" + str(k) + "_act_diff.png"
         v_size_prop_map = self.graph.vertex_properties["evcentrality"]
@@ -160,9 +166,43 @@ class Network:
         mi = val
         ma = val * 2
         labels = self.graph.vertex_properties["nodeID"]
+        if self.plot_pos is None:
+            self.debug_msg(" --> Calculating SFDP layout positions...", level=1)
+            self.plot_pos = sfdp_layout(self.graph, max_iter=1000, verbose=False)
+            self.debug_msg(" --> Done", level=1)
         graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties["act_diff_cols"],
                    vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)), output=out_path,
-                   output_size=(output_size, output_size), vertex_text=labels)
+                   output_size=(output_size, output_size), pos=self.plot_pos, vertex_text=labels)
+
+    def plot_comm_structure(self, k, output_size=4000):
+        out_path = config.graph_dir + self.graph_name + "/" + self.graph_name + "_k" + str(k) + "_comm_str.png"
+        v_size_prop_map = self.graph.vertex_properties["evcentrality"]
+        val = math.sqrt(self.graph.num_vertices()) / self.graph.num_vertices() * (output_size / 4)
+        mi = val
+        ma = val * 2
+        labels = self.graph.vertex_properties["nodeID"]
+        if self.plot_pos is None:
+            self.debug_msg(" --> Calculating SFDP layout positions...", level=1)
+            self.plot_pos = sfdp_layout(self.graph, max_iter=1000, verbose=False)
+            self.debug_msg(" --> Done", level=1)
+        graph_draw(self.graph, vertex_fill_color=self.graph.vertex_properties['colorsComm'],
+                   vertex_size=(prop_to_size(v_size_prop_map, mi=mi, ma=ma)), output=out_path,
+                   output_size=(output_size, output_size), pos=self.plot_pos, vertex_text=labels)
+
+    def calc_comm_act_diff(self):
+        communities = []
+        for v in self.graph.vertices():
+            try:
+                communities[self.graph.vertex_properties["colorsComm"][v]]
+            except:
+                communities.append([0, 0, 0])
+            if self.graph.vertex_properties["act_diff_cols"][v] == [1, 0, 0, 1]:
+                communities[self.graph.vertex_properties["colorsComm"][v]][0] += 1
+            elif self.graph.vertex_properties["act_diff_cols"][v] == [0, 1, 0, 1]:
+                communities[self.graph.vertex_properties["colorsComm"][v]][1] += 1
+            else:
+                communities[self.graph.vertex_properties["colorsComm"][v]][2] += 1
+        print communities
 
     def calc_acs(self):
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))

@@ -16,7 +16,7 @@ tid = 30
 plot_fmt = "pdf"
 plot_only = False
 
-activity_accept_threshold = 5
+activity_accept_threshold = 0
 k = 1
 
 cm_for_ua = [
@@ -79,6 +79,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     nw.debug_user_activity()
     nw.get_ratio_colors(threshold=activity_accept_threshold)
     nw.plot_act_diff_graph(k)
+    nw.get_comm_structure_colors(2)
+    nw.plot_comm_structure(k)
+    nw.calc_comm_act_diff()
     nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
