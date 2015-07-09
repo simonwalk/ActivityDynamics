@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 10
+rand_itas = 1
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -32,10 +32,11 @@ data_sets = ["BeerStackExchange",           # 0
              "BlockLand",                   #11
              "DotaWiki"]                    #12
 
-emp_data_set = data_sets[10]
+emp_data_set = data_sets[0]
 
 
-experiments = ["Random",
+experiments = [
+               "Random",
                "Informed"
               ]
 
@@ -44,7 +45,6 @@ scenarios = [
              #"Remove Users",
              #"Remove Connections",
              "Add Users",
-
              #"Add Connections",
              #"Add Trolls",
              #"Add Entities"
@@ -97,7 +97,7 @@ def calc_activity(experiment, scenario):
     nw.prepare_eigenvalues()
     nw.create_folders()
     nw.calc_average_degree()
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)

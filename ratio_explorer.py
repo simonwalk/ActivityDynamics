@@ -12,7 +12,7 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = 0
+instance_selector = -1
 
 instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
              "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
@@ -40,7 +40,7 @@ instance = instances[instance_selector]
 
 root_path = ""
 root_path_results = root_path + "results/graph_binaries/empirical_data/" + instance + "/"
-storage_path = root_path_results + instance + "_empirical.txt"
+storage_path = root_path_results + "empirical.txt"
 source_path = root_path + "datasets/"+folders[instance_selector]+"/"
 
 
@@ -87,28 +87,31 @@ df_replies.fillna(0, inplace=True)
 
 df_dx = pd.rolling_apply(df_posts + df_replies, func=lambda x: x[0] - x[1], window=2, min_periods=2).shift(-1)
 df_dx.to_pickle(source_path + "user_df_dx.ser")
+df_apm = df_posts + df_replies
+df_apm.to_pickle(source_path + "user_df_apm.ser")
 
 shutil.copy(source_path + "user_df_posts.ser", root_path_results)
 shutil.copy(source_path + "user_df_replies.ser", root_path_results)
 shutil.copy(source_path + "user_df_dx.ser", root_path_results)
+shutil.copy(source_path + "user_df_apm.ser", root_path_results)
 
-appeared_users = []
-agg_act_new_users = []
-for epoch in list(df_replies.index):
-    agg_act = 0
-    new_users_replies = []
-    new_users_posts = []
-    for col in (df_replies.loc[epoch] > 0).iteritems():
-        if col[1] and col[0] not in appeared_users:
-            new_users_replies.append(col[0])
-            agg_act += df_replies.loc[epoch][col[0]]
-    for col in (df_posts.loc[epoch] > 0).iteritems():
-        if col[1] and col[0] not in appeared_users:
-            new_users_posts.append(col[0])
-            agg_act += df_posts.loc[epoch][col[0]]
-    agg_act_new_users.append(agg_act)
-    new_users_combined = new_users_replies + new_users_posts
-    appeared_users = appeared_users + new_users_combined
+# appeared_users = []
+# agg_act_new_users = []
+# for epoch in list(df_replies.index):
+#     agg_act = 0
+#     new_users_replies = []
+#     new_users_posts = []
+#     for col in (df_replies.loc[epoch] > 0).iteritems():
+#         if col[1] and col[0] not in appeared_users:
+#             new_users_replies.append(col[0])
+#             agg_act += df_replies.loc[epoch][col[0]]
+#     for col in (df_posts.loc[epoch] > 0).iteritems():
+#         if col[1] and col[0] not in appeared_users:
+#             new_users_posts.append(col[0])
+#             agg_act += df_posts.loc[epoch][col[0]]
+#     agg_act_new_users.append(agg_act)
+#     new_users_combined = new_users_replies + new_users_posts
+#     appeared_users = appeared_users + new_users_combined
 
 df_result = pd.DataFrame(columns=['posts'], data=(df_posts.sum(axis=1) + 1))
 df_result['replies'] = (df_replies.sum(axis=1) + 1)
@@ -118,6 +121,6 @@ df_result['dx'] = pd.rolling_apply(df_result['agg_activity'], func=lambda x: x[0
                                    min_periods=2).shift(-1)
 columns_resolved = np.array(map(int, [id_to_vertex_dict[i] for i in df_posts.columns]))
 df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: ','.join(map(str, columns_resolved[np.array(x)])), axis=1)
-df_result['agg_act_new_users'] = agg_act_new_users
-df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids', 'agg_act_new_users']]
+#df_result['agg_act_new_users'] = agg_act_new_users
+df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]#, 'agg_act_new_users']]
 df_result.to_csv(storage_path, sep="\t", header=True)
