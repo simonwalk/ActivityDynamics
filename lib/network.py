@@ -181,8 +181,11 @@ class Network:
     def write_summed_weights_to_file(self):
         self.weights_file.write(str(sum(self.get_node_weights("activity")) * self.a_c * self.graph.num_vertices()) + "\n")
 
-    def write_initial_tau_to_file(self):
-        self.taus_file.write(str(float(0)) + "\n")
+    def write_discrete_tau_to_file(self, value):
+        self.taus_file.write(str(float(value)) + "\n")
+
+    def write_nan_to_file(self):
+        self.weights_file.write("NAN" + "\n")
 
     def close_weights_files(self):
         self.weights_file.close()

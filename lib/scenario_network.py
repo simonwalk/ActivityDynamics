@@ -18,6 +18,7 @@ class ScenarioNetwork(Network):
                          store_iterations, ratios, ratio_index, tau_in_days, num_nodes)
 
         self.graph_copy = None
+        self.graph_copy_2 = None
         self.scenario_ids = []
         # self.edge_list = None
         self.experiment_debug = "-"
@@ -34,17 +35,27 @@ class ScenarioNetwork(Network):
             suffix = "_" + suffix
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) + "_" + \
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_run_" + \
                 str(self.run) + suffix + "_weights.txt"
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
+
+    def open_weights_files_append(self, suffix=""):
+        if suffix is not "":
+            suffix = "_" + suffix
+        folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
+        wname = self.graph_name + "_" + str(self.store_iterations) + "_" + \
+                str(float(self.deltatau)).replace(".", "") + "_run_" + \
+                str(self.run) + suffix + "_weights.txt"
+        self.weights_file_path = folder+wname
+        self.weights_file = open(self.weights_file_path, "a")
 
     def open_taus_files(self, suffix=""):
         if suffix is not "":
             suffix = "_" + suffix
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) + "_" + \
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_run_" + \
                 str(self.run) + suffix + "_taus.txt"
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
@@ -358,6 +369,10 @@ class ScenarioNetwork(Network):
             self.ratios[i] = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
+    def update_current_ratio(self):
+        activity_current = self.apm[self.ratio_index]
+        activity_next = activity_current-self.dx[self.ratio_index]
+        self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
 
     def calc_average_degree(self):
         self.average_degree = max(1, int(round(np.mean(self.graph.vertex_properties["degree"].a))))
