@@ -384,12 +384,9 @@ def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_
     for i in range(0, rand_itas):
         weight_path = get_abs_path(graph_name, "_Random_" + scenario + "_" + str(step_value) + "_weights", store_itas,
                                    deltatau=dtau, run=i)
-        print(np.loadtxt(weight_path))
         average.append(np.loadtxt(weight_path))
         if delFiles:
             os.remove(weight_path)
-    for i in average:
-        print len(i)
     np.savetxt(output_path, np.mean(average, axis=0))
 
 
