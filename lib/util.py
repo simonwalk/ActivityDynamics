@@ -108,10 +108,10 @@ def get_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_weights.txt"
 
 
-def get_abs_path(graph_name, suffix, store_iterations, ratio, deltatau=0.001, run=0):
+def get_abs_path(graph_name, suffix, store_iterations, deltatau=0.001, run=0):
     return os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
-           str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + suffix + ".txt")
+           str(deltatau).replace(".", "") + "_run_" + str(run) + suffix + ".txt")
 
 
 # helper function to get filename for intrinsic activity
@@ -375,19 +375,21 @@ def plot_weights_over_time(graph_name):
         debug_msg("  ** Done", level=0)
 
 
-def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_itas, ratio, dtau, delFiles=False):
+def calc_random_itas_average(graph_name, scenario, step_value, rand_itas, store_itas, dtau, delFiles=False):
     debug_msg("*** Starting combination of random iterations ***")
     output_path = os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + "_" +
-                                  str(store_itas) + "_" + str(float(dtau)).replace(".", "") + "_" +
-                                  str(ratio).replace(".", "") + "_run_average_" + scenario + "_" + str(step_value) +
-                                  ".txt")
+                                  str(store_itas) + "_" + str(float(dtau)).replace(".", "") + "_run_average_" +
+                                  scenario + "_" + str(step_value) + ".txt")
     average = []
     for i in range(0, rand_itas):
         weight_path = get_abs_path(graph_name, "_Random_" + scenario + "_" + str(step_value) + "_weights", store_itas,
-                                   ratio, deltatau=dtau, run=i)
+                                   deltatau=dtau, run=i)
+        print(np.loadtxt(weight_path))
         average.append(np.loadtxt(weight_path))
         if delFiles:
             os.remove(weight_path)
+    for i in average:
+        print len(i)
     np.savetxt(output_path, np.mean(average, axis=0))
 
 

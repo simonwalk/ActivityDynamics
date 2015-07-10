@@ -13,10 +13,10 @@ from lib.scenario_network import ScenarioNetwork
 plot_only = False
 
 deltatau = 0.001
-store_itas = 1
+store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 1
+rand_itas = 5
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -159,6 +159,7 @@ def calc_activity(experiment, scenario):
         nw.set_ac(i)
         nw.set_ratio(i)
         nw.reset_tau_iter()
+        nw.run = 0
         nw.write_discrete_tau_to_file(i)
         if nw.graph_copy_2 is not None:
             nw.graph = Graph(nw.graph_copy_2)
@@ -177,14 +178,16 @@ def calc_activity(experiment, scenario):
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
         #nw.write_summed_weights_to_file()
-        nw.write_nan_to_file()
+        if i < (len(nw.ratios) - 1):
+            nw.write_nan_to_file()
         nw.graph_copy_2 = Graph(nw.graph)
+        nw.close_weights_files()
 
         debug_msg(" *** Starting activity dynamics with scenario: " + scenario + " *** ")
         for step, step_value in enumerate(step_values[scenario]):
             debug_msg(" --> Starting step " + str(step + 1) + " with value " + str(step_value))
             for rand_iter in range(0, iter_setup[experiment]):
-                debug_msg(" --> Starting iteration " + str(rand_iter + 1))
+                debug_msg(" --> Starting random iteration " + str(rand_iter + 1))
                 nw.update_debug_info(scenario, experiment[0], step + 1, rand_iter + 1)
                 nw.run = rand_iter
                 nw.graph = Graph(nw.graph_copy)
@@ -211,6 +214,11 @@ def calc_activity(experiment, scenario):
                 for j in xrange(int(nw.deltapsi/nw.deltatau)):
                     nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
                 #nw.write_summed_weights_to_file()
+                nw.close_weights_files()
+    if experiment is "Random":
+        for step_value in step_values[scenario]:
+            debug_msg(" --> Calculating random average for " + str(step_value) + "...")
+            calc_random_itas_average(emp_data_set, scenario, step_value, rand_itas, store_itas, deltatau, delFiles=True)
 
     nw.close_weights_files()
     nw.close_taus_files()
