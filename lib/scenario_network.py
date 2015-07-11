@@ -120,9 +120,10 @@ class ScenarioNetwork(Network):
 
     def debug_msg(self, msg, level=0):
         if self.debug_level <= level:
-            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m][\x1b[32m{}\x1b[00m][{}] \x1b[33m{}\x1b[00m".format(
+            print "  \x1b[31m-SNWK-\x1b[00m [\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m][\x1b[36m{}\x1b[00m]" \
+                  "[\x1b[33m{}\x1b[00m][\x1b[32m{}\x1b[00m][{}] \x1b[33m{}\x1b[00m".format(
                 datetime.datetime.now().strftime("%H:%M:%S"), self.experiment_debug, self.scenario_debug,
-                self.step_debug, self.rand_iter_debug, msg)
+                self.ratio_index + 1, self.step_debug, self.rand_iter_debug, msg)
 
     def update_debug_info(self, scenario, experiment, step, rand_iter):
         self.experiment_debug = experiment

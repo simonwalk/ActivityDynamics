@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = False
+plot_only = True
 
 deltatau = 0.001
 store_itas = 10
@@ -36,7 +36,7 @@ emp_data_set = data_sets[0]
 
 experiments = [
                "Random",
-               #"Informed"
+               "Informed"
               ]
 
 scenarios = [
@@ -232,4 +232,4 @@ if __name__ == '__main__':
             if not plot_only:
                 calc_activity(experiment, scenario)
         plot_scenario_results(emp_data_set, scenario, step_values[scenario], plot_fmt, rand_itas,
-                              legend_suffix[scenario])
+                              legend_suffix[scenario], mode=2)
