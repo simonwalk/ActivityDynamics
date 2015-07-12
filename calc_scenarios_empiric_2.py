@@ -16,7 +16,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 5
+rand_itas = 2
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -161,6 +161,8 @@ def calc_activity(experiment, scenario):
         nw.reset_tau_iter()
         nw.run = 0
         nw.write_discrete_tau_to_file(i)
+        if i > 0:
+            nw.write_discrete_tau_to_file(i)
         if nw.graph_copy_2 is not None:
             nw.graph = Graph(nw.graph_copy_2)
             nw.update_ones_ratio()
@@ -179,6 +181,7 @@ def calc_activity(experiment, scenario):
             nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
         #nw.write_summed_weights_to_file()
         if i < (len(nw.ratios) - 1):
+            nw.write_nan_to_file()
             nw.write_nan_to_file()
         nw.graph_copy_2 = Graph(nw.graph)
         nw.close_weights_files()
@@ -214,6 +217,8 @@ def calc_activity(experiment, scenario):
                 for j in xrange(int(nw.deltapsi/nw.deltatau)):
                     nw.activity_dynamics(store_weights=True, store_taus=False, empirical=True, scenario=scenario)
                 #nw.write_summed_weights_to_file()
+                if i < (len(nw.ratios) - 1):
+                    nw.write_nan_to_file()
                 nw.close_weights_files()
     if experiment is "Random":
         for step_value in step_values[scenario]:

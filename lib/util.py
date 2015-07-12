@@ -425,13 +425,14 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
                                     store_itas, deltatau=dtau, run="average")
         debug_msg("----> " + weights_path)
         temp = np.loadtxt(weights_path)
-        len_temp = len_tau - len(temp)
-        temp_array = np.empty(len_temp)
-        temp_array.fill(np.nan)
-        temp = list(temp_array) + list(temp)
-        for i, el in enumerate(temp):
-            if el < 0:
-                temp[i] = float(0)
+        if mode is None:
+            len_temp = len_tau - len(temp)
+            temp_array = np.empty(len_temp)
+            temp_array.fill(np.nan)
+            temp = list(temp_array) + list(temp)
+            for i, el in enumerate(temp):
+                if el < 0:
+                    temp[i] = float(0)
         combined_data.append(temp)
         header += "\t" + scenario + "_" + str(step_value) + "_Random"
     for step_value in step_values:
@@ -439,13 +440,14 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
                                     store_itas, deltatau=dtau)
         debug_msg("----> " + weights_path)
         temp = np.loadtxt(weights_path)
-        len_temp = len_tau - len(temp)
-        temp_array = np.empty(len_temp)
-        temp_array.fill(np.nan)
-        temp = list(temp_array) + list(temp)
-        for i, el in enumerate(temp):
-            if el < 0:
-                temp[i] = float(0)
+        if mode is None:
+            len_temp = len_tau - len(temp)
+            temp_array = np.empty(len_temp)
+            temp_array.fill(np.nan)
+            temp = list(temp_array) + list(temp)
+            for i, el in enumerate(temp):
+                if el < 0:
+                    temp[i] = float(0)
         combined_data.append(temp)
         header += "\t" + scenario + "_" + str(step_value) + "_Informed"
     np.savetxt(output_path_weights, np.array(combined_data).T, delimiter="\t", header=header,
