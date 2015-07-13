@@ -463,18 +463,27 @@ def plot_scenario_results(graph_name, scenario, step_values, plot_fmt, rand_itas
     debug_msg("--> Weights and tau data successfully combined")
     debug_msg("--> Preparing legend values...")
     legend_values = ""
-    for step_value in step_values:
-        if step_value is 1:
-            used_legend_suffix = legend_suffix[:-1]
-        else:
-            used_legend_suffix = legend_suffix
-        legend_values += str(step_value) + " " + used_legend_suffix + " (Random)" + ", "
-    for step_value in step_values:
-        if step_value is 1:
-            used_legend_suffix = legend_suffix[:-1]
-        else:
-            used_legend_suffix = legend_suffix
-        legend_values += str(step_value) + " " + used_legend_suffix + " (Informed)" + ", "
+    if mode is None:
+        for step_value in step_values:
+            if step_value is 1:
+                used_legend_suffix = legend_suffix[:-1]
+            else:
+                used_legend_suffix = legend_suffix
+            legend_values += str(step_value) + " " + used_legend_suffix + " (Random)" + ", "
+        for step_value in step_values:
+            if step_value is 1:
+                used_legend_suffix = legend_suffix[:-1]
+            else:
+                used_legend_suffix = legend_suffix
+            legend_values += str(step_value) + " " + used_legend_suffix + " (Informed)" + ", "
+    elif mode is 2:
+        for step_value in step_values:
+            if step_value is 1:
+                used_legend_suffix = legend_suffix[:-1]
+            else:
+                used_legend_suffix = legend_suffix
+            legend_values += str(step_value) + " " + used_legend_suffix + " (Random)" + ", "
+            legend_values += str(step_value) + " " + used_legend_suffix + " (Informed)" + ", "
     legend_values = legend_values[:-2]
     pch_skip = ((dpsi / dtau) / store_itas)
     debug_msg("--> Done: " + legend_values)

@@ -25,16 +25,16 @@ clean_weights <- weights[!is.na(weights)]
 
 pch_skip = as.numeric(args[9])
 
-line_types <- c(1, 1)
-pch_styles <- c(0, 1, 3, 4, 8, 2, 5, 6)
+line_types <- c(1, 1, 2, 1, 2, 1, 2, 1)
+pch_styles <- c(NA, 1, NA, NA, NA, NA, NA, NA)
 line_width = 2
 
-for (name in names(weights)) {
-  if (length(grep("Random", name))>0) line_types <- c(line_types, 2)
-  if (length(grep("Informed", name))>0) line_types <- c(line_types, 1)
-}
+#for (name in names(weights)) {
+#  if (length(grep("Random", name))>0) line_types <- c(line_types, 2)
+#  if (length(grep("Informed", name))>0) line_types <- c(line_types, 1)
+#}
 
-print(" ++ Plotting activity")
+print(" ++ Plotting activity: Step value 1")
 if (format == "pdf") pdf(file_name1) else png(file_name1)
 min_y = min(min(clean_weights), min(data$real_act_y))
 max_y = max(max(clean_weights), max(data$real_act_y))
@@ -43,8 +43,8 @@ plot(weights$taus, weights$sim_act, type="l", pch=pch_styles[1], xlab=expression
 axis(1, at=c(0, 2, 4, 6, 8, 10, 12), labels=c("Init", 2, 4, 6, 8, 10, 12), cex.axis=cex_paper)
 #points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1], cex=cex_size)
 lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
-lines(weights$taus, weights[,3], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[3], cex=cex_size)
-lines(weights$taus, weights[,6], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[4], cex=cex_size)
+lines(weights$taus, weights[,3], type="l", pch=pch_styles[3], lty=line_types[3], lwd=line_width, col=colors[3], cex=cex_size)
+lines(weights$taus, weights[,6], type="l", pch=pch_styles[4], lty=line_types[4], lwd=line_width, col=colors[4], cex=cex_size)
 #points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
 
 #legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights)+1, 1), col=colors, legend=legend_text, lty=1, cex=0.7, ncol=2)
@@ -56,7 +56,7 @@ lines(weights$taus, weights[,6], type="l", pch=pch_styles[2], lty=line_types[2],
 grid(col="gray", lwd=line_width)
 dev.off()
 
-print(" ++ Plotting activity")
+print(" ++ Plotting activity: Step value 2")
 if (format == "pdf") pdf(file_name2) else png(file_name2)
 min_y = min(min(clean_weights), min(data$real_act_y))
 max_y = max(max(clean_weights), max(data$real_act_y))
@@ -65,8 +65,8 @@ plot(weights$taus, weights$sim_act, type="l", pch=pch_styles[1], xlab=expression
 axis(1, at=c(0, 2, 4, 6, 8, 10, 12), labels=c("Init", 2, 4, 6, 8, 10, 12), cex.axis=cex_paper)
 #points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1], cex=cex_size)
 lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
-lines(weights$taus, weights[,4], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[5], cex=cex_size)
-lines(weights$taus, weights[,7], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[6], cex=cex_size)
+lines(weights$taus, weights[,4], type="l", pch=pch_styles[5], lty=line_types[5], lwd=line_width, col=colors[5], cex=cex_size)
+lines(weights$taus, weights[,7], type="l", pch=pch_styles[6], lty=line_types[6], lwd=line_width, col=colors[6], cex=cex_size)
 #points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
 
 #legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights)+1, 1), col=colors, legend=legend_text, lty=1, cex=0.7, ncol=2)
@@ -78,7 +78,7 @@ lines(weights$taus, weights[,7], type="l", pch=pch_styles[2], lty=line_types[2],
 grid(col="gray", lwd=line_width)
 dev.off()
 
-print(" ++ Plotting activity")
+print(" ++ Plotting activity: Step value 3")
 if (format == "pdf") pdf(file_name3) else png(file_name3)
 min_y = min(min(clean_weights), min(data$real_act_y))
 max_y = max(max(clean_weights), max(data$real_act_y))
@@ -87,8 +87,8 @@ plot(weights$taus, weights$sim_act, type="l", pch=pch_styles[1], xlab=expression
 axis(1, at=c(0, 2, 4, 6, 8, 10, 12), labels=c("Init", 2, 4, 6, 8, 10, 12), cex.axis=cex_paper)
 #points(tail(weights$taus, n=1), tail(weights$sim_act, n=1), pch=1, col=colors[1], cex=cex_size)
 lines(data$real_act_x, data$real_act_y, type="o", pch=pch_styles[2], lty=line_types[1], lwd=line_width, col=colors[2], cex=cex_size)
-lines(weights$taus, weights[,5], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[7], cex=cex_size)
-lines(weights$taus, weights[,8], type="l", pch=pch_styles[2], lty=line_types[2], lwd=line_width, col=colors[8], cex=cex_size)
+lines(weights$taus, weights[,5], type="l", pch=pch_styles[7], lty=line_types[7], lwd=line_width, col=colors[7], cex=cex_size)
+lines(weights$taus, weights[,8], type="l", pch=pch_styles[8], lty=line_types[8], lwd=line_width, col=colors[8], cex=cex_size)
 #points(tail(weights$taus, n=1), tail(weights[,i], n=1), pch=i, col=colors[i], cex=cex_size)
 
 #legend("bottom", inset=c(0, -0.3), pch=seq(1, length(weights)+1, 1), col=colors, legend=legend_text, lty=1, cex=0.7, ncol=2)
@@ -100,7 +100,7 @@ lines(weights$taus, weights[,8], type="l", pch=pch_styles[2], lty=line_types[2],
 grid(col="gray", lwd=line_width)
 dev.off()
 
-pdf(paste(scenario, "_legend.pdf"), width=14, height=1)
+pdf(paste(scenario, "_legend_2.pdf"), width=14, height=1)
 par(mar=c(0,0,0,0))
 plot.new()
 legend("center", pch=pch_styles, col=colors, legend=legend_text, lty=line_types, lwd=1, cex=1, ncol=4)
