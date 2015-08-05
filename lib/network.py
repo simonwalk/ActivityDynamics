@@ -79,6 +79,9 @@ class Network:
         self.agg_emp_user_activity = None
         self.plot_pos = None
 
+        if len(self.ratios) != 0:
+            self.ratios = []
+
     def reduce_collaboration_edges(self, k):
         self.debug_msg("Reducing to k = " + str(k) + " collaboration edges...", level=1)
         bool_map = self.graph.new_edge_property("bool")

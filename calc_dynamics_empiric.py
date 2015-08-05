@@ -17,7 +17,7 @@ plot_fmt = "pdf"
 plot_only = False
 
 activity_accept_threshold = 0
-k = 1
+ks = [1]
 
 cm_for_ua = [
     "degree",
@@ -41,7 +41,7 @@ def create_network(graph_name):
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
-def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid):
+def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid, k=1):
     nw = Network(False, graph_name, run=rand_iter, deltatau=deltatau, store_iterations=store_itas,
                  tau_in_days=tau_in_days)
 
@@ -75,8 +75,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
                                                                     int(nw.deltapsi/nw.deltatau)),
                              level=1)
         for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
+            nw.activity_dynamics(store_weights=False, store_taus=False, empirical=True)
         nw.aggregate_user_activity()
+        nw.write_summed_weights_to_file()
     nw.get_empirical_activity_per_user()
     nw.debug_user_activity()
     nw.get_ratio_colors(threshold=activity_accept_threshold)
@@ -101,7 +102,8 @@ if __name__ == '__main__':
                     "SMW_NOBBZ",            #7
                     "W15M"]                 #8
     graph_name = empirical_ds[0]
-    if not plot_only:
-        create_network(graph_name)
-        calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name, k, plot_fmt, cm_for_ua)
+    for k in ks:
+        if not plot_only:
+            create_network(graph_name)
+            calc_activity(graph_name, store_itas, deltatau, k=k)
+        empirical_result_plot(graph_name, k, plot_fmt, cm_for_ua)
