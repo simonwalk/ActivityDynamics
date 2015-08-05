@@ -10,13 +10,13 @@ matplotlib.use('Agg')
 from lib.generator import *
 from lib.scenario_network import ScenarioNetwork
 
-plot_only = True
+plot_only = False
 
 deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-rand_itas = 2
+rand_itas = 10
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -32,7 +32,7 @@ data_sets = ["BeerStackExchange",           # 0
              "BlockLand",                   #11
              "DotaWiki"]                    #12
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[2]
 
 experiments = [
                "Random",
@@ -41,11 +41,11 @@ experiments = [
 
 scenarios = [
              "Remove Users",
-             #"Remove Connections",
-             #"Add Users",
-             #"Add Connections",
-             #"Add Trolls",
-             #"Add Entities"
+             "Remove Connections",
+             "Add Users",
+             "Add Connections",
+             "Add Trolls",
+             "Add Entities"
             ]
 
 step_values = {"Remove Users": [1, 5, 10],
