@@ -12,30 +12,31 @@ from graph_tool.all import *
 
 debug = False
 
-instance_selector = -1
+instance_selector = 4
 
-instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
-             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+#instances = ["BEACHAPEDIA", "CHARACTERDB", "W15M", "NOBBZ",
+#             "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
 
-# instances = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
-#              "PhysicsStackExchange", "AskUbuntu"]
+#instances = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
+#             "PhysicsStackExchange", "AskUbuntu"]
 
-# instances = ["BioInformatics", "ComplexOperations", "CSDMS", "Neurolex", "PracticalPlants"]
+instances = ["BioInformatics", "ComplexOperations", "Neurolex", "DotaWiki", "PracticalPlants"]
 
-# folders = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
-#              "PhysicsStackExchange", "AskUbuntu"]
+#folders = ["BeerStackExchange", "BitcoinStackExchange", "ElectronicsStackExchange", "GamingStackExchange",
+#           "PhysicsStackExchange", "AskUbuntu"]
 
-# folders = ["bioinformatics/bioinformatics_org_collab_network.txt.sorted_results",
-#            "complexoperations/complexoperations_org_collab_network.txt.sorted_results",
-#            "csdms/csdms_colorado_edu_collab_network.txt.sorted_results",
-#            "neurolex/neurolex_org_collab_network.txt.sorted_results",
-#            "practicalplants/practicalplants_org_collab_network.txt.sorted_results"]
+folders = ["bioinformatics/bioinformatics_org_collab_network.txt.sorted_results",
+           "complexoperations/complexoperations_org_collab_network.txt.sorted_results",
+           "neurolex/neurolex_org_collab_network.txt.sorted_results",
+           "dotawiki/dotawiki_de_collab_network.txt.sorted_results",
+           "practicalplants/practicalplants_org_collab_network.txt.sorted_results"]
 
-folders = ["beachapedia_org_collab_network.txt.sorted_results",
-           "characterdb_cjklib_org_collab_network.txt.sorted_results",
-           "wiki_15m_cc_collab_network.txt.sorted_results",
-           "nobbz_de_collab_network.txt.sorted_results",
-           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+#folders = ["beachapedia_org_collab_network.txt.sorted_results",
+#           "characterdb_cjklib_org_collab_network.txt.sorted_results",
+#           "wiki_15m_cc_collab_network.txt.sorted_results",
+#           "nobbz_de_collab_network.txt.sorted_results",
+#           "StackOverflow", "EnglishStackExchange", "HistoryStackExchange", "MathStackExchange", "BeerStackExchange"]
+
 instance = instances[instance_selector]
 
 root_path = ""
@@ -123,4 +124,6 @@ columns_resolved = np.array(map(int, [id_to_vertex_dict[i] for i in df_posts.col
 df_result['active_user_ids'] = ((df_replies > 0) | (df_posts > 0)).apply(func=lambda x: ','.join(map(str, columns_resolved[np.array(x)])), axis=1)
 #df_result['agg_act_new_users'] = agg_act_new_users
 df_result = df_result[['dx', 'agg_activity', 'posts', 'replies', 'num_users', 'active_user_ids']]#, 'agg_act_new_users']]
+df_result = df_result.tail(14).head(13).copy()
+df_result.loc[df_result.index[-1], "dx"] = ""
 df_result.to_csv(storage_path, sep="\t", header=True)

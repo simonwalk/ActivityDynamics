@@ -14,7 +14,7 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-plot_only = True
+plot_only = False
 
 activity_accept_threshold = 0
 ks = [1, 2, 3]
@@ -24,6 +24,19 @@ cm_for_ua = [
     "evcentrality",
     "pagerank"
 ]
+
+data_sets = ["BeerStackExchange",           # 0
+             "BitcoinStackExchange",        # 1
+             "ElectronicsStackExchange",    # 2
+             "PhysicsStackExchange",        # 3
+             "GamingStackExchange",         # 4
+             "ComplexOperations",           # 5
+             "BioInformatics",              # 6
+             "Neurolex",                    # 7
+             "DotaWiki",                    # 8
+             "PracticalPlants"]             # 9
+
+emp_data_set = data_sets[9]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -93,17 +106,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
 
 if __name__ == '__main__':
-
-    empirical_ds = ["BeerStackExchange",    #0
-                    "EnglishStackExchange", #1
-                    "MathStackExchange",    #2
-                    "StackOverflow",        #3
-                    "HistoryStackExchange", #4
-                    "CHARACTERDB",          #5
-                    "BEACHAPEDIA",          #6
-                    "SMW_NOBBZ",            #7
-                    "W15M"]                 #8
-    graph_name = empirical_ds[0]
+    graph_name = emp_data_set
     for k in ks:
         if not plot_only:
             create_network(graph_name)
