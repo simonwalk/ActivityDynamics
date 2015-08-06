@@ -111,10 +111,10 @@ def get_weights_fn(store_iterations, deltatau, run, graph_name, ratio):
            str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + "_weights.txt"
 
 
-def get_abs_path(graph_name, suffix, store_iterations, ratio, deltatau=0.001, run=0):
+def get_abs_path(graph_name, suffix, store_iterations, k, deltatau=0.001, run=0):
     return os.path.abspath(config.graph_source_dir + "weights/" + graph_name + "/" + graph_name + \
            "_" + str(store_iterations).replace(".", "") + "_" + \
-           str(deltatau).replace(".", "") + "_" + str(ratio).replace(".", "") + "_run_" + str(run) + suffix + ".txt")
+           str(deltatau).replace(".", "") + "_" + str(k) + "_run_" + str(run) + suffix + ".txt")
 
 
 # helper function to get filename for intrinsic activity
@@ -190,9 +190,9 @@ def empirical_result_plot(graph_name, k, plot_fmt, cm_for_ua):
     np.savetxt(ua_output_path, np.array(centrality_values).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
     debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
+    weights_path = get_abs_path(graph_name, "_weights", store_itas, k, deltatau=dtau)
     debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
+    taus_path = get_abs_path(graph_name, "_taus", store_itas, k, deltatau=dtau)
     debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')

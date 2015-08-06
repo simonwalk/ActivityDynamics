@@ -14,10 +14,10 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 plot_fmt = "pdf"
-plot_only = False
+plot_only = True
 
 activity_accept_threshold = 0
-ks = [1]
+ks = [1, 2, 3]
 
 cm_for_ua = [
     "degree",
@@ -56,6 +56,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
+    nw.struct_k = k
     nw.open_weights_files()
     nw.open_taus_files()
     nw.write_summed_weights_to_file()
@@ -86,6 +87,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     nw.plot_comm_structure(k)
     nw.calc_comm_act_diff()
     nw.close_weights_files()
+    nw.close_taus_files()
     nw.add_graph_properties()
     nw.store_graph(0)
 

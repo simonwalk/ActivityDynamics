@@ -14,11 +14,12 @@ dtau = args[8]
 mu = args[9]
 ac = args[10]
 k1 = args[11]
+struct_k = substring(args[6], 2, 2)
 ua_data = read.table(args[12], sep="\t", header=T, colClasses = "numeric")
 cex_paper = 1.5
 cex_size = 0.6
 colors = c("#000000", "#858585")
-xlabel = substitute(tau ~ " (in " * mode * ")", list(mode=mode))
+xlabel = substitute(tau ~ " (in months)")
 if (args[6] == "days") {
   linetype = "l"
   pchstyle = NA
@@ -83,11 +84,13 @@ errors <- as.numeric(sim_act_y[,1]) - data$real_act_y
 errors_x <- seq(0,length(errors) - 1,1)
 #print(errors)
 rmse <- sqrt(mean(errors^2))
-#print(rmse)
+print(rmse)
+print(rmse/(max(data$real_act_y)-min(data$real_act_y)))
+print(rmse/mean(data$real_act_y))
 if (format == "pdf") pdf(paste(graph_name, "_error.pdf", sep="")) else png(paste(graph_name, "_error.png", sep=""))
 plot(errors_x, errors, type="l", xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex.axis=cex_paper, cex.lab=cex_paper)
-title(substitute(atop("Error of Simulation over " ~ tau ~ " (in " * mode * ")",
-                      "(RMSE = " ~ rmse ~ ")"), list(rmse=rmse, mode=mode)), cex.main=cex_paper)
+title(substitute(atop("Error of Simulation for" ~ bold(network),
+                      "(" * k == ~ struct_k * ", " ~ RMSE == ~ rmse ~ ")"), list(network = args[5], rmse=rmse, mode=mode, struct_k = struct_k)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
 dev.off()
 
@@ -103,9 +106,10 @@ print(pearson_cor)
 if (format == "pdf") pdf(paste(graph_name_for_file, "_ua.pdf", sep="")) else png(paste(graph_name_for_file, "_ua.png", sep=""))
 #plot(ua_data$agg_user_activity, ua_data[,i], pch=19, xlab="Activity", ylab=centrality_names[i-2])
 symbols(x=ua_data$agg_user_activity, y=ua_data[,i], circles=ua_data$evcentrality, inches=1/5, ann=T, bg=rgb(0,0,1,0.1), fg=rgb(0,0,0,0.1), xlab="Simulated Activity", ylab=centrality_names[i-2], cex.axis=cex_paper, cex.lab=cex_paper)
+lines(par()$usr[1:2], par()$usr[3:4], lty = 2)
 title(substitute(atop(title,
-                      "for" ~ bold(network) ~ "(" * rho == ~ cor * ")"),
-                 list(title = title, cor = pearson_cor, network = args[5])), cex.main=1.3)
+                      "for" ~ bold(network) ~ "(" * k == ~ struct_k * "," ~ rho == ~ cor * ")"),
+                 list(title = title, cor = pearson_cor, network = args[5], struct_k = struct_k)), cex.main=1.3)
 dev.off()
 i = i + 1
 }
@@ -125,7 +129,7 @@ if (format == "pdf") pdf(paste(graph_name, "_emp_vs_sim.pdf", sep="")) else png(
 #plot(ua_data$agg_emp_user_activity, ua_data$agg_user_activity, pch=1, xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value))
 #normalized_data= (ua_data$evcentrality - min(ua_data$evcentrality))/(max(ua_data$evcentrality) - min(ua_data$evcentrality))
 symbols(x=ua_data$agg_emp_user_activity, y=ua_data$agg_user_activity, circles=ua_data$evcentrality, inches=1/5, ann=T, bg=cols, fg=rgb(0,0,0,0.1), xlab="Empirical Activity", ylab="Simulated Activity", ylim=c(0, max_value), xlim=c(0, max_value), cex.axis=cex_paper, cex.lab=cex_paper)
-lines(c(0, max_value), c(0, max_value), lty=2)
+lines(par()$usr[1:2], par()$usr[3:4], lty = 2)
 title(substitute(atop("Correlation Between Empirical Activity and Simulated Activity",
-                      "for" ~ bold(network)), list(network = args[5])), cex.main=1.3)
+                      "for" ~ bold(network) ~ "(" * k == ~ struct_k * ")"), list(network = args[5], struct_k = struct_k)), cex.main=1.3)
 dev.off()

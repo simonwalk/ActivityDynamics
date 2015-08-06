@@ -78,6 +78,7 @@ class Network:
         self.agg_user_activity = None
         self.agg_emp_user_activity = None
         self.plot_pos = None
+        self.struct_k = 1
 
         if len(self.ratios) != 0:
             self.ratios = []
@@ -296,7 +297,7 @@ class Network:
     def open_weights_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_k" + str(self.struct_k) + "_run_" + \
                 str(self.run) + "_weights.txt"
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
@@ -304,7 +305,7 @@ class Network:
     def open_taus_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_k" + str(self.struct_k) + "_run_" + \
                 str(self.run) + "_taus.txt"
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
