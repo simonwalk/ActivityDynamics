@@ -14,7 +14,8 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 mode = "months"
-plot_fmt = "png"
+plot_fmt = "pdf"
+plot_only = True
 
 
 def create_network(graph_name):
@@ -23,11 +24,11 @@ def create_network(graph_name):
     bg.load_graph(graph_name+"_run_"+str(0))
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
-    bg.add_node_weights()
-    bg.collect_colors()
+    bg.add_node_weights(0, 0)
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    bg.draw_graph(0)
+    #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
@@ -40,32 +41,44 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
     fpath = nw.get_binary_filename(graph_name)
     nw.debug_msg("Loading {}".format(fpath), level=0)
     nw.load_graph_save(fpath)
-
+    nw.get_epochs_info()
     nw.prepare_eigenvalues()
     nw.create_folders()
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
-    nw.init_empirical_activity()
-    nw.calculate_ratios()
-    nw.set_ratio(0)
-    nw.open_weights_files()
-    nw.open_taus_files()
-    nw.write_summed_weights_to_file()
-    nw.write_initial_tau_to_file()
-    for i in xrange(len(nw.ratios)):
-        debug_msg("Starting activity dynamics for ratio: " + str(i+1))
-        nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
-        nw.set_ac(i)
-        nw.set_ratio(i)
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
+    #nw.open_weights_files()
+    for i in range(0, len(nw.dx) + 1):
+        debug_msg("Starting activity dynamics for epoch: " + str(i))
+        nw.set_cur_epoch(i)
+        nw.reduce_network_to_epoch()
+        nw.update_vertex_properties()
+        nw.update_model_parameters()
+        nw.update_activity()
+        nw.init_empirical_activity()
+        nw.store_to_csapm()
+        if i == len(nw.dx):
+            break
+        if i == 0:
+            nw.store_to_sapm()
+        nw.debug_msg(" --> Current activity: {}".format(sum(nw.get_node_weights("activity")) * nw.a_c * nw.graph.num_vertices()), level=1)
+        nw.calculate_ratios()
+        nw.set_ratio(-1)
         nw.reset_tau_iter()
         nw.debug_msg("Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
-                         "with \x1b[32m ratio={}\x1b[00m and "
-                         "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                         "for \x1b[32m{} iterations\x1b[00m".format(graph_name, nw.ratio, nw.deltatau, nw.deltapsi,
-                                                                    int(nw.deltapsi/nw.deltatau)),
-                             level=1)
-        for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
-    nw.close_weights_files()
+                     "with \x1b[32m ratio={}\x1b[00m and "
+                     "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
+                     "for \x1b[32m{} iterations\x1b[00m".format(graph_name, nw.ratio, nw.deltatau, nw.mu,
+                                                                int(nw.mu/nw.deltatau)),
+                     level=1)
+        for j in xrange(int(nw.mu/nw.deltatau)):
+            nw.activity_dynamics(store_weights=False, store_taus=False, empirical=True)
+        nw.debug_msg(" --> Current activity: {}".format(sum(nw.get_node_weights("activity")) * nw.a_c * nw.graph.num_vertices()), level=1)
+        nw.store_to_sapm()
+
+    print nw.sapm
+    print nw.csapm
+
+    #nw.close_weights_files()
+    #nw.close_taus_files()
     nw.add_graph_properties()
     nw.store_graph(0)
 
@@ -81,7 +94,8 @@ if __name__ == '__main__':
                     "BEACHAPEDIA",          #6
                     "SMW_NOBBZ",            #7
                     "W15M"]                 #8
-    graph_name = empirical_ds[7]
-    #create_network(graph_name)
-    #calc_activity(graph_name, store_itas, deltatau)
+    graph_name = empirical_ds[0]
+    if not plot_only:
+        create_network(graph_name)
+        calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name, mode, plot_fmt)

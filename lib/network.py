@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from random import shuffle, sample
 from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
 import sys
-
+from dateutil.relativedelta import relativedelta
 
 class Network:
     # Create Network Object with default values
@@ -38,7 +38,7 @@ class Network:
     #   debug_level         =   The level of debug messages to be displayed.
     #   store_iterations    =   The interval for storing iterations (1 = all, 2 = every other, etc.)
     def __init__(self, directed, graph_name, run=1, converge_at=1e-16, deltatau=0.01, runs = 1,
-                 deltapsi=0.0001, debug_level=1, store_iterations=1, ratios=[], ratio_index = 0, tau_in_days=30,
+                 mu=0.0001, debug_level=1, store_iterations=1, ratios=[], ratio_index = 0, tau_in_days=30,
                  num_nodes=None):
         # default variables
         self.name_to_id = {}
@@ -52,13 +52,14 @@ class Network:
         self.cur_iteration = 0
         self.ratio_ones = [1.0] * self.graph.num_vertices()
         self.deltatau = deltatau
-        self.deltapsi = deltapsi
+        self.mu = mu
         self.tau_in_days = tau_in_days
         self.converge_at = float(converge_at)
         self.store_iterations = store_iterations
         self.ratio = None
         self.tau_iter = 0
         self.sapm = []
+        self.csapm = []
         # variables used to specifically increase the ratio for certain nodes
         self.random_nodes = []
         # variable needed for adding and removing edges from graph
@@ -73,6 +74,86 @@ class Network:
         # synthetic network helper variables
         self.converged = False
         self.diverged = False
+        #dynamic variables
+        self.weight_initialized = self.graph.new_vertex_property("bool")
+        self.num_epochs = None
+        self.cur_epoch = None
+        self.start_date = None
+        self.original_graph = None
+        self.old_graph = None
+        self.epoch_mode = "months"
+        self.a_c = 1
+        self.diff_users = 0
+        self.k1s = []
+
+    def reduce_network_to_epoch(self):
+        self.debug_msg("Reducing network...", level=1)
+        self.old_graph = Graph(self.graph)
+        if self.original_graph is None:
+            self.original_graph = Graph(self.graph)
+            self.debug_msg(" -> Created copy of original graph!", level=1)
+        else:
+            self.graph = Graph(self.original_graph)
+            self.debug_msg(" -> Reset graph to original!", level=1)
+        timedelta = self.cur_epoch + 1
+        if self.epoch_mode is None:
+            self.debug_msg(" -> No mode given for reduce_network_to_epoch! Aborting...", level=1)
+            sys.exit()
+        elif self.epoch_mode is "months":
+            temp_epoch = self.start_date + relativedelta(months=timedelta)
+            end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
+        elif self.epoch_mode is "days":
+            end_day = self.start_date + datetime.timedelta(days=timedelta)
+        self.debug_msg(" -> Getting network epoch from " + str(self.start_date) + " to " + str(end_day), level=1)
+        self.graph.clear_filters()
+        bool_map = self.graph.new_vertex_property("bool")
+        for v in self.graph.vertices():
+            if self.graph.vertex_properties["firstActivity"][v] > end_day:
+                bool_map[v] = 0
+            else:
+                bool_map[v] = 1
+        self.graph.set_vertex_filter(bool_map)
+        self.graph.purge_vertices()
+        self.A = adjacency(self.graph, weight=None)
+        self.num_vertices = self.graph.num_vertices()
+        self.num_edges = self.graph.num_edges()
+        self.k1 = self.calc_k1()
+        self.k1s.append(self.k1)
+        self.ones_ratio = [1.0] * self.graph.num_vertices()
+        if self.graph.num_vertices() - self.old_graph.num_vertices() > 0:
+            self.diff_users = self.graph.num_vertices() - self.old_graph.num_vertices()
+        else:
+            self.diff_users = self.graph.num_vertices()
+        print "DIFF: ", self.diff_users
+        self.debug_msg("Reduced network to " + str(self.num_vertices) + " vertices with " +
+                       str(self.num_edges) + " edges. K1 = " + str(self.k1), level=1)
+
+    def store_to_sapm(self):
+        self.sapm.append(sum(self.graph.vp["activity"].a) * self.graph.num_vertices() * self.a_c)
+
+    def store_to_csapm(self):
+        self.csapm.append(sum(self.graph.vp["activity"].a) * self.graph.num_vertices() * self.a_c)
+
+    def set_cur_epoch(self, epoch):
+        self.cur_epoch = epoch
+
+    def get_epochs_info(self):
+        path = config.graph_binary_dir + "empirical_data/" + self.graph_name + "/empirical.txt"
+        file = open(path, "rb")
+        for ldx, line in enumerate(file):
+            if ldx < 1:
+                continue
+            elif ldx is 1:
+                el = line.strip().split("\t")
+                self.start_date = datetime.datetime.strptime(el[0], "%Y-%m-%d").date()
+            else:
+                pass
+            self.num_epochs = ldx
+
+    def calc_k1(self):
+        evals_large_sparse, evecs_large_sparse = largest_eigsh(self.A, 2, which='LM')
+        evs = sorted([float(x) for x in evals_large_sparse], reverse=True)[0]
+        return evs
 
     def calc_acs(self):
         self.a_cs = [(np.mean(self.replies) + np.mean(self.posts)) / self.num_vertices] * (len(self.replies))
@@ -95,6 +176,42 @@ class Network:
     def calc_max_q(self):
         return (self.max_posts_per_day * self.tau_in_days * self.num_vertices) / (2 * self.num_edges * self.g_per_month)
 
+    def calc_ac(self):
+        return (self.replies[self.cur_epoch] + self.posts[self.cur_epoch]) / self.num_vertices
+
+    def calc_max_posts_per_day(self, start_tau=0, end_tau=None):
+        return max(self.posts_per_user_per_day[start_tau:end_tau])
+
+    def calc_g_per_month(self):
+        return self.max_posts_per_day / (math.sqrt(self.a_c ** 2 + self.max_posts_per_day ** 2))
+
+    def calc_max_q(self):
+        return (self.max_posts_per_day * self.tau_in_days * self.num_vertices) / (2 * self.num_edges * self.g_per_month)
+
+    def update_model_parameters(self):
+        self.debug_msg("Updating model parameters...", level=1)
+        self.old_a_c = self.a_c
+        self.a_c = self.calc_ac()
+        self.debug_msg(" -> a_c: " + str(self.a_c) + " (old a_c: " + str(self.old_a_c) + ")", level=1)
+        self.max_posts_per_day = self.calc_max_posts_per_day(0 + self.cur_epoch, 1 + self.cur_epoch)
+        self.debug_msg(" -> max_posts_per_day: " + str(self.max_posts_per_day), level=1)
+        self.g_per_month = self.calc_g_per_month()
+        self.debug_msg(" -> g_per_month: " + str(self.g_per_month), level=1)
+        self.max_q = self.calc_max_q()
+        self.debug_msg(" -> max_q: " + str(self.max_q), level=1)
+        self.mu = self.max_q / self.a_c
+        self.debug_msg(" -> mu: " + str(self.mu), level=1)
+        self.debug_msg("Finished updating parameters.", level=1)
+
+    def update_activity(self):
+        if self.old_a_c is not 1:
+            self.old_graph.vertex_properties["activity"].a *= self.old_a_c
+            self.old_graph.vertex_properties["activity"].a /= self.a_c
+            self.old_graph.vertex_properties["activity"].a *= self.old_graph.num_vertices()
+            self.old_graph.vertex_properties["activity"].a /= self.graph.num_vertices()
+            self.debug_msg("Updated activity to new a_c: {}".format(sum(self.old_graph.vp["activity"].a) * self.a_c * self.graph.num_vertices()),
+                           level=1)
+
     def get_empirical_input(self, path, start_tau=0, end_tau=None, ac_per_taus=None):
         self.dx = []
         self.apm = []
@@ -104,6 +221,7 @@ class Network:
         self.init_users = []
         self.posts_per_user_per_day = []
         self.a_cs = []
+        self.agg_act_new_users = []
         f = open(path, "rb")
         for ldx, line in enumerate(f):
             if ldx < 1:
@@ -123,18 +241,8 @@ class Network:
             num_users = float(el[5]) + 1
             self.num_users.append(num_users)
             self.posts_per_user_per_day.append(float(el[3])/num_users/self.tau_in_days)
+            self.agg_act_new_users.append(float(el[7]))
         f.close()
-        self.calc_acs()
-        self.max_posts_per_day = self.calc_max_posts_per_day(start_tau, end_tau)
-        self.g_per_month = self.calc_g_per_month()
-        self.max_q = self.calc_max_q()
-        self.mu = self.max_q / self.a_c
-        self.deltapsi = self.mu
-        self.debug_msg("max_q: {}".format(round(self.max_q, 3)), level=1)
-        self.debug_msg("deltapsi: {}".format(round(self.deltapsi, 3)), level=1)
-        self.debug_msg("max_posts_per_day: {}".format(round(self.max_posts_per_day, 3)), level=1)
-        self.debug_msg("a_c: {}".format(round(self.a_c, 3)), level=1)
-        self.debug_msg("kappa_1: {}".format(round(self.k1, 3)), level=1)
 
     # Creating all necessary folders for storing results, plots and figures
     def create_folders(self):
@@ -162,7 +270,7 @@ class Network:
     def open_weights_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_run_" + \
                 str(self.run) + "_weights.txt"
         self.weights_file_path = folder+wname
         self.weights_file = open(self.weights_file_path, "wb")
@@ -170,7 +278,7 @@ class Network:
     def open_taus_files(self):
         folder = config.graph_source_dir + "weights/" + self.graph_name + "/"
         wname = self.graph_name + "_" + str(self.store_iterations) +"_"+\
-                str(float(self.deltatau)).replace(".", "") + "_" + str(self.ratio).replace(".", "") + "_run_" + \
+                str(float(self.deltatau)).replace(".", "") + "_run_" + \
                 str(self.run) + "_taus.txt"
         self.taus_file_path = folder+wname
         self.taus_file = open(self.taus_file_path, "wb")
@@ -203,7 +311,7 @@ class Network:
     # Add calculated graph_properties to graph object
     def add_graph_properties(self):
         self.set_graph_property("object", self.deltatau, "deltatau")
-        self.set_graph_property("object", self.deltapsi, "deltapsi")
+        self.set_graph_property("object", self.mu, "mu")
         self.set_graph_property("float", self.cur_iteration, "cur_iteration")
         self.set_graph_property("string", self.graph_name, "graph_name")
         self.set_graph_property("int", self.store_iterations, "store_iterations")
@@ -221,6 +329,8 @@ class Network:
             self.set_graph_property("object", self.max_posts_per_day, "max_posts_per_day")
             self.set_graph_property("object", self.g_per_month, "g_per_month")
             self.set_graph_property("object", self.sapm, "simulated_activity_per_month")
+            self.set_graph_property("object", self.csapm, "corrected_simulated_activity_per_month")
+            self.set_graph_property("object", self.k1s, "k1s")
         except:
             self.debug_msg("  -> INFO: Could not store empirical activities! ", level=1)
 
@@ -237,22 +347,42 @@ class Network:
     def get_node_weights(self, name):
         return np.array(self.graph.vp[name].a)
 
+    def update_vertex_properties(self, max_iter_ev=1000, max_iter_hits=1000):
+        self.debug_msg("\x1b[33m  ++ Calculating PageRank\x1b[00m", level=1)
+        pr = pagerank(self.graph)
+        self.graph.vertex_properties["pagerank"] = pr
+        self.debug_msg("\x1b[33m  ++ Calculating Clustering Coefficient\x1b[00m", level=1)
+        clustering = local_clustering(self.graph)
+        self.graph.vertex_properties["clustercoeff"] = clustering
+        self.debug_msg("\x1b[33m  ++ Calculating Eigenvector Centrality\x1b[00m", level=1)
+        ev, ev_centrality = eigenvector(self.graph, weight=None, max_iter=max_iter_ev)
+        self.graph.vertex_properties["evcentrality"] = ev_centrality
+        self.debug_msg("\x1b[33m  ++ Calculating HITS\x1b[00m", level=1)
+        eig, authorities, hubs = hits(self.graph, weight=None, max_iter=max_iter_hits)
+        self.graph.vertex_properties["authorities"] = authorities
+        self.graph.vertex_properties["hubs"] = hubs
+        self.debug_msg("\x1b[33m  ++ Calculating Degree Property Map\x1b[00m", level=1)
+        degree = self.graph.degree_property_map("total")
+        self.graph.vertex_properties["degree"] = degree
+
     # fixed initial activity function
     def init_empirical_activity(self):
-        initial_empirical_activity = self.apm[0] / self.graph.num_vertices() / self.a_c
+        temp_activity = (sum(self.old_graph.vp["activity"].a) * self.a_c * self.graph.num_vertices()) + self.agg_act_new_users[self.cur_epoch]
+        initial_empirical_activity = temp_activity / self.graph.num_vertices() / self.a_c
         self.debug_msg("Init Activity: {}".format(initial_empirical_activity), level=1)
         initial_empirical_activity /= sum(self.graph.vp["evcentrality"].a)
         self.debug_msg("Init Activity per edge: {}".format(initial_empirical_activity), level=1)
         ta = initial_empirical_activity * (sum(self.graph.vp["evcentrality"].a)) * self.a_c * self.graph.num_vertices()
-        ca = self.apm[0]
+        ca = temp_activity
         self.debug_msg("Total Activity: {}".format(ta), level=1)
         self.debug_msg("Control Activity: {}".format(ca), level=1)
         for v in self.graph.vertices():
-            self.graph.vertex_properties["activity"][v] = initial_empirical_activity * self.graph.vp["evcentrality"][v]
-            try:
-                self.graph.vertex_properties["weight_initialized"][v] = True
-            except:
-                pass
+            #if not self.weight_initialized[v]:
+                self.graph.vertex_properties["activity"][v] = initial_empirical_activity * self.graph.vp["evcentrality"][v]
+            #    self.weight_initialized[v] = True
+            #   temp += initial_empirical_activity * self.graph.vp["evcentrality"][v]
+            #else:
+            #    self.graph.vertex_properties["activity"][v] = self.old_graph.vp["activity"][v]
         self.debug_msg("Actual Activity: {}".format(np.sum(self.graph.vp["activity"].a)), level=1)
 
     # node weights setter
@@ -422,12 +552,12 @@ class Network:
             return ev_centrality
 
     def calculate_ratios(self):
-        for i in xrange(len(self.dx)):
-            activity_current = self.apm[i]
-            activity_next = activity_current-self.dx[i]
-            self.ratio = self.k1 - math.log(activity_next/activity_current) / self.deltapsi
-            #self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
-            self.ratios.append(self.ratio)
+        activity_current = self.apm[self.cur_epoch]
+        activity_next = activity_current-self.dx[self.cur_epoch]-self.agg_act_new_users[self.cur_epoch+1]
+        print activity_next, activity_current
+        self.ratio = self.k1 - math.log(activity_next/activity_current) / self.mu
+        #self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
+        self.ratios.append(self.ratio)
         self.debug_msg("ratios ({}): {}".format(len(self.ratios), self.ratios), level=1)
 
     def set_ratio(self, index):
@@ -477,8 +607,8 @@ class Network:
 
         # Store taus to file
         if store_taus and empirical and self.cur_iteration % self.store_iterations == 0:
-            tau = (float(self.tau_iter)+1)*self.deltatau/self.deltapsi
-            tau += self.ratio_index
+            tau = (float(self.tau_iter)+1)*self.deltatau/self.mu
+            tau += self.cur_epoch
             self.taus_file.write(str(tau) + "\n")
         self.tau_iter += 1
 
