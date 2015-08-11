@@ -69,7 +69,7 @@ grid(col=rgb(0, 0, 0, 0.2), lwd=1)
 #     col="#858585", cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
 #axis(4, cex.axis=cex_paper)
 #mtext("Real Activity",side=4,line=3, cex=cex_paper)
-legend("topright", pch=c(NA,pchstyle), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
+legend("topright", pch=c(4,1), col=colors, legend=c("Simulated Activity", "Observed Activity"), lty=c(1,1), cex=cex_paper)
 dev.off()
 
 print(" ++ Plotting Error of Simulation")

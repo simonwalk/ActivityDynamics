@@ -574,6 +574,8 @@ class Network:
     def calculate_ratios(self):
         activity_current = self.apm[self.cur_epoch]
         activity_next = activity_current-self.dx[self.cur_epoch]-self.agg_act_new_users[self.cur_epoch+1]
+        if activity_next == 0:
+            activity_next = 0.01
         self.ratio = self.k1 - math.log(activity_next/activity_current) / self.mu
         #self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
         self.ratios.append(self.ratio)
