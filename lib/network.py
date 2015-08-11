@@ -203,7 +203,7 @@ class Network:
     # Add calculated graph_properties to graph object
     def add_graph_properties(self):
         self.set_graph_property("object", self.deltatau, "deltatau")
-        self.set_graph_property("object", self.deltapsi, "deltapsi")
+        self.set_graph_property("object", self.deltapsi, "mu")
         self.set_graph_property("float", self.cur_iteration, "cur_iteration")
         self.set_graph_property("string", self.graph_name, "graph_name")
         self.set_graph_property("int", self.store_iterations, "store_iterations")

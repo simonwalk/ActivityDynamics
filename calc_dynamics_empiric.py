@@ -15,7 +15,7 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = 1
+plot_only = 0
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -28,7 +28,7 @@ data_sets = ["BeerStackExchange",           # 0
              "DotaWiki",                    # 8
              "PracticalPlants"]             # 9
 
-emp_data_set = data_sets[0]
+emp_data_set = data_sets[9]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
