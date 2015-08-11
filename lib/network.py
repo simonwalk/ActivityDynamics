@@ -85,6 +85,20 @@ class Network:
         self.a_c = 1
         self.diff_users = 0
         self.k1s = []
+        self.num_edges_over_iter = []
+        self.num_vertices_over_iter = []
+        self.a_c_over_iter = []
+        self.mppd_over_iter = []
+        self.gpm_over_iter = []
+        self.mq_over_iter = []
+
+    def save_props_per_iter(self):
+        self.num_vertices_over_iter.append(self.num_vertices)
+        self.num_edges_over_iter.append(self.num_edges)
+        self.a_c_over_iter.append(self.a_c)
+        self.mppd_over_iter.append(self.max_posts_per_day)
+        self.gpm_over_iter.append(self.g_per_month)
+        self.mq_over_iter.append(self.max_q)
 
     def reduce_network_to_epoch(self):
         self.debug_msg("Reducing network...", level=1)
@@ -331,6 +345,13 @@ class Network:
             self.set_graph_property("object", self.sapm, "simulated_activity_per_month")
             self.set_graph_property("object", self.csapm, "corrected_simulated_activity_per_month")
             self.set_graph_property("object", self.k1s, "k1s")
+            self.set_graph_property("object", self.agg_act_new_users, "agg_act_new_users")
+            self.set_graph_property("object", self.num_vertices_over_iter, "num_vertices_over_iter")
+            self.set_graph_property("object", self.num_edges_over_iter, "num_edges_over_iter")
+            self.set_graph_property("object", self.a_c_over_iter, "a_c_over_iter")
+            self.set_graph_property("object", self.mppd_over_iter, "mppd_over_iter")
+            self.set_graph_property("object", self.gpm_over_iter, "gpm_over_iter")
+            self.set_graph_property("object", self.mq_over_iter, "mq_over_iter")
         except:
             self.debug_msg("  -> INFO: Could not store empirical activities! ", level=1)
 

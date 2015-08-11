@@ -54,7 +54,14 @@ def get_network_details(graph_name):
     sapm = graph.graph_properties["simulated_activity_per_month"]
     csapm = graph.graph_properties["corrected_simulated_activity_per_month"]
     k1s = graph.graph_properties["k1s"]
-    return dtau, store_itas, mu, ac, ratios, k1, apm, sapm, csapm, k1s
+    aanu = graph.graph_properties["agg_act_new_users"]
+    nvoi = graph.graph_properties["num_vertices_over_iter"]
+    neoi = graph.graph_properties["num_edges_over_iter"]
+    acoi = graph.graph_properties["a_c_over_iter"]
+    mppdoi = graph.graph_properties["mppd_over_iter"]
+    gpmoi = graph.graph_properties["gpm_over_iter"]
+    mqoi = graph.graph_properties["mq_over_iter"]
+    return dtau, store_itas, mu, ac, ratios, k1, apm, sapm, csapm, k1s, aanu, nvoi, neoi, acoi, mppdoi, gpmoi, mqoi
 
 
 # retrieve parameters stored in binary graph file
@@ -170,8 +177,9 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     import subprocess
     import os
     output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
+    output_table = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_table_" + mode + ".txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, store_itas, mu, ac, ratios, k1, apm, sapm, csapm, k1s = get_network_details(graph_name)
+    dtau, store_itas, mu, ac, ratios, k1, apm, sapm, csapm, k1s, aanu, nvoi, neoi, acoi, mppdoi, gpmoi, mqoi = get_network_details(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
@@ -181,6 +189,44 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     header = "ratios\tk1s\treal_act_x\treal_act_y\tsim_act_y\tcor_sim_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
+    debug_msg("--> Save Latex table")
+    tabstring_nvoi = ""
+    tabstring_neoi = ""
+    tabstring_k1oi = ""
+    tabstring_roi = ""
+    tabstring_acoi = ""
+    tabstring_mppdoi = ""
+    tabstring_gpmoi = ""
+    tabstring_mqoi = ""
+    tabstring_aanu = ""
+    tabstring_sad = ""
+    sad_list = []
+    for i in range(0, len(apm)):
+        sad_list.append(round(csapm[i] - apm[i], 2))
+    for i in range(0, len(nvoi)):
+        tabstring_nvoi += "& $" + str(nvoi[i]) + "$ "
+        tabstring_neoi += "& $" + str(neoi[i]) + "$ "
+        tabstring_k1oi += "& $" + str(round(k1s[i], 2)) + "$ "
+        tabstring_roi += "& $" + str(round(ratios[i], 2)) + "$ "
+        tabstring_acoi += "& $" + str(round(acoi[i], 2)) + "$ "
+        tabstring_mppdoi += "& $" + str(round(mppdoi[i], 2)) + "$ "
+        tabstring_gpmoi += "& $" + str(round(gpmoi[i], 2)) + "$ "
+        tabstring_mqoi += "& $" + str(round(mqoi[i], 2)) + "$ "
+        tabstring_aanu += "& $" + str(aanu[i]) + "$ "
+        tabstring_sad += "& $" + str(sad_list[i]) + "$ "
+    tabfile = open(output_table, "w")
+    tabfile.write(tabstring_nvoi + "\n")
+    tabfile.write(tabstring_neoi + "\n")
+    tabfile.write(tabstring_k1oi + "\n")
+    tabfile.write(tabstring_roi + "\n")
+    tabfile.write(tabstring_acoi + "\n")
+    tabfile.write(tabstring_mppdoi + "\n")
+    tabfile.write(tabstring_gpmoi + "\n")
+    tabfile.write(tabstring_mqoi + "\n")
+    tabfile.write(tabstring_aanu + "\n")
+    tabfile.write(tabstring_sad + "\n")
+    tabfile.close()
+    debug_msg("--> Done.")
     #debug_msg("--> Getting weight file and tau file path")
     #weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
     #debug_msg("----> " + weights_path)

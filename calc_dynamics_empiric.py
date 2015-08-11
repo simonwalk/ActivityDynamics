@@ -15,7 +15,7 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = True
+plot_only = 1
 
 
 def create_network(graph_name):
@@ -31,6 +31,8 @@ def create_network(graph_name):
     #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
+    for v in bg.graph.vertices():
+        print bg.graph.vp["firstActivity"][v]
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
@@ -52,6 +54,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
         nw.reduce_network_to_epoch()
         nw.update_vertex_properties()
         nw.update_model_parameters()
+        nw.save_props_per_iter()
         nw.update_activity()
         nw.init_empirical_activity()
         nw.store_to_csapm()

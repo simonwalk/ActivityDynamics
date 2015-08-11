@@ -16,7 +16,7 @@ ac = args[8]
 k1 = args[9]
 cex_paper = 1.5
 cex_size = 0.6
-colors = c("#000000", "#858585", rgb(0, 1, 0, 0.2), rgb(0, 0, 0, 0.2), rgb(0, 0, 1, 0.5))
+colors = c("#000000", "#858585", rgb(0, 1, 0, 0.8), rgb(0, 0, 0, 0.8), rgb(0, 0, 1, 0.5))
 xlabel = substitute(tau ~ " (in " * mode * ")", list(mode=mode))
 if (args[6] == "days") {
   linetype = "l"
@@ -34,14 +34,15 @@ min_y = min(clean_ratios, data$k1s)
 max_y = max(clean_ratios, data$k1s)
 #k1_x = seq(1,length(data$ratios),1)
 #k1_y = as.numeric(rep(k1, length(k1_x)))
-plot(data$real_act_x, data$ratios, type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
-lines(data$real_act_x, data$k1s, lty=2, col=colors[2])
+par(mar=c(5,5,4,5)+.1)
+plot(head(data$real_act_x, -1), head(data$ratios, -1), type=linetype, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y), pch=1)
+lines(head(data$real_act_x, -1), head(data$k1s, -1), lty=2, col=colors[2])
 rho = sd(data$ratios, na.rm=TRUE)
 rho_n = rho/as.numeric(k1)
 rob = round(rho_n, digits=4)
 title(substitute(atop("Ratio " ~ (frac(lambda,mu)) ~ " over " ~ tau ~ " (in " * mode * ")",
-                      Delta ~ tau == ~ dt ~ ", " ~ mu == ~ dp ~ ", " ~ kappa[1] == ~ k1 ~ ", " ~ rho == ~ rho_n),
-                 list(dt = dtau, dp = mu, k1 = k1, rho_n=rob, mode=mode)), cex.main=cex_paper)
+                      "for " ~ bold(network)),
+                 list(network = args[3], mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
 legend("bottomright", pch=c(pchstyle,NA), col=colors, legend=c("Ratio", expression(kappa[1])), lty=c(1,2), cex=cex_paper)
 dev.off()
@@ -60,8 +61,8 @@ while (i < length(data$real_act_x)) {
     i = i + 1
 }
 title(substitute(atop("Activity over " ~ tau ~ " (in " * mode * ")",
-                      Delta ~ tau == ~ dt ~ ", " ~ mu == ~ dp ~ ", " ~ a[c] == ~ ac),
-                 list(dt = dtau, dp = mu, ac = ac, mode=mode)), cex.main=cex_paper)
+                      "for " ~ bold(network)),
+                 list(network=args[3], mode=mode)), cex.main=cex_paper)
 grid(col=rgb(0, 0, 0, 0.2), lwd=1)
 #par(new=TRUE)
 #plot(data$real_act_x, data$real_act_y, type="o", lty=1, pch=2,xaxt="n",yaxt="n",xlab="",ylab="", 
@@ -89,8 +90,9 @@ errors_x <- seq(0,length(errors) - 1,1)
 rmse <- sqrt(mean(errors^2))
 #print(rmse)
 if (format == "pdf") pdf(paste(graph_name, "_error.pdf", sep="")) else png(paste(graph_name, "_error.png", sep=""))
+par(mar=c(5,5,4,5)+.1)
 plot(errors_x, errors, type="l", xlab=xlabel, ylab="Activity", lty=1, col=colors[1], cex.axis=cex_paper, cex.lab=cex_paper)
 title(substitute(atop("Error of Simulation over " ~ tau ~ " (in " * mode * ")",
-                      "(RMSE = " ~ rmse ~ ")"), list(rmse=rmse, mode=mode)), cex.main=cex_paper)
+                      "for" ~ bold(network) ~ "(RMSE = " ~ rmse ~ ")"), list(network=args[3], rmse=round(rmse, 2), mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
 dev.off()
