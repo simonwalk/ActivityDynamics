@@ -15,7 +15,7 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = 0
+plot_only = 1
 
 data_sets = ["BeerStackExchange",           # 0
              "BitcoinStackExchange",        # 1
@@ -28,7 +28,7 @@ data_sets = ["BeerStackExchange",           # 0
              "DotaWiki",                    # 8
              "PracticalPlants"]             # 9
 
-emp_data_set = data_sets[5]
+emp_data_set = data_sets[0]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -98,9 +98,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
 if __name__ == '__main__':
     graph_name = emp_data_set
-    # if not plot_only:
-    #     create_network(graph_name)
-    #     calc_activity(graph_name, store_itas, deltatau)
-    # empirical_result_plot(graph_name, mode, plot_fmt)
-    for graph_name in data_sets:
-        empirical_result_plot(graph_name, mode, plot_fmt)
+    if not plot_only:
+        create_network(graph_name)
+        calc_activity(graph_name, store_itas, deltatau)
+    empirical_result_plot(graph_name, mode, plot_fmt)
+    # for graph_name in data_sets:
+    #     empirical_result_plot(graph_name, mode, plot_fmt)
