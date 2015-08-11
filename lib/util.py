@@ -44,15 +44,15 @@ def get_network_details_for_epochs(graph_name):
 def get_network_details(graph_name):
     graph = load_graph(config.graph_binary_dir + "GT/" + graph_name + "/" + graph_name + "_run_" + str(0) + ".gt")
     dtau = graph.graph_properties["deltatau"]
-    dpsi = graph.graph_properties["deltapsi"]
     store_itas = graph.graph_properties["store_iterations"]
-    mu = round(graph.graph_properties["deltapsi"], 2)
+    mu = round(graph.graph_properties["mu"], 2)
     ac = round(graph.graph_properties["a_c"], 2)
     ratios = graph.graph_properties["ratios"]
-    ratios = [np.nan] + ratios
+    ratios = ratios + [np.nan]
     k1 = round(graph.graph_properties["top_eigenvalues"][0], 2)
     apm = graph.graph_properties["activity_per_month"]
-    return dtau, dpsi, store_itas, mu, ac, ratios, k1, apm
+    sapm = graph.graph_properties["simulated_activity_per_month"]
+    return dtau, store_itas, mu, ac, ratios, k1, apm, sapm
 
 
 # retrieve parameters stored in binary graph file
@@ -167,27 +167,27 @@ def empirical_result_plot(graph_name, mode, plot_fmt):
     debug_msg("*** Start plotting of empirical results ***")
     import subprocess
     import os
-    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_" + mode + ".txt")
+    output_path = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_static.txt")
     debug_msg("--> Start collecting data of: " + graph_name)
-    dtau, store_itas, mu, ac, ratios, k1, apm = get_network_details(graph_name)
+    dtau, store_itas, mu, ac, ratios, k1, apm, sapm = get_network_details(graph_name)
     debug_msg("--> Done with collecting data")
     real_act_y = apm
     real_act_x = range(len(apm))
     debug_msg("--> Real activity data included")
     debug_msg("--> Starting combination of data")
-    combined_data = [ratios, real_act_x, real_act_y]
-    header = "ratios\treal_act_x\treal_act_y"
+    combined_data = [ratios, real_act_x, real_act_y, sapm]
+    header = "ratios\treal_act_x\treal_act_y\tsim_act_y"
     np.savetxt(output_path, np.array(combined_data).T, delimiter="\t", header=header, comments="")
     debug_msg("--> Data successfully combined")
-    debug_msg("--> Getting weight file and tau file path")
-    weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
-    debug_msg("----> " + weights_path)
-    taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
-    debug_msg("----> " + taus_path)
+    #debug_msg("--> Getting weight file and tau file path")
+    #weights_path = get_abs_path(graph_name, "_weights", store_itas, ratios[1], deltatau=dtau)
+    #debug_msg("----> " + weights_path)
+    #taus_path = get_abs_path(graph_name, "_taus", store_itas, ratios[1], deltatau=dtau)
+    #debug_msg("----> " + taus_path)
     debug_msg("--> Calling empirical_plots.R")
     r_script_path = os.path.abspath(config.r_dir + 'empirical_plots.R')
     wd = r_script_path.replace("R Scripts/empirical_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, weights_path, taus_path, graph_name, mode,
+    subprocess.call([config.r_binary_path, r_script_path, wd, output_path, graph_name, mode,
                      plot_fmt, str(dtau), str(mu), str(ac), str(k1)])
                     #stdout=open(os.devnull, 'wb'))#, stderr=open(os.devnull, 'wb'))
     debug_msg("*** Successfully plotted empirical results ***")

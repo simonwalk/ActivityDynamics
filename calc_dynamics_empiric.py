@@ -14,8 +14,21 @@ deltatau = 0.001
 store_itas = 10
 tid = 30
 mode = "months"
-plot_fmt = "png"
+plot_fmt = "pdf"
+plot_only = 1
 
+data_sets = ["BeerStackExchange",           # 0
+             "BitcoinStackExchange",        # 1
+             "ElectronicsStackExchange",    # 2
+             "PhysicsStackExchange",        # 3
+             "GamingStackExchange",         # 4
+             "ComplexOperations",           # 5
+             "BioInformatics",              # 6
+             "Neurolex",                    # 7
+             "DotaWiki",                    # 8
+             "PracticalPlants"]             # 9
+
+emp_data_set = data_sets[0]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -24,10 +37,10 @@ def create_network(graph_name):
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    bg.collect_colors()
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    bg.draw_graph(0)
+    #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
 
@@ -43,45 +56,41 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
     nw.prepare_eigenvalues()
     nw.create_folders()
-    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "_empirical.txt")
+    nw.get_empirical_input(config.graph_binary_dir + "empirical_data/" + nw.graph_name + "/empirical.txt")
     nw.init_empirical_activity()
     nw.calculate_ratios()
     nw.set_ratio(0)
-    nw.open_weights_files()
-    nw.open_taus_files()
-    nw.write_summed_weights_to_file()
-    nw.write_initial_tau_to_file()
+    #nw.open_weights_files()
+    #nw.open_taus_files()
+    #nw.write_summed_weights_to_file()
+    #nw.write_initial_tau_to_file()
     for i in xrange(len(nw.ratios)):
         debug_msg("Starting activity dynamics for ratio: " + str(i+1))
         nw.debug_msg(" --> Sum of weights: {}".format(sum(nw.get_node_weights("activity"))), level=1)
         nw.set_ac(i)
         nw.set_ratio(i)
         nw.reset_tau_iter()
+        if i == 0:
+            nw.sapm.append(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices())
         nw.debug_msg("Running Dynamic Simulation for '\x1b[32m{}\x1b[00m' "
                          "with \x1b[32m ratio={}\x1b[00m and "
                          "\x1b[32mdtau={}\x1b[00m and \x1b[32mdpsi={}\x1b[00m "
-                         "for \x1b[32m{} iterations\x1b[00m".format(graph_name, nw.ratio, nw.deltatau, nw.deltapsi,
+                         "for \x1b[32m{} iterations\x1b[00m".format(graph_name, nw.ratio, nw.deltatau, nw.mu,
                                                                     int(nw.deltapsi/nw.deltatau)),
                              level=1)
-        for j in xrange(int(nw.deltapsi/nw.deltatau)):
-            nw.activity_dynamics(store_weights=True, store_taus=True, empirical=True)
-    nw.close_weights_files()
+        for j in xrange(int(nw.mu/nw.deltatau)):
+            nw.activity_dynamics(store_weights=False, store_taus=False, empirical=True)
+        nw.sapm.append(sum(nw.graph.vp["activity"].a) * nw.a_c * nw.graph.num_vertices())
+    #nw.close_weights_files()
     nw.add_graph_properties()
     nw.store_graph(0)
 
 
 if __name__ == '__main__':
-
-    empirical_ds = ["BeerStackExchange",    #0
-                    "EnglishStackExchange", #1
-                    "MathStackExchange",    #2
-                    "StackOverflow",        #3
-                    "HistoryStackExchange", #4
-                    "CHARACTERDB",          #5
-                    "BEACHAPEDIA",          #6
-                    "SMW_NOBBZ",            #7
-                    "W15M"]                 #8
-    graph_name = empirical_ds[7]
-    #create_network(graph_name)
-    #calc_activity(graph_name, store_itas, deltatau)
+    graph_name = emp_data_set
+    if not plot_only:
+        create_network(graph_name)
+        calc_activity(graph_name, store_itas, deltatau)
     empirical_result_plot(graph_name, mode, plot_fmt)
+    # for graph_name in data_sets:
+    #     empirical_result_plot(graph_name, mode, plot_fmt)

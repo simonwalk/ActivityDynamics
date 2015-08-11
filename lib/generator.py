@@ -11,6 +11,7 @@ from random import randint, uniform, random
 from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
 from random import shuffle
 from scipy.stats import poisson
+import matplotlib
 
 
 # Generator Class works with GraphTool generators, as they provide more functionality than NetworkX Generators
