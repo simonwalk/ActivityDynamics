@@ -15,8 +15,23 @@ store_itas = 10
 tid = 30
 mode = "months"
 plot_fmt = "pdf"
-plot_only = 1
+plot_only = 0
 
+data_sets = ["BeerStackExchange",           # 0
+             "BitcoinStackExchange",        # 1
+             "ElectronicsStackExchange",    # 2
+             "PhysicsStackExchange",        # 3
+             "GamingStackExchange",         # 4
+             "AskUbuntu",                   # 5
+             "ComplexOperations",           # 6
+             "BioInformatics",              # 7
+             "CSDMS",                       # 8
+             "Neurolex",                    # 9
+             "PracticalPlants",             #10
+             "BlockLand",                   #11
+             "DotaWiki"]                    #12
+
+emp_data_set = data_sets[0]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -31,8 +46,6 @@ def create_network(graph_name):
     #bg.draw_graph(0)
     bg.calc_vertex_properties()
     bg.store_graph(0)
-    for v in bg.graph.vertices():
-        print bg.graph.vp["firstActivity"][v]
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
@@ -87,17 +100,7 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
 
 if __name__ == '__main__':
-
-    empirical_ds = ["BeerStackExchange",    #0
-                    "EnglishStackExchange", #1
-                    "MathStackExchange",    #2
-                    "StackOverflow",        #3
-                    "HistoryStackExchange", #4
-                    "CHARACTERDB",          #5
-                    "BEACHAPEDIA",          #6
-                    "SMW_NOBBZ",            #7
-                    "W15M"]                 #8
-    graph_name = empirical_ds[0]
+    graph_name = emp_data_set
     if not plot_only:
         create_network(graph_name)
         calc_activity(graph_name, store_itas, deltatau)

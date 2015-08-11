@@ -7,7 +7,7 @@ data = read.table(args[2], sep="\t", header=T, colClasses = "numeric")
 #sim_act_x = read.table(args[4], header=F)
 #print(" ++ Reading weights data")
 #sim_act_y = read.table(args[3], header=F)
-graph_name = paste(args[3], args[4], sep="_")
+graph_name = paste(args[3], "dynamic", sep="_")
 mode = args[4]
 format = args[5]
 dtau = args[6]

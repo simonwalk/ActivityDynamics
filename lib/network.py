@@ -138,7 +138,6 @@ class Network:
             self.diff_users = self.graph.num_vertices() - self.old_graph.num_vertices()
         else:
             self.diff_users = self.graph.num_vertices()
-        print "DIFF: ", self.diff_users
         self.debug_msg("Reduced network to " + str(self.num_vertices) + " vertices with " +
                        str(self.num_edges) + " edges. K1 = " + str(self.k1), level=1)
 
@@ -575,7 +574,6 @@ class Network:
     def calculate_ratios(self):
         activity_current = self.apm[self.cur_epoch]
         activity_next = activity_current-self.dx[self.cur_epoch]-self.agg_act_new_users[self.cur_epoch+1]
-        print activity_next, activity_current
         self.ratio = self.k1 - math.log(activity_next/activity_current) / self.mu
         #self.ratio -= 0.03 * activity_current / (self.a_c * self.num_vertices)
         self.ratios.append(self.ratio)
