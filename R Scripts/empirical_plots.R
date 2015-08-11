@@ -15,7 +15,7 @@ mu = args[7]
 ac = args[8]
 k1 = args[9]
 cex_paper = 1.5
-cex_size = 0.6
+cex_size = 1.5
 colors = c("#000000", "#858585", rgb(0, 0, 0, 0.8), rgb(0, 1, 0, 0.8))
 xlabel = substitute(tau ~ " (in " * mode * ")", list(mode=mode))
 line_width=2
@@ -30,8 +30,8 @@ max_y = max(clean_ratios, data$k1s)
 #k1_x = seq(1,length(data$ratios),1)
 #k1_y = as.numeric(rep(k1, length(k1_x)))
 par(mar=c(5,5,4,5)+.1)
-plot(head(data$real_act_x, -1), head(data$ratios, -1), type="o", lwd=line_width, pch=4, col=colors[1], xlab=xlabel, ylab="Ratio", cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
-lines(head(data$real_act_x, -1), head(data$k1s, -1), type="o", lwd=line_width, pch=1, lty=2, col=colors[2])
+plot(head(data$real_act_x, -1), head(data$ratios, -1), type="o", lwd=line_width, pch=4, col=colors[1], xlab=xlabel, ylab="Ratio", cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper, ylim=c(min_y, max_y))
+lines(head(data$real_act_x, -1), head(data$k1s, -1), type="o", lwd=line_width, pch=1, lty=2, col=colors[2], cex=cex_size)
 rho = sd(data$ratios, na.rm=TRUE)
 rho_n = rho/as.numeric(k1)
 rob = round(rho_n, digits=4)
@@ -100,7 +100,7 @@ rmse <- sqrt(mean(errors^2))
 #print(rmse)
 if (format == "pdf") pdf(paste(graph_name, "_error.pdf", sep="")) else png(paste(graph_name, "_error.png", sep=""))
 par(mar=c(5,5,4,5)+.1)
-plot(errors_x, errors, type="o", lwd=line_width, xlab=xlabel, ylab="Activity", lty=1, pch=4, col=colors[1], cex.axis=cex_paper, cex.lab=cex_paper)
+plot(errors_x, errors, type="o", lwd=line_width, xlab=xlabel, ylab="Activity", lty=1, pch=4, col=colors[1], cex=cex_size, cex.axis=cex_paper, cex.lab=cex_paper)
 title(substitute(atop("Error of Simulation over " ~ tau ~ " (in " * mode * ")",
                       "for" ~ bold(network) ~ "(RMSE = " ~ rmse ~ ")"), list(network=args[3], rmse=round(rmse, 2), mode=mode)), cex.main=cex_paper)
 grid(col="gray", lwd=1)
