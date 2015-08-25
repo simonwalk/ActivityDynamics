@@ -12,6 +12,7 @@ from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
 from random import shuffle
 from scipy.stats import poisson
 import matplotlib
+from dateutil.relativedelta import relativedelta
 
 
 # Generator Class works with GraphTool generators, as they provide more functionality than NetworkX Generators
@@ -319,6 +320,24 @@ class Generator():
         self.directed = self.graph.is_directed()
         self.num_nodes = self.graph.num_vertices()
         remove_parallel_edges(self.graph)
+
+    def reduce_network_to_epoch(self, cur_epoch, start_date):
+        self.debug_msg("Reducing network...")
+        timedelta = cur_epoch + 1
+        temp_epoch = start_date + relativedelta(months=timedelta)
+        end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
+        self.debug_msg(" -> Getting network epoch from " + str(start_date) + " to " + str(end_day))
+        self.graph.clear_filters()
+        bool_map = self.graph.new_vertex_property("bool")
+        for v in self.graph.vertices():
+            if self.graph.vertex_properties["firstActivity"][v] > end_day:
+                bool_map[v] = 0
+            else:
+                bool_map[v] = 1
+        self.graph.set_vertex_filter(bool_map)
+        #self.graph.purge_vertices()
+        self.debug_msg("Reduced network to " + str(self.graph.num_vertices()) + " vertices with " +
+                       str(self.graph.num_edges()) + " edges.")
 
 
     # collecting colors for plots

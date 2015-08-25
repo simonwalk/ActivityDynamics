@@ -28,7 +28,7 @@ data_sets = ["BeerStackExchange",           # 0
              "DotaWiki",                    # 8
              "PracticalPlants"]             # 9
 
-emp_data_set = data_sets[9]
+emp_data_set = data_sets[0]
 
 def create_network(graph_name):
     bg = Generator(graph_name)
@@ -37,12 +37,15 @@ def create_network(graph_name):
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    #bg.collect_colors()
+    bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    #bg.draw_graph(0)
-    bg.calc_vertex_properties()
-    bg.store_graph(0)
+    start_date = datetime.date(2014, 2, 1)
+    for i in range(0, 7):
+        bg.reduce_network_to_epoch(i, start_date)
+        bg.draw_graph(i, output_size=1000)
+    #bg.calc_vertex_properties()
+    #bg.store_graph(0)
 
 
 # not the prettiest way to transfer params, but necessary for multiprocessing
@@ -90,7 +93,7 @@ if __name__ == '__main__':
     graph_name = emp_data_set
     if not plot_only:
         create_network(graph_name)
-        calc_activity(graph_name, store_itas, deltatau)
-    empirical_result_plot(graph_name, mode, plot_fmt)
+        #calc_activity(graph_name, store_itas, deltatau)
+    #empirical_result_plot(graph_name, mode, plot_fmt)
     # for graph_name in data_sets:
     #     empirical_result_plot(graph_name, mode, plot_fmt)
