@@ -41,7 +41,7 @@ def create_network(graph_name):
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
     start_date = datetime.date(2014, 2, 1)
-    for i in range(0, 7):
+    for i in range(0, 6):
         bg.reduce_network_to_epoch(i, start_date)
         bg.draw_graph(i, output_size=1000)
     #bg.calc_vertex_properties()

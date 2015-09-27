@@ -23,6 +23,7 @@ class Generator():
         self.directed = directed
         self.num_nodes = num_nodes
         self.graph_name = graph_name
+        self.init_v = None
 
 
     # create network meta function that calls the corresponding functions of the generator class
@@ -323,6 +324,7 @@ class Generator():
 
     def reduce_network_to_epoch(self, cur_epoch, start_date):
         self.debug_msg("Reducing network...")
+        colors = [[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 1], [1, 1, 0, 1], [1, 0, 1, 1]]
         timedelta = cur_epoch + 1
         temp_epoch = start_date + relativedelta(months=timedelta)
         end_day = datetime.date(temp_epoch.year, temp_epoch.month, 1) - datetime.timedelta(days=1)
@@ -335,6 +337,12 @@ class Generator():
             else:
                 bool_map[v] = 1
         self.graph.set_vertex_filter(bool_map)
+        for v in self.graph.vertices():
+            if cur_epoch > 0:
+                if self.init_v[v] == 0:
+                    self.graph.vertex_properties["colorsActivity"][v] = colors[cur_epoch - 1]
+            self.init_v[v] = 1
+
         #self.graph.purge_vertices()
         self.debug_msg("Reduced network to " + str(self.graph.num_vertices()) + " vertices with " +
                        str(self.graph.num_edges()) + " edges.")
@@ -482,6 +490,7 @@ class Generator():
         self.graph = load_graph(config.graph_binary_dir + "GT/" + self.graph_name + "/{}.gt".format(fn))
         self.directed = self.graph.is_directed()
         self.num_nodes = self.graph.num_vertices()
+        self.init_v = self.graph.new_vertex_property("bool")
         self.debug_msg("Graph loaded with {} nodes and {} edges".format(self.graph.num_vertices(),
                                                                         self.graph.num_edges()))
 
