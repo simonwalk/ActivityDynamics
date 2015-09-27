@@ -37,14 +37,27 @@ def create_network(graph_name):
     bg.clear_all_filters()
     bg.calc_eigenvalues(2)
     bg.add_node_weights()
-    bg.collect_colors()
+    #bg.collect_colors()
     remove_self_loops(bg.graph)
     remove_parallel_edges(bg.graph)
-    start_date = datetime.date(2014, 2, 1)
-    for i in range(0, 6):
-        bg.reduce_network_to_epoch(i, start_date)
-        bg.draw_graph(i, output_size=1000)
-    #bg.calc_vertex_properties()
+    #start_date = datetime.date(2014, 2, 1)
+    #for i in range(0, 6):
+    #    bg.reduce_network_to_epoch(i, start_date)
+    #    bg.draw_graph(i, output_size=1000)
+    bg.calc_vertex_properties()
+
+    out_file = open(config.graph_source_dir + "empirical_results/" + graph_name + "_deg_dis.txt", "w")
+    for v in bg.graph.vertices():
+        out_file.write(str(bg.graph.vp["degree"][v]) + "\n")
+    out_file.close()
+
+    import subprocess
+
+    r_script_path = os.path.abspath(config.r_dir + 'deg_dis_plots.R')
+    wd = r_script_path.replace("R Scripts/deg_dis_plots.R", "") + config.plot_dir + "empirical_results/"
+    subprocess.call([config.r_binary_path, r_script_path, wd, graph_name])
+
+
     #bg.store_graph(0)
 
 
@@ -90,8 +103,9 @@ def calc_activity(graph_name, store_itas, deltatau, rand_iter=0, tau_in_days=tid
 
 
 if __name__ == '__main__':
-    graph_name = emp_data_set
-    if not plot_only:
+    #graph_name = emp_data_set
+    for graph_name in data_sets:
+    #if not plot_only:
         create_network(graph_name)
         #calc_activity(graph_name, store_itas, deltatau)
     #empirical_result_plot(graph_name, mode, plot_fmt)
