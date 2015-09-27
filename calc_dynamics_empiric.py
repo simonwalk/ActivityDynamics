@@ -46,16 +46,19 @@ def create_network(graph_name):
     #    bg.draw_graph(i, output_size=1000)
     bg.calc_vertex_properties()
 
-    out_file = open(config.graph_source_dir + "empirical_results/" + graph_name + "_deg_dis.txt", "w")
+    out_file = os.path.abspath(config.graph_source_dir + "empirical_results/" + graph_name + "_deg_dis.txt")
+
+    degfile = open(out_file, "w")
+
     for v in bg.graph.vertices():
-        out_file.write(str(bg.graph.vp["degree"][v]) + "\n")
-    out_file.close()
+        degfile.write(str(bg.graph.vp["degree"][v]) + "\n")
+    degfile.close()
 
     import subprocess
 
     r_script_path = os.path.abspath(config.r_dir + 'deg_dis_plots.R')
     wd = r_script_path.replace("R Scripts/deg_dis_plots.R", "") + config.plot_dir + "empirical_results/"
-    subprocess.call([config.r_binary_path, r_script_path, wd, graph_name])
+    subprocess.call([config.r_binary_path, r_script_path, wd, graph_name, out_file])
 
 
     #bg.store_graph(0)
